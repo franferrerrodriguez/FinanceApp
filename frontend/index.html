@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es" class="dark">
+  <head>
+    <script>
+      (function () {
+        try {
+          var raw = localStorage.getItem('financia_app_data');
+          var theme = 'system';
+          var locale = 'es';
+          if (raw) {
+            var data = JSON.parse(raw);
+            var state = data.state || data;
+            theme = state.theme || theme;
+            locale = state.locale || locale;
+          }
+          var prefersDark = window.matchMedia(
+            '(prefers-color-scheme: dark)',
+          ).matches;
+          var isDark =
+            theme === 'dark' ||
+            (theme !== 'light' && prefersDark);
+          document.documentElement.classList.toggle('dark', isDark);
+          document.documentElement.style.colorScheme = isDark
+            ? 'dark'
+            : 'light';
+          document.documentElement.lang =
+            locale === 'en' ? 'en-GB' : 'es-ES';
+        } catch (e) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <title>FinanciaApp</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

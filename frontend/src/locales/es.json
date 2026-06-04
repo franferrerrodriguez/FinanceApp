@@ -1,0 +1,414 @@
+{
+  "app": {
+    "name": "FinanciaApp",
+    "tagline": "Finanzas personales",
+    "loading": "Cargando tus datos…"
+  },
+  "footer": {
+    "poweredBy": "Powered by",
+    "brand": "Cartia Solutions",
+    "copyright": "© {{year}} Cartia Solutions. Todos los derechos reservados."
+  },
+  "menu": {
+    "open": "Abrir menú",
+    "close": "Cerrar menú",
+    "title": "Menú",
+    "preferences": "Preferencias",
+    "language": "Idioma",
+    "theme": "Tema",
+    "themeLight": "Claro",
+    "themeDark": "Oscuro",
+    "themeSystem": "Sistema",
+    "session": "Sesión",
+    "guestHint": "Puedes usar la app sin cuenta. Regístrate para guardar tu progreso en la nube.",
+    "register": "Registrarse",
+    "login": "Iniciar sesión",
+    "account": "Cuenta",
+    "accountSettings": "Mi cuenta",
+    "logout": "Cerrar sesión"
+  },
+  "nav": {
+    "main": "Navegación principal",
+    "dashboard": "Dashboard",
+    "balance": "Patrimonio",
+    "projection": "Proyección"
+  },
+  "auth": {
+    "close": "Cerrar",
+    "registerTitle": "Crear cuenta",
+    "registerSubtitle": "Email y contraseña. Tus datos locales se copiarán a tu cuenta.",
+    "loginTitle": "Iniciar sesión",
+    "loginSubtitle": "Accede con el email y la contraseña de tu cuenta.",
+    "email": "Email",
+    "password": "Contraseña",
+    "registerSubmit": "Registrarme",
+    "loginSubmit": "Entrar",
+    "submitting": "Un momento…",
+    "hasAccount": "¿Ya tienes cuenta?",
+    "noAccount": "¿Aún no tienes cuenta?",
+    "switchToLogin": "Iniciar sesión",
+    "switchToRegister": "Registrarse",
+    "notConfigured": "El registro en la nube requiere configurar VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en el entorno.",
+    "confirmEmail": "Revisa tu email para confirmar la cuenta. Tus datos locales se conservan hasta que entres.",
+    "success": "Sesión iniciada. Tus datos se están guardando en la nube.",
+    "migrationFailed": "Has iniciado sesión, pero no se pudieron subir todos los datos. Se reintentará al volver a entrar.",
+    "errors": {
+      "required": "Introduce email y contraseña.",
+      "notConfigured": "El servidor de cuentas no está configurado.",
+      "generic": "No se pudo completar. Comprueba email y contraseña."
+    }
+  },
+  "common": {
+    "back": "Atrás",
+    "continue": "Continuar",
+    "start": "Empezar",
+    "optional": "(opcional)",
+    "required": "*",
+    "currencySymbol": "€",
+    "nextIteration": "Próxima iteración",
+    "months": {
+      "1": "Enero",
+      "2": "Febrero",
+      "3": "Marzo",
+      "4": "Abril",
+      "5": "Mayo",
+      "6": "Junio",
+      "7": "Julio",
+      "8": "Agosto",
+      "9": "Septiembre",
+      "10": "Octubre",
+      "11": "Noviembre",
+      "12": "Diciembre"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "profileFallback": "Usuario",
+    "detailSection": "Más detalle",
+    "subtitle": "Visión de tu patrimonio, cashflow y evolución mensual.",
+    "subtitleWithEstimates": "Algunos gastos fijos son medias estimadas hasta que los completes en Balance.",
+    "saveBanner": {
+      "aria": "Recordatorio para guardar tu progreso",
+      "message": "Tienes cambios sin guardar — ¿quieres registrarte para no perder tu progreso?",
+      "cta": "Registrarme",
+      "later": "Más tarde"
+    },
+    "kpi": {
+      "netWorth": "Patrimonio neto",
+      "totalAssets": "Total activos",
+      "totalLiabilities": "Total pasivos",
+      "savingsRate": "Tasa de ahorro",
+      "savingsPerMonth": "{{amount}} / mes",
+      "trendThisMonth": "{{amount}} este mes",
+      "trendImprovement": "{{amount}} (mejora)",
+      "freeCashflow": "Cashflow libre",
+      "monthlyChange": "Variación mensual"
+    },
+    "alerts": {
+      "negative_cashflow": "Tus gastos superan tus ingresos este mes.",
+      "low_savings_rate": "Estás ahorrando menos del 10% de tus ingresos.",
+      "credit_card_debt": "Tienes deuda en tarjeta. Considera amortizarla primero.",
+      "negative_net_worth": "Tu deuda supera tus activos. Revisa tus pasivos."
+    },
+    "charts": {
+      "netWorth": {
+        "title": "Evolución del patrimonio neto",
+        "seriesNetWorth": "Patrimonio neto",
+        "seriesAssets": "Total activos",
+        "empty": "Cierra meses en Balance para ver la evolución histórica."
+      },
+      "cashflow": {
+        "title": "Cashflow mensual",
+        "income": "Ingresos",
+        "subtitle": "Distribución de {{income}} de ingresos",
+        "rowLabel": "Mes actual",
+        "segments": {
+          "fixed": "Gastos fijos",
+          "variable": "Gastos variables",
+          "investment": "Ahorro / inversión",
+          "free": "Disponible"
+        }
+      },
+      "assets": {
+        "title": "Distribución de activos",
+        "empty": "Registra valores en el cierre mensual para ver el desglose."
+      },
+      "holdings": {
+        "title": "Mayor peso en el patrimonio",
+        "topAssets": "Top activos",
+        "topLiabilities": "Top pasivos",
+        "empty": "Sin datos de cierre mensual todavía."
+      }
+    },
+    "emergencyFund": {
+      "title": "Fondo de emergencia",
+      "noSnapshots": "Registra tus cuentas en Balance para ver este indicador",
+      "progressAria": "Progreso hacia el fondo de emergencia",
+      "have": "Tienes {{amount}} · cubre {{months}} meses de gastos",
+      "target": "Objetivo: {{amount}} ({{months}} meses)"
+    },
+    "annualExpensesSummary": "Gastos anuales previstos: {{yearly}} (media {{monthly}}/mes)"
+  },
+  "balance": {
+    "title": "Patrimonio",
+    "description": "Aquí vives tus datos reales: ingresos, gastos, evolución anual y aportaciones. Dashboard y proyección los leen solos.",
+    "tabsLabel": "Secciones de patrimonio",
+    "tabs": {
+      "cashflow": "Ingresos y gastos",
+      "contributions": "Aportaciones",
+      "patrimony": "Activos y deudas"
+    },
+    "cashflow": {
+      "income": "Ingresos / mes",
+      "fixed": "Gastos fijos / mes",
+      "leisure": "Ocio / mes",
+      "savings": "Ahorro del mes",
+      "incomeTitle": "Ingresos",
+      "incomeSubtitle": "Lo que entra cada mes (neto). Mismo dato que en el onboarding, editable aquí.",
+      "expensesTitle": "Gastos mensuales",
+      "expensesSubtitle": "Hipoteca, hogar y ocio. La proyección usa estos importes mes a mes.",
+      "projectionGrowthTitle": "Evolución en la proyección",
+      "projectionGrowthSubtitle": "Subida de gastos en la proyección. El salario cambia según el historial o el importe vigente.",
+      "expenseIncrease": "Subida gastos anual",
+      "salaryHistoryTitle": "Historial de salarios",
+      "salaryHistorySubtitle": "Registra tramos con «vigente desde» (mes/año). El salario de arriba es el actual; en la proyección cada mes usa el último tramo que aplique.",
+      "salaryHistoryEmpty": "Sin tramos anteriores. Si has subido el sueldo, añade el salario antiguo con su fecha de inicio.",
+      "salaryHistoryFrom": "Vigente desde",
+      "salaryHistoryEffective": "Equivale a {{amount}}/mes en ese tramo",
+      "salaryHistoryRemove": "Eliminar tramo",
+      "salaryHistoryAdd": "Añadir tramo al historial",
+      "expenseIncreaseHint": "0% = gastos estables; súbelo si esperas más inflación en vivienda/ocio",
+      "initialPatrimony": "Patrimonio inicial (€)",
+      "usedBy": "Usado por",
+      "salaryNormalLabel": "Salario neto mensual (paga normal)",
+      "salaryPaysLabel": "Número de pagas al año",
+      "salaryPays": {
+        "12": "12 pagas",
+        "14": "14 pagas",
+        "other": "Otro"
+      },
+      "salaryPaysCustom": "Pagas al año",
+      "salaryEffectiveHint": "Equivale a {{amount}}/mes reales distribuidos uniformemente",
+      "salaryFourteenNote": "Las pagas extra de junio y diciembre se distribuyen entre los 12 meses para una proyección uniforme. Si prefieres verlas como picos, puedes añadirlas como «Ingreso anual puntual» (próximamente).",
+      "salaryOtherNote": "Con {{count}} pagas, el ingreso mensual efectivo es (paga × {{count}}) / 12.",
+      "annualExpensesTitle": "Gastos anuales previstos",
+      "annualExpensesSubtitle": "Pagos que no son mensuales pero puedes estimar: IBI, seguro del coche, revisión, vacaciones, ropa de temporada…",
+      "annualExpensesEmpty": "Aún no has añadido gastos anuales.",
+      "annualExpenseName": "Nombre",
+      "annualExpenseNamePlaceholder": "Ej. IBI, Vacaciones verano",
+      "annualExpenseAmount": "Importe anual (€)",
+      "annualExpenseMonth": "Mes de pago",
+      "annualExpenseRemove": "Eliminar",
+      "annualExpenseAdd": "Añadir gasto anual",
+      "emergencyFundTitle": "Fondo de emergencia objetivo",
+      "emergencyFundSubtitle": "¿Cuántos meses de gastos quieres tener siempre disponibles?",
+      "emergencyFundMonthsLabel": "Meses de colchón",
+      "emergencyFundMonthsOption": "{{count}} meses",
+      "emergencyFundTargetHint": "Tu objetivo: {{target}} ({{months}} meses × {{monthly}}/mes de gastos totales)"
+    },
+    "contributions": {
+      "title": "Aportaciones mensuales",
+      "subtitle": "Indica cuánto aportas y a qué producto o proveedor (Indexa, ETF, plan de pensiones, etc.).",
+      "totalMonthly": "Total aportaciones / mes",
+      "weightedReturn": "Rentabilidad media ponderada",
+      "weightedReturnHint": "Ganancia media al año, después de inflación",
+      "initialPatrimony": "Patrimonio inicial",
+      "empty": "Aún no has definido aportaciones. Añade al menos una línea para alimentar la proyección.",
+      "addFirst": "Añadir primera aportación",
+      "addAnother": "Añadir otra aportación",
+      "active": "Activa en proyección",
+      "remove": "Eliminar",
+      "provider": "Proveedor / destino",
+      "category": "Tipo de producto",
+      "customLabel": "Nombre personalizado (opcional)",
+      "monthlyAmount": "Importe mensual (€)",
+      "growthMode": "Evolución de la aportación",
+      "growthFixed": "Importe fijo",
+      "growthRamp": "Suma fija cada mes",
+      "growthAnnual": "Sube un % cada año",
+      "rampPerMonth": "Más cada mes (€)",
+      "annualIncrease": "Subida anual (%)",
+      "customReturn": "Rentabilidad anual propia",
+      "customReturnHint": "Vacío = {{default}} según tipo",
+      "incomeLink": "Ingresos y gastos en",
+      "projectionLink": "Aportaciones en"
+    },
+    "contributionCategories": {
+      "investment": "Fondos indexados",
+      "etf": "ETF / bróker",
+      "pension": "Jubilación / plan de pensiones",
+      "bank": "Cuenta remunerada",
+      "other": "Otro"
+    },
+    "patrimony": {
+      "title": "Activos y pasivos",
+      "description": "Próximamente podrás registrar cuentas, saldos y cierres mensuales aquí."
+    },
+    "plannedFeatures": "Próximamente: varias cuentas por banco o bróker, cierre mensual y tabla histórica.",
+    "providers": {
+      "indexa": "Indexa Capital",
+      "myinvestor": "Myinvestor",
+      "tradeRepublic": "Trade Republic",
+      "revolut": "Revolut",
+      "openbank": "Openbank",
+      "pensionPlan": "Plan de pensiones",
+      "other": "Otro"
+    }
+  },
+  "projection": {
+    "title": "Proyección futura",
+    "subtitle": "Proyección mes a mes con interés compuesto. El patrimonio crece con tus aportaciones netas más la rentabilidad sobre lo ya invertido (la aportación del mes no renta hasta el mes siguiente).",
+    "sources": {
+      "title": "Datos de la proyección",
+      "hint": "Todo se edita en Patrimonio. Aquí solo ves el resumen en tiempo real.",
+      "income": "Ingresos mensuales",
+      "fixed": "Gastos fijos",
+      "variable": "Ocio / variables",
+      "salaryHistory": "Historial salarial",
+      "salaryHistoryCount": "{{count}} tramos",
+      "salaryHistoryFlat": "Salario vigente (sin tramos)",
+      "expenseIncrease": "Subida gastos anual",
+      "investments": "Inversiones adicionales (mes 1)",
+      "patrimony": "Patrimonio inicial",
+      "editInPatrimony": "Editar",
+      "return": "Rentabilidad anual configurada",
+      "noContributions": "Define tus aportaciones en Patrimonio (fondos o plan de pensiones) para rellenar la columna Inversiones adicionales.",
+      "contributionsTotal": "Suma mensual de aportaciones activas: {{amount}}"
+    },
+    "settings": {
+      "title": "Parámetros de la proyección",
+      "hint": "Solo puedes cambiar aquí el horizonte y la rentabilidad. El resto se edita en Patrimonio.",
+      "years": "Años a proyectar",
+      "yearsOption": "{{years}} años",
+      "annualReturn": "Rentabilidad anual",
+      "annualReturnOption": "{{percent}} %",
+      "returnMode": "Tipo de rentabilidad",
+      "returnModeTooltip": "Real = ganancia después de inflación (poder adquisitivo). Nominal = dato bruto del mercado.",
+      "realReturn": "Real (después de inflación)",
+      "realReturnHint": "Ganancia neta en poder de compra.",
+      "nominalReturn": "Nominal",
+      "nominalReturnHint": "Sin descontar inflación."
+    },
+    "summary": {
+      "finalPatrimony": "Patrimonio final",
+      "totalContributed": "Total aportado",
+      "returnGenerated": "Rentabilidad generada",
+      "returnGeneratedHint": "Lo que el interés compuesto ha generado por encima de tus aportaciones.",
+      "configuredReturn": "Rentabilidad anual (parámetro)",
+      "configuredReturnHint": "Valor configurado arriba; no es una media calculada.",
+      "averageSavingsRate": "Tasa de ahorro media",
+      "equation": "{{final}} = {{contributed}} aportado + {{returnAmount}} de rentabilidad + {{initial}} inicial"
+    },
+    "table": {
+      "scrollHint": "Desliza horizontalmente para ver todas las columnas",
+      "date": "Fecha",
+      "salary": "Salario neto",
+      "fixed": "Gastos fijos",
+      "variable": "Ocio / variables",
+      "netContribution": "Aportación neta",
+      "punctual": "Gastos puntuales",
+      "investments": "Inv. adicionales",
+      "monthlyReturn": "Rentab. del mes",
+      "patrimony": "Patrimonio acum.",
+      "monthCount": "{{count}} meses ({{years}} años)."
+    }
+  },
+  "onboarding": {
+    "stepProgress": "Paso {{current}} de {{total}}",
+    "steps": {
+      "0": { "title": "Bienvenida", "short": "Perfil" },
+      "1": { "title": "Tus ingresos", "short": "Ingresos" },
+      "2": { "title": "Gastos", "short": "Gastos" },
+      "3": { "title": "Resumen", "short": "Resumen" }
+    },
+    "welcome": {
+      "title": "Bienvenido a FinanciaApp",
+      "subtitle": "En unos minutos tendrás una visión clara de tu cashflow y tu capacidad de ahorro. Todo se guarda en este dispositivo.",
+      "name": "Nombre",
+      "namePlaceholder": "Tu nombre",
+      "age": "Edad",
+      "agePlaceholder": "Ej. 32",
+      "ageHint": "Para proyecciones y jubilación; no afecta al cashflow mensual.",
+      "ageErrorRequired": "Indica tu edad para continuar.",
+      "ageErrorTooYoung": "Debes tener al menos {{min}} años para usar la app.",
+      "ageErrorTooOld": "La edad máxima permitida es {{max}} años.",
+      "ageErrorInvalid": "Introduce una edad válida en números enteros.",
+      "nameErrorRequired": "Indica tu nombre para continuar.",
+      "formIncomplete": "Revisa los campos marcados antes de continuar."
+    },
+    "income": {
+      "title": "Tus ingresos",
+      "intro": "Introduce importes <strong>netos</strong> (lo que recibes en cuenta después de impuestos y retenciones).",
+      "salaryHelpAria": "Ayuda: salario bruto o neto",
+      "grossNetBody": "Pon el <strong>neto</strong>: lo que te ingresa en el banco cada mes. El <strong>bruto</strong> es el del contrato y suele ser mayor — no lo uses aquí.",
+      "monthlySalary": "Salario neto mensual",
+      "otherIncome": "Otros ingresos netos mensuales",
+      "otherIncomeHint": "Alquileres, freelance, dividendos…",
+      "totalIncome": "Ingresos totales / mes"
+    },
+    "expenses": {
+      "title": "Tus gastos al mes",
+      "subtitle": "Cuatro bloques: vivienda, hogar, supermercado y ocio. Usa medias si varían cada mes.",
+      "household": "Gastos del hogar",
+      "householdHint": "Media mensual: luz, agua, gas, seguros, internet y similares (sin la compra del super).",
+      "groceries": "Supermercado y comida en casa",
+      "groceriesHint": "Media mensual de la compra del super, despensa y comida que preparas en casa.",
+      "leisure": "Gastos de ocio",
+      "leisureHint": "Media mensual: restaurantes, salidas, hobbies, compras no esenciales…",
+      "useDetailedView": "Prefiero desglosar luz, seguros, etc.",
+      "useSimpleView": "Volver a la vista simple",
+      "detailedIntro": "Opcional: desglose fino del bloque «Hogar».",
+      "subtotalMortgage": "Hipoteca / alquiler",
+      "subtotalHousehold": "Gastos del hogar y supermercado",
+      "subtotalLeisure": "Gastos de ocio",
+      "mortgageRent": "Hipoteca o alquiler",
+      "mortgageRentTotal": "Hipoteca o alquiler (cuota total)",
+      "mortgageRentTotalHint": "Importe completo de la cuota, aunque la paguéis entre varios.",
+      "expenseShared": "Lo pagamos entre varios (pareja, compañeros de piso…)",
+      "yourSharePercent": "Tu parte",
+      "sharePreview": "En tus gastos contaremos {{yours}}/mes (de {{total}} en total).",
+      "detailedTotal": "Suma del desglose: {{amount}}",
+      "utilities": "Suministros",
+      "utilitiesHint": "Luz, agua, gas, internet…",
+      "insurance": "Seguros",
+      "subscriptions": "Suscripciones",
+      "otherFixed": "Otros gastos fijos"
+    },
+    "summary": {
+      "title": "Resumen",
+      "titleWithName": "{{name}}, resumen",
+      "subtitle": "Revisa lo que has indicado. No hay nada más que rellenar aquí.",
+      "income": "Ingresos / mes",
+      "fixedExpenses": "Gastos fijos / mes",
+      "leisure": "Ocio / mes",
+      "freeCashflow": "Disponible tras gastos / mes",
+      "savingsRate": "Margen tras gastos",
+      "hint": "Patrimonio, cuentas e inversión los configurarás en Balance. Puedes cambiar ingresos y gastos cuando quieras.",
+      "registerPrompt": "¿Quieres guardar este progreso en la nube?",
+      "registerCta": "Registrarme",
+      "registerLater": "Más tarde, empezar sin cuenta"
+    }
+  },
+  "categories": {
+    "asset": {
+      "bank": "Banco / Cuenta corriente",
+      "investment": "Fondos indexados / ETF",
+      "pension": "Plan de pensiones",
+      "cash": "Efectivo",
+      "real_estate": "Inmueble",
+      "other": "Otro activo"
+    },
+    "liability": {
+      "mortgage": "Hipoteca",
+      "personal_loan": "Préstamo personal",
+      "credit_card": "Tarjeta de crédito",
+      "family_debt": "Deuda familiar",
+      "other": "Otra deuda"
+    }
+  },
+  "scenarios": {
+    "conservative": "Conservador",
+    "moderate": "Moderado",
+    "optimistic": "Optimista"
+  }
+}

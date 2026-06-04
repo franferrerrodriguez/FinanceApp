@@ -1,0 +1,107 @@
+import assert from 'node:assert/strict';
+import { annualToMonthlyRate } from './calculations.js';
+import {
+  buildMonthlyProjectionTable,
+  summarizeMonthlyProjection,
+} from './projectionTable.js';
+import { getProjectionAnnualRate } from './projectionRates.js';
+
+assert.equal(getProjectionAnnualRate({ useRealReturn: true, indexFundRealReturn: 0.04 }), 0.04);
+
+const rMes = annualToMonthlyRate(0.04);
+assert.ok(Math.abs(rMes - 0.003273739) < 0.000001);
+
+const baseSettings = {
+  monthlyNetSalary: 2530,
+  otherMonthlyIncome: 0,
+  mortgageRent: 318.5,
+  mortgageRentTotal: 318.5,
+  mortgageRentShared: false,
+  householdFixedEstimate: 0,
+  leisureEstimate: 200,
+  leisureShared: false,
+  initialPatrimony: 0,
+  indexFundRealReturn: 0.04,
+  useRealReturn: true,
+  annualSalaryIncrease: 0,
+  projectionAnnualExpenseIncrease: 0,
+  projectionYears: 2,
+};
+
+const rows = buildMonthlyProjectionTable({
+  settings: baseSettings,
+  contributionPlans: [],
+  initialPatrimony: 0,
+  startDate: new Date(2026, 5, 1),
+  years: 2,
+});
+
+assert.equal(rows[0].netContribution, 2011.5);
+assert.equal(rows[0].patrimonioInicio, 0);
+assert.equal(rows[0].monthlyReturn, 0);
+assert.equal(rows[0].patrimonyEnd, 2011.5);
+
+assert.equal(rows[1].patrimonioInicio, 2011.5);
+assert.equal(rows[1].netContribution, 2011.5);
+const expectedM2 = 2011.5 + 2011.5 + 2011.5 * rMes;
+assert.ok(Math.abs(rows[1].patrimonyEnd - expectedM2) < 0.02);
+
+const summary = summarizeMonthlyProjection(rows, 0);
+assert.equal(summary.finalPatrimony, rows[rows.length - 1].patrimonyEnd);
+assert.ok(summary.isCoherent);
+assert.equal(
+  summary.finalPatrimony,
+  summary.initialPatrimony + summary.totalContributions + summary.totalInterest,
+);
+
+const withInvest = buildMonthlyProjectionTable({
+  settings: baseSettings,
+  contributionPlans: [
+    {
+      id: '1',
+      providerId: 'indexa',
+      category: 'investment',
+      monthlyAmount: 500,
+      isActive: true,
+      growthMode: 'fixed',
+      rampPerMonth: 0,
+      annualIncrease: 0,
+      customAnnualReturn: null,
+    },
+  ],
+  initialPatrimony: 0,
+  startDate: new Date(2026, 0, 1),
+  years: 1,
+});
+assert.equal(withInvest[0].additionalInvestments, 500);
+assert.equal(withInvest[0].netContribution, 2011.5 + 500);
+
+const fourteenPays = buildMonthlyProjectionTable({
+  settings: {
+    ...baseSettings,
+    salaryPaysPreset: '14',
+    monthlyNetSalaryEffective: (2530 * 14) / 12,
+  },
+  contributionPlans: [],
+  initialPatrimony: 0,
+  startDate: new Date(2026, 5, 1),
+  years: 1,
+});
+const effectiveSalary = (2530 * 14) / 12;
+assert.equal(
+  fourteenPays[0].netContribution,
+  Math.round((effectiveSalary - 318.5 - 200) * 100) / 100,
+);
+
+const withAnnual = buildMonthlyProjectionTable({
+  settings: baseSettings,
+  annualExpenses: [{ id: '1', name: 'IBI', amount: 600, month: 6 }],
+  contributionPlans: [],
+  initialPatrimony: 0,
+  startDate: new Date(2026, 5, 1),
+  years: 1,
+});
+assert.equal(withAnnual[0].punctualExpenses, 600);
+assert.equal(withAnnual[0].netContribution, 2011.5 - 600);
+
+console.log('projectionTable.test.js: ok');

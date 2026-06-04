@@ -1,0 +1,414 @@
+{
+  "app": {
+    "name": "FinanciaApp",
+    "tagline": "Personal finance",
+    "loading": "Loading your data…"
+  },
+  "footer": {
+    "poweredBy": "Powered by",
+    "brand": "Cartia Solutions",
+    "copyright": "© {{year}} Cartia Solutions. All rights reserved."
+  },
+  "menu": {
+    "open": "Open menu",
+    "close": "Close menu",
+    "title": "Menu",
+    "preferences": "Preferences",
+    "language": "Language",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "session": "Session",
+    "guestHint": "You can use the app without an account. Register to save your progress in the cloud.",
+    "register": "Register",
+    "login": "Sign in",
+    "account": "Account",
+    "accountSettings": "My account",
+    "logout": "Log out"
+  },
+  "nav": {
+    "main": "Main navigation",
+    "dashboard": "Dashboard",
+    "balance": "Net worth",
+    "projection": "Projection"
+  },
+  "auth": {
+    "close": "Close",
+    "registerTitle": "Create account",
+    "registerSubtitle": "Email and password. Your local data will be copied to your account.",
+    "loginTitle": "Sign in",
+    "loginSubtitle": "Use the email and password for your account.",
+    "email": "Email",
+    "password": "Password",
+    "registerSubmit": "Register",
+    "loginSubmit": "Sign in",
+    "submitting": "Please wait…",
+    "hasAccount": "Already have an account?",
+    "noAccount": "Don't have an account yet?",
+    "switchToLogin": "Sign in",
+    "switchToRegister": "Register",
+    "notConfigured": "Cloud registration requires VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in the environment.",
+    "confirmEmail": "Check your email to confirm your account. Your local data stays until you sign in.",
+    "success": "Signed in. Your data is being saved to the cloud.",
+    "migrationFailed": "Signed in, but not all data could be uploaded. It will retry on next sign-in.",
+    "errors": {
+      "required": "Enter email and password.",
+      "notConfigured": "The account server is not configured.",
+      "generic": "Could not complete. Check your email and password."
+    }
+  },
+  "common": {
+    "back": "Back",
+    "continue": "Continue",
+    "start": "Get started",
+    "optional": "(optional)",
+    "required": "*",
+    "currencySymbol": "€",
+    "nextIteration": "Coming soon",
+    "months": {
+      "1": "January",
+      "2": "February",
+      "3": "March",
+      "4": "April",
+      "5": "May",
+      "6": "June",
+      "7": "July",
+      "8": "August",
+      "9": "September",
+      "10": "October",
+      "11": "November",
+      "12": "December"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "profileFallback": "User",
+    "detailSection": "More detail",
+    "subtitle": "Overview of your net worth, cashflow and monthly trend.",
+    "subtitleWithEstimates": "Some fixed expenses are estimated until you complete them in Balance.",
+    "saveBanner": {
+      "aria": "Reminder to save your progress",
+      "message": "You have unsaved changes — register to keep your progress.",
+      "cta": "Sign up",
+      "later": "Later"
+    },
+    "kpi": {
+      "netWorth": "Net worth",
+      "totalAssets": "Total assets",
+      "totalLiabilities": "Total liabilities",
+      "savingsRate": "Savings rate",
+      "savingsPerMonth": "{{amount}} / month",
+      "trendThisMonth": "{{amount}} this month",
+      "trendImprovement": "{{amount}} (improved)",
+      "freeCashflow": "Free cashflow",
+      "monthlyChange": "Monthly change"
+    },
+    "alerts": {
+      "negative_cashflow": "Your expenses exceed your income this month.",
+      "low_savings_rate": "You are saving less than 10% of your income.",
+      "credit_card_debt": "You have credit card debt. Consider paying it down first.",
+      "negative_net_worth": "Your debt exceeds your assets. Review your liabilities."
+    },
+    "charts": {
+      "netWorth": {
+        "title": "Net worth over time",
+        "seriesNetWorth": "Net worth",
+        "seriesAssets": "Total assets",
+        "empty": "Close months in Balance to see historical trends."
+      },
+      "cashflow": {
+        "title": "Monthly cashflow",
+        "income": "Income",
+        "subtitle": "Breakdown of {{income}} income",
+        "rowLabel": "Current month",
+        "segments": {
+          "fixed": "Fixed expenses",
+          "variable": "Variable expenses",
+          "investment": "Savings / investment",
+          "free": "Available"
+        }
+      },
+      "assets": {
+        "title": "Asset allocation",
+        "empty": "Record values in the monthly close to see the breakdown."
+      },
+      "holdings": {
+        "title": "Largest holdings",
+        "topAssets": "Top assets",
+        "topLiabilities": "Top liabilities",
+        "empty": "No monthly close data yet."
+      }
+    },
+    "emergencyFund": {
+      "title": "Emergency fund",
+      "noSnapshots": "Record your accounts in Balance to see this indicator",
+      "progressAria": "Progress toward emergency fund goal",
+      "have": "You have {{amount}} · covers {{months}} months of expenses",
+      "target": "Goal: {{amount}} ({{months}} months)"
+    },
+    "annualExpensesSummary": "Planned annual expenses: {{yearly}} (avg. {{monthly}}/month)"
+  },
+  "balance": {
+    "title": "Net worth",
+    "description": "Your real numbers live here: income, expenses, annual growth and contributions. Dashboard and projection read them automatically.",
+    "tabsLabel": "Net worth sections",
+    "tabs": {
+      "cashflow": "Income & expenses",
+      "contributions": "Contributions",
+      "patrimony": "Assets & debts"
+    },
+    "cashflow": {
+      "income": "Income / month",
+      "fixed": "Fixed expenses / month",
+      "leisure": "Leisure / month",
+      "savings": "Monthly savings",
+      "incomeTitle": "Income",
+      "incomeSubtitle": "Monthly net income. Same as onboarding, editable here.",
+      "expensesTitle": "Monthly expenses",
+      "expensesSubtitle": "Mortgage, household and leisure. Projection uses these each month.",
+      "projectionGrowthTitle": "Projection growth",
+      "projectionGrowthSubtitle": "Expense growth in projection. Salary follows history or your current amount.",
+      "expenseIncrease": "Annual expense increase",
+      "salaryHistoryTitle": "Salary history",
+      "salaryHistorySubtitle": "Add periods with «effective from» (month/year). The salary above is current; projection uses the latest matching period per month.",
+      "salaryHistoryEmpty": "No past periods yet. After a raise, add your previous salary with its start date.",
+      "salaryHistoryFrom": "Effective from",
+      "salaryHistoryEffective": "Equals {{amount}}/month for that period",
+      "salaryHistoryRemove": "Remove period",
+      "salaryHistoryAdd": "Add period to history",
+      "expenseIncreaseHint": "0% = flat expenses; raise if you expect higher housing/leisure costs",
+      "initialPatrimony": "Starting net worth (€)",
+      "usedBy": "Used by",
+      "salaryNormalLabel": "Monthly net salary (regular paycheck)",
+      "salaryPaysLabel": "Paychecks per year",
+      "salaryPays": {
+        "12": "12 paychecks",
+        "14": "14 paychecks",
+        "other": "Other"
+      },
+      "salaryPaysCustom": "Paychecks per year",
+      "salaryEffectiveHint": "Equals {{amount}}/month spread evenly",
+      "salaryFourteenNote": "Extra June and December paychecks are spread across 12 months for a smooth projection. To model them as spikes, add them as a one-off annual income (coming soon).",
+      "salaryOtherNote": "With {{count}} paychecks, effective monthly income is (paycheck × {{count}}) / 12.",
+      "annualExpensesTitle": "Planned annual expenses",
+      "annualExpensesSubtitle": "Non-monthly costs you can estimate: property tax, car insurance, service, holidays, seasonal clothing…",
+      "annualExpensesEmpty": "No annual expenses added yet.",
+      "annualExpenseName": "Name",
+      "annualExpenseNamePlaceholder": "e.g. Property tax, Summer holiday",
+      "annualExpenseAmount": "Annual amount (€)",
+      "annualExpenseMonth": "Payment month",
+      "annualExpenseRemove": "Remove",
+      "annualExpenseAdd": "Add annual expense",
+      "emergencyFundTitle": "Emergency fund goal",
+      "emergencyFundSubtitle": "How many months of expenses do you want on hand?",
+      "emergencyFundMonthsLabel": "Months of runway",
+      "emergencyFundMonthsOption": "{{count}} months",
+      "emergencyFundTargetHint": "Your goal: {{target}} ({{months}} months × {{monthly}}/month total expenses)"
+    },
+    "contributions": {
+      "title": "Monthly contributions",
+      "subtitle": "How much you invest and where (Indexa, ETF, pension plan, etc.).",
+      "totalMonthly": "Total contributions / month",
+      "weightedReturn": "Weighted average return",
+      "weightedReturnHint": "Average yearly gain after inflation",
+      "initialPatrimony": "Starting net worth",
+      "empty": "No contributions yet. Add at least one line to feed the projection.",
+      "addFirst": "Add first contribution",
+      "addAnother": "Add another contribution",
+      "active": "Active in projection",
+      "remove": "Remove",
+      "provider": "Provider / destination",
+      "category": "Product type",
+      "customLabel": "Custom name (optional)",
+      "monthlyAmount": "Monthly amount (€)",
+      "growthMode": "Contribution growth",
+      "growthFixed": "Fixed amount",
+      "growthRamp": "Fixed increase each month",
+      "growthAnnual": "Annual % increase",
+      "rampPerMonth": "Extra per month (€)",
+      "annualIncrease": "Annual increase (%)",
+      "customReturn": "Custom annual return",
+      "customReturnHint": "Empty = {{default}} by type",
+      "incomeLink": "Income & expenses under",
+      "projectionLink": "Contributions under"
+    },
+    "contributionCategories": {
+      "investment": "Index funds",
+      "etf": "ETF / broker",
+      "pension": "Pension plan",
+      "bank": "Savings account",
+      "other": "Other"
+    },
+    "patrimony": {
+      "title": "Assets & liabilities",
+      "description": "Soon you will register accounts, balances and monthly closes here."
+    },
+    "plannedFeatures": "Coming soon: multiple accounts per bank or broker, monthly close and history table.",
+    "providers": {
+      "indexa": "Indexa Capital",
+      "myinvestor": "Myinvestor",
+      "tradeRepublic": "Trade Republic",
+      "revolut": "Revolut",
+      "openbank": "Openbank",
+      "pensionPlan": "Pension plan",
+      "other": "Other"
+    }
+  },
+  "projection": {
+    "title": "Future projection",
+    "subtitle": "Month-by-month projection with compound interest. Wealth grows from net contributions plus return on what was already invested (this month's contribution does not earn return until next month).",
+    "sources": {
+      "title": "Projection data sources",
+      "hint": "Everything is edited under Net worth. This is a live summary only.",
+      "income": "Monthly income",
+      "fixed": "Fixed expenses",
+      "variable": "Leisure / variable",
+      "salaryHistory": "Salary history",
+      "salaryHistoryCount": "{{count}} periods",
+      "salaryHistoryFlat": "Current salary (no periods)",
+      "expenseIncrease": "Annual expense increase",
+      "investments": "Additional investments (month 1)",
+      "patrimony": "Starting net worth",
+      "editInPatrimony": "Edit",
+      "return": "Configured annual return",
+      "noContributions": "Define contributions under Net worth (funds or pension plan) to fill the Additional investments column.",
+      "contributionsTotal": "Monthly sum of active contributions: {{amount}}"
+    },
+    "settings": {
+      "title": "Projection parameters",
+      "hint": "Only horizon and return are edited here. Everything else is under Net worth.",
+      "years": "Years to project",
+      "yearsOption": "{{years}} years",
+      "annualReturn": "Annual return",
+      "annualReturnOption": "{{percent}}%",
+      "returnMode": "Return type",
+      "returnModeTooltip": "Real = gain after inflation (purchasing power). Nominal = gross market figure.",
+      "realReturn": "Real (after inflation)",
+      "realReturnHint": "Net gain in purchasing power.",
+      "nominalReturn": "Nominal",
+      "nominalReturnHint": "Before inflation."
+    },
+    "summary": {
+      "finalPatrimony": "Final net worth",
+      "totalContributed": "Total contributed",
+      "returnGenerated": "Return generated",
+      "returnGeneratedHint": "What compound interest generated above your contributions.",
+      "configuredReturn": "Annual return (parameter)",
+      "configuredReturnHint": "Value set above; not a calculated average.",
+      "averageSavingsRate": "Average savings rate",
+      "equation": "{{final}} = {{contributed}} contributed + {{returnAmount}} return + {{initial}} starting"
+    },
+    "table": {
+      "scrollHint": "Swipe sideways to see all columns",
+      "date": "Date",
+      "salary": "Net salary",
+      "fixed": "Fixed expenses",
+      "variable": "Leisure / variable",
+      "netContribution": "Net contribution",
+      "punctual": "One-off expenses",
+      "investments": "Add. investments",
+      "monthlyReturn": "Monthly return",
+      "patrimony": "Total net worth",
+      "monthCount": "{{count}} months ({{years}} years)."
+    }
+  },
+  "onboarding": {
+    "stepProgress": "Step {{current}} of {{total}}",
+    "steps": {
+      "0": { "title": "Welcome", "short": "Profile" },
+      "1": { "title": "Your income", "short": "Income" },
+      "2": { "title": "Expenses", "short": "Expenses" },
+      "3": { "title": "Summary", "short": "Summary" }
+    },
+    "welcome": {
+      "title": "Welcome to FinanciaApp",
+      "subtitle": "In a few minutes you will have a clear view of your cashflow and saving capacity. Everything is stored on this device.",
+      "name": "Name",
+      "namePlaceholder": "Your name",
+      "age": "Age",
+      "agePlaceholder": "e.g. 32",
+      "ageHint": "For projections and retirement; does not affect monthly cashflow.",
+      "ageErrorRequired": "Enter your age to continue.",
+      "ageErrorTooYoung": "You must be at least {{min}} years old to use the app.",
+      "ageErrorTooOld": "Maximum age allowed is {{max}}.",
+      "ageErrorInvalid": "Enter a valid whole number for your age.",
+      "nameErrorRequired": "Enter your name to continue.",
+      "formIncomplete": "Check the highlighted fields before continuing."
+    },
+    "income": {
+      "title": "Your income",
+      "intro": "Enter <strong>net</strong> amounts (what lands in your account after tax and withholdings).",
+      "salaryHelpAria": "Help: gross vs net salary",
+      "grossNetBody": "Use your <strong>net</strong> pay: what hits your bank each month. <strong>Gross</strong> is on your contract and is usually higher — do not use it here.",
+      "monthlySalary": "Monthly net salary",
+      "otherIncome": "Other monthly net income",
+      "otherIncomeHint": "Rent, freelance, dividends…",
+      "totalIncome": "Total income / month"
+    },
+    "expenses": {
+      "title": "Your monthly expenses",
+      "subtitle": "Four blocks: housing, household, groceries and leisure. Use averages if they vary each month.",
+      "household": "Household expenses",
+      "householdHint": "Monthly average: power, water, gas, insurance, internet and similar (not grocery shopping).",
+      "groceries": "Groceries & food at home",
+      "groceriesHint": "Monthly average for supermarket, pantry and meals you cook at home.",
+      "leisure": "Leisure expenses",
+      "leisureHint": "Monthly average: restaurants, going out, hobbies, non-essential shopping…",
+      "useDetailedView": "I prefer to break down utilities, insurance, etc.",
+      "useSimpleView": "Back to simple view",
+      "detailedIntro": "Optional: detailed breakdown of the «Household» block.",
+      "subtotalMortgage": "Mortgage / rent",
+      "subtotalHousehold": "Household & groceries",
+      "subtotalLeisure": "Leisure expenses",
+      "mortgageRent": "Mortgage or rent",
+      "mortgageRentTotal": "Mortgage or rent (full payment)",
+      "mortgageRentTotalHint": "Full instalment amount, even if you split it with others.",
+      "expenseShared": "We share this (partner, flatmates…)",
+      "yourSharePercent": "Your share",
+      "sharePreview": "We will count {{yours}}/month in your expenses (of {{total}} total).",
+      "detailedTotal": "Breakdown total: {{amount}}",
+      "utilities": "Utilities",
+      "utilitiesHint": "Power, water, gas, internet…",
+      "insurance": "Insurance",
+      "subscriptions": "Subscriptions",
+      "otherFixed": "Other fixed expenses"
+    },
+    "summary": {
+      "title": "Summary",
+      "titleWithName": "{{name}}, summary",
+      "subtitle": "Review what you entered. There is nothing else to fill in here.",
+      "income": "Income / month",
+      "fixedExpenses": "Fixed expenses / month",
+      "leisure": "Leisure / month",
+      "freeCashflow": "Available after expenses / month",
+      "savingsRate": "Margin after expenses",
+      "hint": "Net worth, accounts and investments will be set up in Balance. You can change income and expenses anytime.",
+      "registerPrompt": "Save this progress to the cloud?",
+      "registerCta": "Register",
+      "registerLater": "Later — start without an account"
+    }
+  },
+  "categories": {
+    "asset": {
+      "bank": "Bank / Current account",
+      "investment": "Index funds / ETF",
+      "pension": "Pension plan",
+      "cash": "Cash",
+      "real_estate": "Property",
+      "other": "Other asset"
+    },
+    "liability": {
+      "mortgage": "Mortgage",
+      "personal_loan": "Personal loan",
+      "credit_card": "Credit card",
+      "family_debt": "Family debt",
+      "other": "Other debt"
+    }
+  },
+  "scenarios": {
+    "conservative": "Conservative",
+    "moderate": "Moderate",
+    "optimistic": "Optimistic"
+  }
+}
