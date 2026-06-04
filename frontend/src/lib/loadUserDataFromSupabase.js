@@ -1,3 +1,5 @@
+import { mergeFinanceLists } from './mergeFinanceLists';
+import { filterDraftAssets, filterDraftLiabilities } from './patrimonyDrafts';
 import { mergePersistedState } from '../store/persistConfig';
 import { useAppStore } from '../store/appStore';
 import {
@@ -77,6 +79,12 @@ export async function loadUserDataFromSupabase(userId) {
       : null;
     const profile = lists.profile ?? profileFromTable;
 
+    const current = useAppStore.getState();
+
+    const cloudAssets = (assetsRes.data ?? []).map(mapAssetFromDb);
+    const cloudLiabilities = (liabilitiesRes.data ?? []).map(mapLiabilityFromDb);
+    const cloudSnapshots = (snapshotsRes.data ?? []).map(mapSnapshotFromDb);
+
     const persisted = {
       onboardingCompleted:
         lists.onboardingCompleted || Boolean(settingsRow),
@@ -84,15 +92,24 @@ export async function loadUserDataFromSupabase(userId) {
       annualExpenses: lists.annualExpenses,
       cashflowHistory: lists.cashflowHistory,
       contributionPlans: lists.contributionPlans,
-      assets: (assetsRes.data ?? []).map(mapAssetFromDb),
-      liabilities: (liabilitiesRes.data ?? []).map(mapLiabilityFromDb),
-      snapshots: (snapshotsRes.data ?? []).map(mapSnapshotFromDb),
+      assets: filterDraftAssets(
+        mergeFinanceLists(cloudAssets, lists.assets ?? current.assets),
+      ),
+      liabilities: filterDraftLiabilities(
+        mergeFinanceLists(
+          cloudLiabilities,
+          lists.liabilities ?? current.liabilities,
+        ),
+      ),
+      snapshots: mergeFinanceLists(
+        cloudSnapshots,
+        lists.snapshots ?? current.snapshots,
+      ),
       profile,
       locale: lists.locale,
       theme: lists.theme,
     };
 
-    const current = useAppStore.getState();
     const merged = mergePersistedState(persisted, current);
 
     useAppStore.setState({

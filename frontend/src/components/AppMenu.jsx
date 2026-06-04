@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthModal } from '../context/AuthModalContext';
 import { LOCALE_LABELS, SUPPORTED_LOCALES } from '../i18n/config';
 import { isAuthAvailable, signOutFromSupabase } from '../lib/auth';
+import { SelectField } from './SelectField';
 import { ui } from '../lib/uiClasses';
 import { getDisplayName, getInitials } from '../lib/userDisplay';
 import { usePreferences, useProfile, useSessionMeta } from '../store/hooks';
@@ -180,18 +181,18 @@ export function AppMenu({ className = '' }) {
 
                 <MenuSection title={t('menu.preferences')} first={!isAuthenticated}>
                   <MenuRow label={t('menu.language')}>
-                    <select
+                    <SelectField
                       id="app-menu-locale"
+                      variant="menu"
                       value={locale}
                       onChange={(e) => setLocale(e.target.value)}
-                      className={`w-full ${ui.select}`}
                     >
                       {SUPPORTED_LOCALES.map((code) => (
                         <option key={code} value={code}>
                           {LOCALE_LABELS[code]}
                         </option>
                       ))}
-                    </select>
+                    </SelectField>
                   </MenuRow>
 
                   <MenuRow label={t('menu.theme')}>

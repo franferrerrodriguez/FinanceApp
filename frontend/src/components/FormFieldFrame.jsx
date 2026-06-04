@@ -11,24 +11,33 @@ export function FormFieldFrame({
   children,
   className = '',
   controlClassName = ui.formFieldControl,
+  /** When false, no hint row (use for stacked forms; avoids empty spacer in grids). */
+  reserveHintSpace = true,
 }) {
   const labelIsString = typeof label === 'string';
+  const showHintRow = reserveHintSpace || hint;
 
   return (
     <div className={`flex min-w-0 flex-col ${className}`}>
-      <span className={`${ui.formFieldLabel} ${ui.textLabel}`}>
+      <span
+        className={`block text-sm font-medium leading-snug ${ui.textLabel} ${
+          showHintRow ? ui.formFieldLabel : 'mb-1.5'
+        }`}
+      >
         {label}
         {required && labelIsString ? (
           <span className="text-emerald-500"> *</span>
         ) : null}
       </span>
-      <p
-        className={`${ui.formFieldHint} ${ui.textMuted} ${hint ? '' : 'invisible'}`}
-        aria-hidden={!hint}
-        title={hint || undefined}
-      >
-        {hint || '\u00a0'}
-      </p>
+      {showHintRow ? (
+        <p
+          className={`${ui.formFieldHint} ${ui.textMuted} ${hint ? '' : 'invisible'}`}
+          aria-hidden={!hint}
+          title={hint || undefined}
+        >
+          {hint || '\u00a0'}
+        </p>
+      ) : null}
       <div className={controlClassName}>{children}</div>
     </div>
   );

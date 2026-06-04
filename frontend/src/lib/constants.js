@@ -82,6 +82,7 @@ export function resolveProjectionYearsFromPersist(value) {
 export const ASSET_CATEGORY_VALUES = [
   'bank',
   'investment',
+  'etf',
   'pension',
   'cash',
   'real_estate',

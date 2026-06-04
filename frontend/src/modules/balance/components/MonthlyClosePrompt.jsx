@@ -74,7 +74,7 @@ export function MonthlyClosePrompt({ status, onCloseMonth, className = '' }) {
         className={`mt-3 ${isUrgent ? ui.btnPrimary : ui.btnSecondary}`}
         onClick={() => onCloseMonth(suggestedMonthKey)}
       >
-        {t('balance.patrimony.closeMonthFor', {
+        {t('balance.patrimony.recordBalancesFor', {
           month: formatMonthKeyLong(suggestedMonthKey, locale),
         })}
       </button>

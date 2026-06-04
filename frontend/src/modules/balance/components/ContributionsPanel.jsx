@@ -5,9 +5,16 @@ import {
   createContributionPlan,
   getPlanAnnualReturn,
   getTotalMonthlyContributions,
-  getWeightedAnnualReturn,
+  getWeightedReturnSummary,
+  hasActiveContributionAmounts,
 } from '../../../lib/contributionPlans';
-import { INVESTMENT_PROVIDER_IDS } from '../../../lib/investmentProviders';
+import {
+  INVESTMENT_PROVIDER_IDS,
+  INVESTMENT_PROVIDER_LEGACY_LABELS,
+} from '../../../lib/investmentProviders';
+import { InstitutionSelect } from '../../../components/InstitutionSelect';
+import { SelectField } from '../../../components/SelectField';
+import { INSTITUTION_OTHER_ID } from '../../../lib/institutions';
 import { ui } from '../../../lib/uiClasses';
 import { useFinanceData } from '../../../store/hooks';
 import { formatMoney, formatPercent } from '../../../utils/formatters';
@@ -29,11 +36,11 @@ export function ContributionsPanel() {
     addContributionPlan,
     updateContributionPlan,
     removeContributionPlan,
-    setSettings,
   } = useFinanceData();
 
   const total = getTotalMonthlyContributions(contributionPlans);
-  const weightedReturn = getWeightedAnnualReturn(settings, contributionPlans);
+  const returnSummary = getWeightedReturnSummary(settings, contributionPlans);
+  const hasAmounts = hasActiveContributionAmounts(contributionPlans);
 
   const handleAdd = () => {
     addContributionPlan(
@@ -56,38 +63,30 @@ export function ContributionsPanel() {
           </p>
         </div>
 
+        <p
+          className={`rounded-xl border px-4 py-3 text-sm ${ui.cardMuted}`}
+        >
+          {t('balance.contributions.scopeNote')}
+        </p>
+
         <div className="grid gap-3 sm:grid-cols-2">
           <Stat
             label={t('balance.contributions.totalMonthly')}
             value={formatMoney(total)}
-          />
-          <Stat
-            label={t('balance.contributions.weightedReturn')}
-            value={formatPercent(weightedReturn)}
-            hint={t('balance.contributions.weightedReturnHint')}
-          />
-        </div>
-
-        <label className="block max-w-xs">
-          <span className={`mb-1.5 block text-sm font-medium ${ui.textLabel}`}>
-            {t('balance.contributions.initialPatrimony')}
-          </span>
-          <span className={`mb-2 block text-xs ${ui.textMuted}`}>
-            {t('balance.contributions.initialPatrimonyHint')}
-          </span>
-          <input
-            type="number"
-            min={0}
-            step="100"
-            value={settings.initialPatrimony ?? 0}
-            onChange={(e) =>
-              setSettings({
-                initialPatrimony: Math.max(0, parseFloat(e.target.value) || 0),
-              })
+            hint={
+              hasAmounts
+                ? t('balance.contributions.totalMonthlyHint')
+                : t('balance.contributions.totalMonthlyEmpty')
             }
-            className={`${ui.input} ${ui.inputAmount}`}
           />
-        </label>
+          {hasAmounts ? (
+            <Stat
+              label={t('balance.contributions.weightedReturn')}
+              value={formatPercent(returnSummary.rate)}
+              hint={t('balance.contributions.weightedReturnHint')}
+            />
+          ) : null}
+        </div>
       </div>
 
       <section className={`${ui.chartCard} ${ui.stackSection}`}>
@@ -140,7 +139,7 @@ function ContributionPlanCard({ plan, settings, onChange, onRemove }) {
   const planReturn = getPlanAnnualReturn(settings, plan);
 
   return (
-    <li className={`${ui.block} ${ui.stackSection}`}>
+    <li className={`${ui.block} ${ui.stackSection} p-4 sm:p-5`}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <label className="flex items-center gap-2">
           <input
@@ -164,49 +163,64 @@ function ContributionPlanCard({ plan, settings, onChange, onRemove }) {
 
       <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Field label={t('balance.contributions.provider')}>
-          <select
+          <InstitutionSelect
+            institutionIds={INVESTMENT_PROVIDER_IDS}
+            i18nKey="balance.providers"
+            legacyMap={INVESTMENT_PROVIDER_LEGACY_LABELS}
             value={plan.providerId}
-            onChange={(e) => {
-              const providerId = e.target.value;
+            optional={false}
+            onChange={(providerId) => {
               const meta = PROVIDER_META[providerId] ?? PROVIDER_META.other;
-              onChange({
-                providerId,
-                category: meta.category,
-              });
+              const patch = { providerId, category: meta.category };
+              if (
+                providerId === INSTITUTION_OTHER_ID &&
+                plan.providerId !== INSTITUTION_OTHER_ID
+              ) {
+                patch.label = '';
+              }
+              onChange(patch);
             }}
-            className={`${ui.input} py-2.5`}
-          >
-            {INVESTMENT_PROVIDER_IDS.map((id) => (
-              <option key={id} value={id}>
-                {t(`balance.providers.${id}`)}
-              </option>
-            ))}
-          </select>
+          />
         </Field>
 
+        {plan.providerId === INSTITUTION_OTHER_ID ? (
+          <Field label={t('balance.contributions.providerCustom')}>
+            <input
+              type="text"
+              value={plan.label ?? ''}
+              placeholder={t('balance.contributions.providerCustomPlaceholder')}
+              onChange={(e) => onChange({ label: e.target.value })}
+              className={`${ui.input} w-full`}
+            />
+          </Field>
+        ) : null}
+
         <Field label={t('balance.contributions.category')}>
-          <select
+          <SelectField
+            variant="input"
+            className="py-2.5"
             value={plan.category}
             onChange={(e) => onChange({ category: e.target.value })}
-            className={`${ui.input} py-2.5`}
           >
             {CONTRIBUTION_CATEGORIES.map((cat) => (
               <option key={cat} value={cat}>
                 {t(`balance.contributionCategories.${cat}`)}
               </option>
             ))}
-          </select>
+          </SelectField>
         </Field>
 
-        <Field label={t('balance.contributions.customLabel')}>
-          <input
-            type="text"
-            value={plan.label ?? ''}
-            placeholder={t(`balance.providers.${plan.providerId}`)}
-            onChange={(e) => onChange({ label: e.target.value })}
-            className={`${ui.input} ${ui.inputMedium}`}
-          />
-        </Field>
+        {plan.providerId !== INSTITUTION_OTHER_ID ? (
+          <Field label={t('balance.contributions.customLabel')}>
+            <input
+              type="text"
+              value={plan.label ?? ''}
+              placeholder={t(`balance.providers.${plan.providerId}`)}
+              onChange={(e) => onChange({ label: e.target.value })}
+              className={`${ui.input} ${ui.inputMedium}`}
+            />
+          </Field>
+        ) : null}
 
         <Field label={t('balance.contributions.monthlyAmount')}>
           <input
@@ -224,10 +238,11 @@ function ContributionPlanCard({ plan, settings, onChange, onRemove }) {
         </Field>
 
         <Field label={t('balance.contributions.growthMode')}>
-          <select
+          <SelectField
+            variant="input"
+            className="py-2.5"
             value={plan.growthMode ?? 'fixed'}
             onChange={(e) => onChange({ growthMode: e.target.value })}
-            className={`${ui.input} py-2.5`}
           >
             <option value="fixed">{t('balance.contributions.growthFixed')}</option>
             <option value="ramp_monthly">
@@ -236,7 +251,7 @@ function ContributionPlanCard({ plan, settings, onChange, onRemove }) {
             <option value="annual_increase">
               {t('balance.contributions.growthAnnual')}
             </option>
-          </select>
+          </SelectField>
         </Field>
 
         {plan.growthMode === 'ramp_monthly' ? (

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import { EffectiveMonthSelect } from '../../../components/EffectiveMonthSelect';
 import { getCurrentMonthKey } from '../../../lib/dashboardMetrics';
 import { getMonthlyCloseMonthOptions } from '../../../lib/monthlyClose';
 import {
@@ -10,7 +11,12 @@ import {
   getActiveLiabilities,
 } from '../../../lib/patrimony';
 import { usePreferences } from '../../../store/hooks';
-import { MonthKeyPicker } from '../../../components/MonthKeyPicker';
+import { formatInstitutionLabel } from '../../../lib/institutions';
+import { formatMonthKeyLong, formatSnapshotDateLabel } from '../../../utils/monthLabel';
+import {
+  SPANISH_BANK_IDS,
+  SPANISH_BANK_LEGACY_LABELS,
+} from '../../../lib/spanishBanks';
 import { ui } from '../../../lib/uiClasses';
 
 export function MonthlyCloseModal({
@@ -27,6 +33,7 @@ export function MonthlyCloseModal({
   const { locale } = usePreferences();
   const activeAssets = getActiveAssets(assets);
   const activeLiabilities = getActiveLiabilities(liabilities);
+  const currentMonthKey = getCurrentMonthKey();
 
   const monthOptions = useMemo(
     () =>
@@ -37,9 +44,10 @@ export function MonthlyCloseModal({
   const resolvedMonthKey =
     monthKey && monthOptions.some((o) => o.monthKey === monthKey)
       ? monthKey
-      : (monthOptions[0]?.monthKey ?? getCurrentMonthKey());
+      : (monthOptions[0]?.monthKey ?? currentMonthKey);
 
   const selectedOption = monthOptions.find((o) => o.monthKey === resolvedMonthKey);
+  const isCurrentMonth = resolvedMonthKey === currentMonthKey;
 
   const initial = useMemo(
     () =>
@@ -74,6 +82,7 @@ export function MonthlyCloseModal({
 
   const canSubmit = activeAssets.length > 0 || activeLiabilities.length > 0;
   const isUpdate = selectedOption?.hasClose;
+  const snapshotDateLabel = formatSnapshotDateLabel(initial.snapshotDate, locale);
 
   const handleSubmit = () => {
     const snaps = buildCloseMonthSnapshots({
@@ -96,27 +105,47 @@ export function MonthlyCloseModal({
       <div
         role="dialog"
         aria-modal="true"
-        aria-labelledby="monthly-close-title"
+        aria-labelledby="record-balances-title"
         className={`${ui.modalPanel} relative z-[211] flex max-h-[min(90vh,40rem)] w-full max-w-lg flex-col`}
       >
         <div className={`shrink-0 border-b px-6 py-4 ${ui.divider}`}>
-          <h2 id="monthly-close-title" className={`text-lg font-semibold ${ui.heading}`}>
-            {t('balance.patrimony.closeModalTitle')}
+          <h2 id="record-balances-title" className={`text-lg font-semibold ${ui.heading}`}>
+            {t('balance.patrimony.recordBalancesTitle')}
           </h2>
           <p className={`mt-1 text-sm ${ui.textMuted}`}>
             {isUpdate
-              ? t('balance.patrimony.closeUpdateSubtitle')
-              : t('balance.patrimony.closeSubtitle')}
+              ? t('balance.patrimony.recordBalancesUpdateSubtitle', {
+                  month: formatMonthKeyLong(resolvedMonthKey, locale),
+                })
+              : t('balance.patrimony.recordBalancesSubtitle', {
+                  month: formatMonthKeyLong(resolvedMonthKey, locale),
+                  date: snapshotDateLabel,
+                })}
           </p>
 
           {monthOptions.length > 0 ? (
-            <div className="mt-4">
-              <MonthKeyPicker
+            <div className="mt-4 space-y-2">
+              <label className={`block text-sm font-medium ${ui.textLabel}`}>
+                {t('balance.patrimony.recordBalancesMonth')}
+              </label>
+              <EffectiveMonthSelect
+                id="record-balances-month"
                 value={resolvedMonthKey}
+                extraMonthKeys={monthOptions.map((o) => o.monthKey)}
+                lookbackMonths={48}
                 onChange={(mk) => onMonthKeyChange?.(mk)}
-                options={monthOptions}
-                showStatus
+                ariaLabel={t('balance.patrimony.recordBalancesMonth')}
               />
+              {selectedOption ? (
+                <p className={`text-xs ${ui.textMuted}`}>
+                  {selectedOption.hasClose
+                    ? t('balance.patrimony.recordBalancesMonthClosed')
+                    : t('balance.patrimony.recordBalancesMonthPending')}
+                  {isCurrentMonth
+                    ? ` · ${t('balance.patrimony.recordBalancesCurrentMonthHint')}`
+                    : null}
+                </p>
+              ) : null}
             </div>
           ) : null}
         </div>
@@ -135,16 +164,21 @@ export function MonthlyCloseModal({
                     {activeAssets.map((asset) => {
                       const row = assetRows.find((r) => r.assetId === asset.id);
                       return (
-                        <li
-                          key={asset.id}
-                          className={`p-3 ${ui.cardInset}`}
-                        >
+                        <li key={asset.id} className={`p-3 ${ui.cardInset}`}>
                           <p className={`text-sm font-medium ${ui.textLabel}`}>
                             {asset.name}
                           </p>
                           <p className={`text-xs ${ui.textMuted}`}>
                             {t(`categories.asset.${asset.category}`)}
-                            {asset.provider ? ` · ${asset.provider}` : ''}
+                            {asset.provider
+                              ? ` · ${formatInstitutionLabel(
+                                  asset.provider,
+                                  SPANISH_BANK_IDS,
+                                  t,
+                                  'balance.banks',
+                                  SPANISH_BANK_LEGACY_LABELS,
+                                )}`
+                              : ''}
                           </p>
                           <label className="mt-2 block">
                             <span className="sr-only">{t('balance.patrimony.value')}</span>
@@ -188,10 +222,7 @@ export function MonthlyCloseModal({
                         (r) => r.liabilityId === liability.id,
                       );
                       return (
-                        <li
-                          key={liability.id}
-                          className={`p-3 ${ui.cardInset}`}
-                        >
+                        <li key={liability.id} className={`p-3 ${ui.cardInset}`}>
                           <p className={`text-sm font-medium ${ui.textLabel}`}>
                             {liability.name}
                           </p>
@@ -231,7 +262,9 @@ export function MonthlyCloseModal({
           )}
         </div>
 
-        <div className={`flex shrink-0 flex-col gap-2 border-t px-6 py-4 sm:flex-row sm:justify-end ${ui.divider}`}>
+        <div
+          className={`flex shrink-0 flex-col gap-2 border-t px-6 py-4 sm:flex-row sm:justify-end ${ui.divider}`}
+        >
           <button type="button" className={ui.btnSecondary} onClick={onClose}>
             {t('common.cancel')}
           </button>
@@ -241,7 +274,7 @@ export function MonthlyCloseModal({
             disabled={!canSubmit}
             onClick={handleSubmit}
           >
-            {t('balance.patrimony.closeConfirm')}
+            {t('balance.patrimony.recordBalancesConfirm')}
           </button>
         </div>
       </div>

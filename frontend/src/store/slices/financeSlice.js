@@ -11,8 +11,17 @@ import {
   createContributionPlan,
   getTotalMonthlyContributions,
 } from '../../lib/contributionPlans';
+import { dedupeFinanceList } from '../../lib/mergeFinanceLists';
+import {
+  deleteAssetFromCloud,
+  deleteLiabilityFromCloud,
+} from '../../lib/patrimonyCloud';
 import { enrichSettingsWithSalary } from '../../lib/salary';
-import { getSnapshotMonthKey } from '../../lib/snapshotUtils';
+import {
+  getSnapshotAssetId,
+  getSnapshotLiabilityId,
+  getSnapshotMonthKey,
+} from '../../lib/snapshotUtils';
 
 const createId = () =>
   crypto.randomUUID?.() ??
@@ -169,24 +178,28 @@ export const createFinanceSlice = (set, get) => ({
   },
 
   addAsset: (asset) =>
-    set((state) => ({
-      assets: [
-        ...state.assets,
-        { ...asset, id: asset.id ?? createId(), isActive: true },
-      ],
-    })),
+    set((state) => {
+      const id = asset.id ?? createId();
+      if (state.assets.some((a) => a.id === id)) return state;
+      return {
+        assets: dedupeFinanceList([
+          ...state.assets,
+          { ...asset, id, isActive: true },
+        ]),
+      };
+    }),
 
   addLiability: (liability) =>
-    set((state) => ({
-      liabilities: [
-        ...state.liabilities,
-        {
-          ...liability,
-          id: liability.id ?? createId(),
-          isActive: true,
-        },
-      ],
-    })),
+    set((state) => {
+      const id = liability.id ?? createId();
+      if (state.liabilities.some((l) => l.id === id)) return state;
+      return {
+        liabilities: dedupeFinanceList([
+          ...state.liabilities,
+          { ...liability, id, isActive: true },
+        ]),
+      };
+    }),
 
   addSnapshot: (snapshot) =>
     set((state) => ({
@@ -218,6 +231,24 @@ export const createFinanceSlice = (set, get) => ({
         l.id === id ? { ...l, isActive } : l,
       ),
     })),
+
+  removeAsset: (id) => {
+    const userId = get().user?.id;
+    set((state) => ({
+      assets: state.assets.filter((a) => a.id !== id),
+      snapshots: state.snapshots.filter((s) => getSnapshotAssetId(s) !== id),
+    }));
+    if (userId) void deleteAssetFromCloud(userId, id);
+  },
+
+  removeLiability: (id) => {
+    const userId = get().user?.id;
+    set((state) => ({
+      liabilities: state.liabilities.filter((l) => l.id !== id),
+      snapshots: state.snapshots.filter((s) => getSnapshotLiabilityId(s) !== id),
+    }));
+    if (userId) void deleteLiabilityFromCloud(userId, id);
+  },
 
   closeMonthSnapshots: (monthKey, newSnapshots) =>
     set((state) => ({

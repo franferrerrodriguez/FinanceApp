@@ -1,8 +1,14 @@
 import { useAppStore } from '../store/appStore';
 import { buildAppDataPayload, mapSettingsToUserSettingsRow } from './mapSettingsToDb';
+import {
+  mapAssetRow,
+  mapLiabilityRow,
+  mapSnapshotRow,
+} from './patrimonyDb';
+import { filterDraftAssets, filterDraftLiabilities } from './patrimonyDrafts';
 import { supabase, supabaseConfigured } from './supabase';
 
-/** Saves profile and settings to Supabase (does not migrate full assets). */
+/** Saves profile, settings, app_data and patrimony lists to Supabase. */
 export async function persistUserToSupabase(userId) {
   if (!supabaseConfigured || !supabase) {
     return { ok: false, errorCode: 'not_configured' };
@@ -10,6 +16,9 @@ export async function persistUserToSupabase(userId) {
 
   const state = useAppStore.getState();
   const { profile, settings } = state;
+  const assets = filterDraftAssets(state.assets);
+  const liabilities = filterDraftLiabilities(state.liabilities);
+  const snapshots = state.snapshots;
 
   try {
     if (profile?.name || profile?.age != null) {
@@ -29,10 +38,33 @@ export async function persistUserToSupabase(userId) {
       const { error } = await supabase.from('user_settings').upsert(
         {
           ...settingsRow,
-          app_data: buildAppDataPayload(state),
+          app_data: buildAppDataPayload({ ...state, assets, liabilities }),
           updated_at: new Date().toISOString(),
         },
         { onConflict: 'user_id' },
+      );
+      if (error) throw error;
+    }
+
+    if (assets.length) {
+      const { error } = await supabase
+        .from('assets')
+        .upsert(assets.map((a) => mapAssetRow(a, userId)), { onConflict: 'id' });
+      if (error) throw error;
+    }
+
+    if (liabilities.length) {
+      const { error } = await supabase.from('liabilities').upsert(
+        liabilities.map((l) => mapLiabilityRow(l, userId)),
+        { onConflict: 'id' },
+      );
+      if (error) throw error;
+    }
+
+    if (snapshots.length) {
+      const { error } = await supabase.from('monthly_snapshots').upsert(
+        snapshots.map((s) => mapSnapshotRow(s, userId)),
+        { onConflict: 'id' },
       );
       if (error) throw error;
     }

@@ -15,6 +15,11 @@ import {
   syncSettingsFromCashflowHistory,
   upsertCurrentMonthCashflowTramo,
 } from '../lib/cashflowHistory';
+import { mergeFinanceLists } from '../lib/mergeFinanceLists';
+import {
+  filterDraftAssets,
+  filterDraftLiabilities,
+} from '../lib/patrimonyDrafts';
 import { ONBOARDING_STEP_IDS } from '../modules/onboarding/constants';
 
 export const PERSIST_STORAGE_KEY = 'financia_app_data';
@@ -62,9 +67,13 @@ export function mergePersistedState(persisted, current) {
       [],
     contributionPlans:
       persisted.contributionPlans ?? current.contributionPlans ?? [],
-    assets: persisted.assets ?? current.assets,
-    liabilities: persisted.liabilities ?? current.liabilities,
-    snapshots: persisted.snapshots ?? current.snapshots,
+    assets: filterDraftAssets(
+      mergeFinanceLists(persisted.assets, current.assets),
+    ),
+    liabilities: filterDraftLiabilities(
+      mergeFinanceLists(persisted.liabilities, current.liabilities),
+    ),
+    snapshots: mergeFinanceLists(persisted.snapshots, current.snapshots),
     profile: persisted.profile ?? current.profile,
     onboardingStep: Math.min(
       persisted.onboardingStep ?? 0,

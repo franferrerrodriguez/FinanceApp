@@ -1,3 +1,4 @@
+import { getLastNMonthKeys } from './dashboardMetrics.js';
 import {
   calcTotalFixedExpenses,
   calcTotalIncome,
@@ -7,6 +8,15 @@ import {
   computeMonthlyNetSalaryEffective,
   enrichSettingsWithSalary,
 } from './salary.js';
+
+/** Recent months for tramo dropdowns (newest first), including any persisted keys. */
+export function buildEffectiveMonthOptions(extraMonthKeys = [], lookbackMonths = 36) {
+  const set = new Set(getLastNMonthKeys(lookbackMonths));
+  for (const key of extraMonthKeys ?? []) {
+    if (key) set.add(key);
+  }
+  return [...set].sort((a, b) => b.localeCompare(a));
+}
 
 export function getCurrentMonthKey(date = new Date()) {
   const y = date.getFullYear();

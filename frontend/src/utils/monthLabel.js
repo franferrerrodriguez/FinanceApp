@@ -44,3 +44,17 @@ export function formatMonthKeyLong(monthKey, language) {
 
 /** @deprecated Use formatMonthKey */
 export const formatMonthKeyLabel = formatMonthKey;
+
+/** ISO date YYYY-MM-DD → localized label (e.g. "4 de junio de 2026"). */
+export function formatSnapshotDateLabel(isoDate, language) {
+  const raw = String(isoDate ?? '').slice(0, 10);
+  const [y, m, d] = raw.split('-').map(Number);
+  if (!Number.isFinite(y) || !Number.isFinite(m) || !Number.isFinite(d)) {
+    return raw;
+  }
+  return new Date(y, m - 1, d).toLocaleDateString(resolveIntlLocale(language), {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}

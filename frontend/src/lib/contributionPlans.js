@@ -5,9 +5,24 @@ import { getProjectionAnnualRate } from './projectionRates.js';
 export const PROVIDER_META = {
   indexa: { category: 'investment', returnKey: 'indexFund' },
   myinvestor: { category: 'investment', returnKey: 'indexFund' },
+  scalable: { category: 'investment', returnKey: 'indexFund' },
+  inbestme: { category: 'investment', returnKey: 'indexFund' },
+  finizens: { category: 'investment', returnKey: 'indexFund' },
   tradeRepublic: { category: 'etf', returnKey: 'indexFund' },
+  degiro: { category: 'etf', returnKey: 'indexFund' },
+  interactiveBrokers: { category: 'etf', returnKey: 'indexFund' },
+  etoro: { category: 'etf', returnKey: 'indexFund' },
+  xtb: { category: 'etf', returnKey: 'indexFund' },
+  renta4: { category: 'etf', returnKey: 'indexFund' },
+  selfBank: { category: 'etf', returnKey: 'indexFund' },
+  andbank: { category: 'etf', returnKey: 'indexFund' },
+  freedom24: { category: 'etf', returnKey: 'indexFund' },
+  lightyear: { category: 'etf', returnKey: 'indexFund' },
   revolut: { category: 'bank', returnKey: 'savings' },
   openbank: { category: 'bank', returnKey: 'savings' },
+  ing: { category: 'bank', returnKey: 'savings' },
+  n26: { category: 'bank', returnKey: 'savings' },
+  wise: { category: 'bank', returnKey: 'savings' },
   pensionPlan: { category: 'pension', returnKey: 'pension' },
   other: { category: 'other', returnKey: 'indexFund' },
 };
@@ -21,7 +36,7 @@ export const CONTRIBUTION_CATEGORIES = [
 ];
 
 /** Categories counted as additional investment in projection. */
-export const PROJECTION_INVESTMENT_CATEGORIES = ['investment', 'pension'];
+export const PROJECTION_INVESTMENT_CATEGORIES = ['investment', 'etf', 'pension'];
 
 export function createContributionPlan(partial = {}) {
   const providerId = partial.providerId ?? 'indexa';
@@ -130,6 +145,12 @@ export function getTotalMonthlyContributions(plans) {
   return resolveContributionsForMonth(plans, 0).total;
 }
 
+export function hasActiveContributionAmounts(plans) {
+  return (plans ?? []).some(
+    (p) => p.isActive && (p.monthlyAmount ?? 0) > 0,
+  );
+}
+
 export function getWeightedAnnualReturn(settings, plans) {
   const active = (plans ?? []).filter((p) => p.isActive);
   if (!active.length) return getProjectionAnnualRate(settings);
@@ -146,6 +167,17 @@ export function getWeightedAnnualReturn(settings, plans) {
 
   if (weightTotal <= 0) return getProjectionAnnualRate(settings);
   return weightedSum / weightTotal;
+}
+
+/** UI helper: distinguish real weighted average vs global projection default. */
+export function getWeightedReturnSummary(settings, plans) {
+  const hasWeighted = hasActiveContributionAmounts(plans);
+  return {
+    rate: hasWeighted
+      ? getWeightedAnnualReturn(settings, plans)
+      : getProjectionAnnualRate(settings),
+    isWeighted: hasWeighted,
+  };
 }
 
 export function seedPlansFromLegacyInvestment(settings) {

@@ -1,25 +1,60 @@
-/** Predefined providers (Balance, contributions, assets). */
+/** Contribution destinations (brokers, roboadvisors, banks, pension). */
 export const INVESTMENT_PROVIDER_IDS = [
   'indexa',
   'myinvestor',
   'tradeRepublic',
+  'degiro',
+  'interactiveBrokers',
+  'etoro',
+  'xtb',
+  'renta4',
+  'selfBank',
+  'scalable',
+  'inbestme',
+  'finizens',
+  'andbank',
+  'freedom24',
+  'lightyear',
   'revolut',
   'openbank',
+  'ing',
+  'n26',
+  'wise',
   'pensionPlan',
   'other',
 ];
 
-const LEGACY_PROVIDER_LABELS = {
+export const INVESTMENT_PROVIDER_LEGACY_LABELS = {
   'Indexa Capital': 'indexa',
+  Indexa: 'indexa',
   Myinvestor: 'myinvestor',
   'Trade Republic': 'tradeRepublic',
+  Degiro: 'degiro',
+  'Interactive Brokers': 'interactiveBrokers',
+  IBKR: 'interactiveBrokers',
+  eToro: 'etoro',
+  XTB: 'xtb',
+  'Renta 4': 'renta4',
+  Renta4: 'renta4',
+  'Self Bank': 'selfBank',
+  'Scalable Capital': 'scalable',
+  Inbestme: 'inbestme',
+  Finizens: 'finizens',
+  Andbank: 'andbank',
+  Freedom24: 'freedom24',
+  Lightyear: 'lightyear',
   Revolut: 'revolut',
   Openbank: 'openbank',
+  ING: 'ing',
+  N26: 'n26',
+  Wise: 'wise',
+  TransferWise: 'wise',
   'Plan de pensiones': 'pensionPlan',
   Otro: 'other',
+  Other: 'other',
 };
 
 export function normalizeProviderId(idOrLabel) {
   if (INVESTMENT_PROVIDER_IDS.includes(idOrLabel)) return idOrLabel;
-  return LEGACY_PROVIDER_LABELS[idOrLabel] ?? idOrLabel;
+  return INVESTMENT_PROVIDER_LEGACY_LABELS[idOrLabel] ?? idOrLabel;
 }

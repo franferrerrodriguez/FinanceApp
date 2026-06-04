@@ -36,6 +36,9 @@ export function buildAppDataPayload(state) {
     annualExpenses: state.annualExpenses ?? [],
     cashflowHistory: state.cashflowHistory ?? [],
     contributionPlans: state.contributionPlans ?? [],
+    assets: state.assets ?? [],
+    liabilities: state.liabilities ?? [],
+    snapshots: state.snapshots ?? [],
     profile: state.profile ?? null,
     onboardingCompleted: Boolean(state.onboardingCompleted),
     locale: state.locale ?? 'es',
@@ -98,6 +101,9 @@ export function mapAppDataLists(appData) {
     contributionPlans: Array.isArray(app.contributionPlans)
       ? app.contributionPlans
       : [],
+    assets: Array.isArray(app.assets) ? app.assets : [],
+    liabilities: Array.isArray(app.liabilities) ? app.liabilities : [],
+    snapshots: Array.isArray(app.snapshots) ? app.snapshots : [],
     profile: app.profile ?? null,
     onboardingCompleted: Boolean(app.onboardingCompleted),
     locale: app.locale ?? 'es',

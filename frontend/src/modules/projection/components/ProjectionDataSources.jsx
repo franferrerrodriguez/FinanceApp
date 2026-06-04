@@ -66,19 +66,16 @@ export function ProjectionDataSources() {
           editTo={balancePath(BALANCE_TAB.CASHFLOW)}
         />
         <SourceItem
-          label={t('projection.sources.expenseIncrease')}
-          value={formatPercent(settings.projectionAnnualExpenseIncrease ?? 0)}
-          editTo="/projection"
-        />
-        <SourceItem
           label={t('projection.sources.investments')}
           value={formatMoney(investments)}
+          editLabel={t('projection.sources.editInContributions')}
           editTo={balancePath(BALANCE_TAB.CONTRIBUTIONS)}
         />
         <SourceItem
           label={t('projection.sources.patrimony')}
           value={formatMoney(settings.initialPatrimony ?? 0)}
-          editTo={balancePath(BALANCE_TAB.CONTRIBUTIONS)}
+          editLabel={t('projection.sources.editInSettings')}
+          editTo="#projection-settings"
         />
         <SourceItem
           label={t('projection.sources.return')}
@@ -103,8 +100,9 @@ export function ProjectionDataSources() {
   );
 }
 
-function SourceItem({ label, value, editTo }) {
+function SourceItem({ label, value, editTo, editLabel }) {
   const { t } = useTranslation();
+  const linkText = editLabel ?? t('projection.sources.edit');
 
   return (
     <div className={`rounded-xl border px-4 py-3 ${ui.cardMuted}`}>
@@ -117,7 +115,7 @@ function SourceItem({ label, value, editTo }) {
           to={editTo}
           className="mt-2 inline-block text-xs font-medium text-emerald-600 hover:underline dark:text-emerald-400"
         >
-          {t('projection.sources.editInPatrimony')}
+          {linkText}
         </Link>
       ) : null}
     </div>

@@ -6,6 +6,7 @@ import { calcMonthTotals, getCurrentMonthKey, getLastNMonthKeys } from './dashbo
 import { SNAPSHOT_ITEM_TYPE } from './snapshotItemTypes.js';
 import {
   getMonthEndDate,
+  getTodayIsoDate,
   getSnapshotAssetId,
   getSnapshotLiabilityId,
   getSnapshotMonthKey,
@@ -69,6 +70,7 @@ export function buildMonthlyCloseDrafts({
   liabilities,
   snapshots,
   monthKey = getCurrentMonthKey(),
+  asOfDate,
 }) {
   const keys = getLastNMonthKeys(24);
   const idx = keys.indexOf(monthKey);
@@ -107,7 +109,29 @@ export function buildMonthlyCloseDrafts({
     return { liabilityId: liability.id, value: amount };
   });
 
-  return { assetRows, liabilityRows, snapshotDate: getMonthEndDate(monthKey) };
+  const snapshotDate = resolveSnapshotDateForMonth(monthKey, asOfDate);
+
+  return { assetRows, liabilityRows, snapshotDate };
+}
+
+/** Current calendar month → today; past months → last day of month. */
+export function resolveSnapshotDateForMonth(monthKey, asOfDate) {
+  if (asOfDate === 'today') return getTodayIsoDate();
+  if (asOfDate) return asOfDate;
+  return monthKey === getCurrentMonthKey()
+    ? getTodayIsoDate()
+    : getMonthEndDate(monthKey);
+}
+
+function getLatestSnapshotDateInMonth(snapshots, monthKey) {
+  const monthSnaps = groupSnapshotsByMonth(snapshots)[monthKey] ?? [];
+  if (!monthSnaps.length) return null;
+  let latest = '';
+  for (const snap of monthSnaps) {
+    const d = String(snap.snapshotDate ?? '').slice(0, 10);
+    if (d && d > latest) latest = d;
+  }
+  return latest || null;
 }
 
 export function buildCloseMonthSnapshots({ assetRows, liabilityRows, snapshotDate }) {
@@ -145,7 +169,11 @@ export function getCurrentPatrimonySummary(snapshots, monthKey = getCurrentMonth
       liability_id: getSnapshotLiabilityId(s),
     })),
   );
-  return { ...totals, hasClose: true };
+  return {
+    ...totals,
+    hasClose: true,
+    asOfDate: getLatestSnapshotDateInMonth(snapshots, monthKey),
+  };
 }
 
 export function buildPatrimonyHistoryTable({

@@ -1,17 +1,28 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PercentRow } from '../../../components/PercentRow';
+import { Link } from 'react-router-dom';
 import { SelectField } from '../../../components/SelectField';
+import { BALANCE_TAB, balancePath } from '../../../lib/balanceTabs';
 import { normalizeProjectionYears } from '../../../lib/constants';
+import { getCurrentMonthKey } from '../../../lib/dashboardMetrics';
+import { getCurrentPatrimonySummary } from '../../../lib/patrimony';
 import { ui } from '../../../lib/uiClasses';
-import { useSettings } from '../../../store/hooks';
+import { useFinanceData } from '../../../store/hooks';
+import { formatMoney } from '../../../utils/formatters';
 
 const YEAR_OPTIONS = Array.from({ length: 50 }, (_, i) => i + 1);
 const RETURN_PERCENT_OPTIONS = Array.from({ length: 15 }, (_, i) => i + 1);
 
 export function ProjectionSettingsPanel() {
   const { t } = useTranslation();
-  const { settings, setSettings } = useSettings();
+  const { settings, setSettings, snapshots } = useFinanceData();
+  const patrimonySummary = useMemo(
+    () => getCurrentPatrimonySummary(snapshots, getCurrentMonthKey()),
+    [snapshots],
+  );
+  const patrimonyNetWorth = patrimonySummary.hasClose
+    ? Math.max(0, patrimonySummary.netWorth ?? 0)
+    : null;
 
   const years = normalizeProjectionYears(settings.projectionYears);
   const yearOptions = useMemo(() => {
@@ -35,13 +46,57 @@ export function ProjectionSettingsPanel() {
   }, [returnPercent]);
 
   return (
-    <section className={ui.chartCard}>
+    <section id="projection-settings" className={ui.chartCard}>
       <h3 className={`mb-1 text-base font-semibold ${ui.heading}`}>
         {t('projection.settings.title')}
       </h3>
       <p className={`mb-4 text-sm ${ui.textMuted}`}>
         {t('projection.settings.hint')}
       </p>
+
+      <div className="mb-5 max-w-md space-y-2">
+        <label className="block">
+          <span className={`mb-1.5 block text-sm font-medium ${ui.textLabel}`}>
+            {t('projection.settings.initialPatrimony')}
+          </span>
+          <span className={`mb-2 block text-xs leading-snug ${ui.textMuted}`}>
+            {t('projection.settings.initialPatrimonyHint')}
+          </span>
+          <input
+            type="number"
+            min={0}
+            step="100"
+            value={settings.initialPatrimony ?? 0}
+            onChange={(e) =>
+              setSettings({
+                initialPatrimony: Math.max(0, parseFloat(e.target.value) || 0),
+              })
+            }
+            className={`${ui.input} ${ui.inputAmount} w-full`}
+          />
+        </label>
+        {patrimonyNetWorth != null ? (
+          <button
+            type="button"
+            className={`${ui.btnSecondary} text-sm`}
+            onClick={() => setSettings({ initialPatrimony: patrimonyNetWorth })}
+          >
+            {t('projection.settings.usePatrimonyClose', {
+              amount: formatMoney(patrimonyNetWorth),
+            })}
+          </button>
+        ) : (
+          <p className={`text-xs ${ui.textMuted}`}>
+            {t('projection.settings.noPatrimonyClose')}{' '}
+            <Link
+              to={balancePath(BALANCE_TAB.PATRIMONY)}
+              className="font-medium text-emerald-600 hover:underline dark:text-emerald-400"
+            >
+              {t('projection.settings.goPatrimony')}
+            </Link>
+          </p>
+        )}
+      </div>
 
       <div className="grid max-w-2xl gap-5 sm:grid-cols-3">
         <label className="block">
@@ -108,17 +163,6 @@ export function ProjectionSettingsPanel() {
               : t('projection.settings.nominalReturnHint')}
           </p>
         </label>
-      </div>
-
-      <div className={`mt-5 max-w-2xl border-t pt-5 ${ui.divider}`}>
-        <PercentRow
-          label={t('projection.settings.expenseIncrease')}
-          hint={t('projection.settings.expenseIncreaseHint')}
-          value={settings.projectionAnnualExpenseIncrease}
-          onChange={(v) =>
-            setSettings({ projectionAnnualExpenseIncrease: v })
-          }
-        />
       </div>
     </section>
   );

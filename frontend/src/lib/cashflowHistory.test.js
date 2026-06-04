@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { buildMonthlyProjectionTable } from './projectionTable.js';
 import {
+  buildEffectiveMonthOptions,
   createCashflowEntryFromSettings,
   getCashflowTotalsForDate,
   resolveMonthlySalaryForDate,
@@ -18,6 +19,11 @@ const settings = {
   projectionYears: 1,
   projectionAnnualExpenseIncrease: 0,
 };
+
+const monthOpts = buildEffectiveMonthOptions(['2019-03', '2026-01'], 12);
+assert.ok(monthOpts.includes('2026-01'));
+assert.ok(monthOpts.includes('2019-03'));
+assert.ok(monthOpts[0] >= monthOpts[1]);
 
 const history = [
   createCashflowEntryFromSettings(

@@ -5,6 +5,7 @@ import {
   buildPatrimonyHistoryTable,
   createAsset,
   createLiability,
+  resolveSnapshotDateForMonth,
 } from './patrimony.js';
 
 const asset = createAsset({ id: 'a1', name: 'Cuenta', category: 'bank' });
@@ -38,6 +39,9 @@ const drafts = buildMonthlyCloseDrafts({
 
 assert.equal(drafts.assetRows[0].value, 10000);
 assert.equal(drafts.liabilityRows[0].value, 80000);
+
+assert.match(resolveSnapshotDateForMonth('2026-06'), /^\d{4}-\d{2}-\d{2}$/);
+assert.equal(resolveSnapshotDateForMonth('2020-01').endsWith('-01-31'), true);
 
 const closed = buildCloseMonthSnapshots({
   assetRows: [{ assetId: 'a1', value: 12000 }],

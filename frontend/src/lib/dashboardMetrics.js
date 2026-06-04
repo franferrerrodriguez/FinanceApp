@@ -29,6 +29,7 @@ import {
 const ASSET_CATEGORY_ORDER = [
   'bank',
   'investment',
+  'etf',
   'real_estate',
   'pension',
   'cash',

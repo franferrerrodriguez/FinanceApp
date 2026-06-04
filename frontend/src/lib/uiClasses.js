@@ -90,9 +90,12 @@ export const ui = {
   progressTrack: 'h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800',
   divider: 'border-slate-200 dark:border-slate-800',
   select:
-    'rounded-lg border border-slate-300 bg-white py-1.5 pl-3 pr-9 text-sm text-slate-800 appearance-none focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200',
+    'rounded-lg border border-slate-300 bg-white py-1.5 pl-3 pr-11 text-sm text-slate-800 appearance-none focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200',
   selectField:
-    'w-full min-h-[2.75rem] cursor-pointer appearance-none rounded-xl border border-slate-300 bg-white py-2.5 pl-4 pr-11 text-base text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white',
+    'w-full min-h-[2.75rem] cursor-pointer appearance-none rounded-xl border border-slate-300 bg-white py-2.5 pl-4 pr-12 text-base text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white',
+  /** Pair with SelectField overlay chevron (hides native arrow, reserves right space). */
+  selectWithChevron:
+    'cursor-pointer appearance-none !pr-12',
   selectChevron: 'text-slate-400 dark:text-slate-500',
   iconBtn:
     'rounded-lg border border-slate-300 p-2 text-slate-600 transition hover:bg-slate-100 dark:border-slate-600 dark:text-slate-400 dark:hover:bg-slate-800',

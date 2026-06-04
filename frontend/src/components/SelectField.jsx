@@ -1,5 +1,14 @@
 import { ui } from '../lib/uiClasses';
 
+const CHEVRON_INSET = 'right-3.5';
+
+const VARIANT_CLASS = {
+  field: ui.selectField,
+  input: `${ui.input} ${ui.selectWithChevron}`,
+  compact: `${ui.input} ${ui.inputCompact} ${ui.selectWithChevron}`,
+  menu: `w-full ${ui.select} ${ui.selectWithChevron}`,
+};
+
 function ChevronIcon() {
   return (
     <svg
@@ -17,19 +26,28 @@ function ChevronIcon() {
   );
 }
 
-/** Native select with visible arrow and comfortable right padding. */
-export function SelectField({ id, className = '', wrapperClassName = '', children, ...props }) {
+/** Native select with custom chevron and comfortable right padding (use for all dropdowns). */
+export function SelectField({
+  id,
+  variant = 'field',
+  className = '',
+  wrapperClassName = '',
+  children,
+  ...props
+}) {
+  const base = VARIANT_CLASS[variant] ?? VARIANT_CLASS.field;
+
   return (
     <div className={`relative ${wrapperClassName}`}>
       <select
         id={id}
-        className={`${ui.selectField} ${className}`}
+        className={`${base} ${className}`.trim()}
         {...props}
       >
         {children}
       </select>
       <span
-        className={`pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 ${ui.selectChevron}`}
+        className={`pointer-events-none absolute inset-y-0 flex items-center ${CHEVRON_INSET} ${ui.selectChevron}`}
         aria-hidden
       >
         <ChevronIcon />

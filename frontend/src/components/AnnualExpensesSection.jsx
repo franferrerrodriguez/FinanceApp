@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { createAnnualExpense } from '../lib/annualExpenses';
+import { SelectField } from './SelectField';
 import { ui } from '../lib/uiClasses';
 import { formatMoney } from '../utils/formatters';
 
@@ -71,21 +72,22 @@ export function AnnualExpensesSection({
                   <span className={`mb-1 block text-xs font-medium ${ui.textLabel}`}>
                     {t('balance.cashflow.annualExpenseMonth')}
                   </span>
-                  <select
+                  <SelectField
+                    variant="compact"
+                    className={ui.inputNarrow}
                     value={item.month ?? 1}
                     onChange={(e) =>
                       onUpdate(item.id, {
                         month: parseInt(e.target.value, 10),
                       })
                     }
-                    className={`${ui.input} ${ui.inputCompact} ${ui.inputNarrow}`}
                   >
                     {MONTH_OPTIONS.map((m) => (
                       <option key={m} value={m}>
                         {t(`common.months.${m}`)}
                       </option>
                     ))}
-                  </select>
+                  </SelectField>
                 </label>
               </div>
               <button

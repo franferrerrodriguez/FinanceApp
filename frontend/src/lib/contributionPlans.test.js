@@ -3,7 +3,10 @@ import {
   createContributionPlan,
   getTotalMonthlyContributions,
   getWeightedAnnualReturn,
+  getWeightedReturnSummary,
+  hasActiveContributionAmounts,
   resolveContributionsForMonth,
+  resolveInvestmentContributionsForMonth,
   seedPlansFromLegacyInvestment,
 } from './contributionPlans.js';
 
@@ -38,6 +41,19 @@ assert.equal(resolveContributionsForMonth([rampPlan], 2).total, 700);
 
 const weighted = getWeightedAnnualReturn(settings, plans);
 assert.equal(weighted, 0.04);
+
+assert.equal(hasActiveContributionAmounts(plans), true);
+assert.equal(getWeightedReturnSummary(settings, []).isWeighted, false);
+assert.equal(getWeightedReturnSummary(settings, plans).isWeighted, true);
+
+const etfOnly = [
+  createContributionPlan({
+    providerId: 'tradeRepublic',
+    monthlyAmount: 200,
+    category: 'etf',
+  }),
+];
+assert.equal(resolveInvestmentContributionsForMonth(etfOnly, 0), 200);
 
 const seeded = seedPlansFromLegacyInvestment({ monthlyInvestmentAmount: 200 });
 assert.equal(seeded.length, 1);
