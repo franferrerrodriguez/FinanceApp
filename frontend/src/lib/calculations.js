@@ -4,7 +4,10 @@ import {
   sumEuros,
 } from './money.js';
 import { getEffectiveMonthlySalary } from './salary.js';
-import { resolveMonthlySalaryForDate } from './salaryHistory.js';
+import {
+  resolveMonthlySalaryForDate,
+  resolveSettingsForDate,
+} from './cashflowHistory.js';
 import { getPunctualExpensesForDate } from './annualExpenses.js';
 import { normalizeProjectionYears } from './constants.js';
 
@@ -14,8 +17,8 @@ export const nominalToReal = (nominalRate, inflationRate) =>
   (1 + nominalRate) / (1 + inflationRate) - 1;
 
 /**
- * Tasa mensual equivalente: (1 + r_anual)^(1/12) − 1.
- * NUNCA usar r_anual / 12: subestima el interés compuesto.
+ * Equivalent monthly rate: (1 + r_annual)^(1/12) − 1.
+ * NEVER use r_annual / 12: it understates compound interest.
  */
 export const annualToMonthlyRate = (annualRate) =>
   Math.pow(1 + (annualRate ?? 0), 1 / 12) - 1;
@@ -88,7 +91,7 @@ export const calcFIREYear = (projectionTable, annualExpenses, annualRate) =>
 export const calcNetWorth = (snapshots) =>
   sumEuros(...snapshots.map((s) => s.value ?? 0));
 
-/** Total hogar antes de reparto (bloque simple o desglose). */
+/** Household total before split (simple block or breakdown). */
 export const getHouseholdTotal = (settings) => {
   if (!settings) return 0;
   if (settings.useDetailedExpenses) {
@@ -135,10 +138,10 @@ export const getEffectiveLeisureExpenses = (settings) =>
     settings?.leisureYourSharePercent,
   );
 
-/** @deprecated Usa getEffectiveHouseholdExpenses */
+/** @deprecated Use getEffectiveHouseholdExpenses */
 export const getHouseholdExpenses = getEffectiveHouseholdExpenses;
 
-/** @deprecated Usa getEffectiveLeisureExpenses */
+/** @deprecated Use getEffectiveLeisureExpenses */
 export const getLeisureExpenses = getEffectiveLeisureExpenses;
 
 export const calcTotalVariableExpenses = (settings) =>
@@ -209,9 +212,9 @@ export function hasAnySharedExpense(settings) {
   );
 }
 
-// ——— Proyección mensual (fuente de verdad) ———
+// ——— Monthly projection (source of truth) ———
 
-/** Escala un importe base según años completos transcurridos (mes 0–11 → 0, 12–23 → 1…). */
+/** Scale a base amount by full years elapsed (months 0–11 → 0, 12–23 → 1…). */
 export function scaleByAnnualSteps(baseAmount, monthIndex, annualIncrease) {
   const yearsElapsed = Math.floor(monthIndex / 12);
   if (!annualIncrease || yearsElapsed <= 0) return baseAmount;
@@ -231,22 +234,24 @@ function getProjectionStartDate(fromDate = new Date()) {
 }
 
 /**
- * Tabla mensual de proyección (cálculo puro).
+ * Monthly projection table (pure calculation).
  * @param {object} params
  * @param {object} params.settings
  * @param {object[]} [params.contributionPlans]
  * @param {number} [params.initialPatrimony]
  * @param {Date} [params.startDate]
  * @param {number} [params.years]
- * @param {number} params.annualRate - Rentabilidad anual configurada en Proyección
+ * @param {number} params.annualRate - Annual return configured in Projection
  * @param {(plans: object[], monthIndex: number) => number} [params.getInvestmentContributions]
  * @param {Array<{ id: string, name: string, amount: number, month: number }>} [params.annualExpenses]
- * @param {Array<object>} [params.salaryHistory]
+ * @param {Array<object>} [params.cashflowHistory]
+ * @param {Array<object>} [params.salaryHistory] @deprecated use cashflowHistory
  */
 export function buildMonthlyProjectionRows({
   settings,
   contributionPlans = [],
   annualExpenses = [],
+  cashflowHistory = [],
   salaryHistory = [],
   initialPatrimony = 0,
   startDate,
@@ -254,6 +259,9 @@ export function buildMonthlyProjectionRows({
   annualRate,
   getInvestmentContributions,
 }) {
+  const history =
+    cashflowHistory.length > 0 ? cashflowHistory : salaryHistory;
+
   const horizonYears = normalizeProjectionYears(
     years ?? settings?.projectionYears,
   );
@@ -262,10 +270,6 @@ export function buildMonthlyProjectionRows({
 
   const monthlyRate = annualToMonthlyRate(annualRate);
   const expenseIncrease = settings?.projectionAnnualExpenseIncrease ?? 0;
-
-  const otherIncome = settings?.otherMonthlyIncome ?? 0;
-  const baseFixed = calcTotalFixedExpenses(settings);
-  const baseVariable = calcTotalVariableExpenses(settings);
 
   const resolveInvestments =
     getInvestmentContributions ??
@@ -277,9 +281,13 @@ export function buildMonthlyProjectionRows({
   for (let monthIndex = 0; monthIndex < monthCount; monthIndex++) {
     const yearsElapsed = Math.floor(monthIndex / 12);
     const date = addMonths(start, monthIndex);
+    const monthSettings = resolveSettingsForDate(settings, history, date);
     const salary = roundMoney(
-      resolveMonthlySalaryForDate(settings, salaryHistory, date),
+      resolveMonthlySalaryForDate(settings, history, date),
     );
+    const baseFixed = calcTotalFixedExpenses(monthSettings);
+    const baseVariable = calcTotalVariableExpenses(monthSettings);
+    const otherIncome = monthSettings?.otherMonthlyIncome ?? 0;
     const fixedExpenses = roundMoney(
       scaleByAnnualSteps(baseFixed, monthIndex, expenseIncrease),
     );

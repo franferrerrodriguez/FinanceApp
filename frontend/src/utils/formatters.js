@@ -1,11 +1,10 @@
-import i18n from '../i18n';
-import { LOCALE_BCP47 } from '../i18n/config';
+import { resolveIntlLocale } from './monthLabel';
 
 function getIntlLocale() {
-  return LOCALE_BCP47[i18n.language] ?? LOCALE_BCP47.es;
+  return resolveIntlLocale();
 }
 
-/** Formato estándar para importes en EUR (siempre 2 decimales). */
+/** Standard format for EUR amounts (always 2 decimals). */
 function moneyFormatter() {
   return new Intl.NumberFormat(getIntlLocale(), {
     style: 'currency',
@@ -15,7 +14,7 @@ function moneyFormatter() {
   });
 }
 
-/** Ejes de gráficos y cifras muy grandes sin decimales. */
+/** Chart axes and very large figures without decimals. */
 function moneyCompactFormatter() {
   return new Intl.NumberFormat(getIntlLocale(), {
     style: 'currency',
@@ -32,13 +31,13 @@ function percentFormatter() {
   });
 }
 
-/** Importes monetarios en UI (onboarding, dashboard, tablas). */
+/** Money amounts in UI (onboarding, dashboard, tables). */
 export const formatMoney = (value) => moneyFormatter().format(value ?? 0);
 
-/** @deprecated Usa formatMoney */
+/** @deprecated Use formatMoney */
 export const formatEur = formatMoney;
 
-/** @deprecated Usa formatMoney */
+/** @deprecated Use formatMoney */
 export const formatEurExact = formatMoney;
 
 export const formatMoneyCompact = (value) =>

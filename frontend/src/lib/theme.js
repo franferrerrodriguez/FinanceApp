@@ -26,7 +26,7 @@ export function applyThemePreference(theme) {
 }
 
 /**
- * Escucha cambios del SO cuando theme === 'system'.
+ * Listens for OS changes when theme === 'system'.
  * @returns {() => void} cleanup
  */
 export function subscribeSystemTheme(onChange) {

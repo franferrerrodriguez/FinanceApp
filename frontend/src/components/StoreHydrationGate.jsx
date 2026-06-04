@@ -1,17 +1,20 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { isAuthAvailable } from '../lib/auth';
 import { ui } from '../lib/uiClasses';
 import { useAppStore } from '../store/appStore';
 
 /**
- * Bloquea el árbol hasta que el estado persistido esté en Zustand.
- * Evita redirecciones incorrectas (p. ej. mandar al onboarding antes de leer localStorage).
+ * Blocks the tree until persisted state is in Zustand.
+ * Avoids wrong redirects (e.g. sending to onboarding before reading localStorage).
  */
 export function StoreHydrationGate({ children }) {
   const { t } = useTranslation();
   const [hydrated, setHydrated] = useState(() =>
     useAppStore.persist.hasHydrated(),
   );
+  const authBootstrapped = useAppStore((s) => s.authBootstrapped);
+  const needsAuthBootstrap = isAuthAvailable() && !authBootstrapped;
 
   useEffect(() => {
     const unsubFinish = useAppStore.persist.onFinishHydration(() => {
@@ -20,10 +23,17 @@ export function StoreHydrationGate({ children }) {
 
     setHydrated(useAppStore.persist.hasHydrated());
 
-    return unsubFinish;
+    const fallback = window.setTimeout(() => {
+      setHydrated(true);
+    }, 2000);
+
+    return () => {
+      window.clearTimeout(fallback);
+      unsubFinish();
+    };
   }, []);
 
-  if (!hydrated) {
+  if (!hydrated || needsAuthBootstrap) {
     return (
       <div
         className={`flex min-h-screen items-center justify-center ${ui.page} ${ui.text}`}

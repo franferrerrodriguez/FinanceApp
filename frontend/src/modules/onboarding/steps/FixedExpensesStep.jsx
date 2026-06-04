@@ -9,11 +9,12 @@ import {
   getLeisureTotal,
   getMortgageRentTotal,
 } from '../../../lib/calculations';
-import { allocateEurosByWeights } from '../../../lib/money';
+import { patchExpenseViewMode } from '../../../lib/expenseViewMode';
+import { DetailedHouseholdBreakdown } from '../components/DetailedHouseholdBreakdown';
+import { ExpenseViewToggle } from '../components/ExpenseViewToggle';
 import { ui } from '../../../lib/uiClasses';
 import { useSettings } from '../../../store/hooks';
 import { ExpenseSubtotals } from '../components/ExpenseSubtotals';
-import { MoneyField } from '../components/MoneyField';
 import { OnboardingActions } from '../components/OnboardingActions';
 import { SharedExpenseBlock } from '../components/SharedExpenseBlock';
 
@@ -24,22 +25,7 @@ export function FixedExpensesStep({ onBack, onNext }) {
   const detailed = settings.useDetailedExpenses ?? false;
 
   const toggleDetailed = () => {
-    const next = !detailed;
-    if (next && (settings.householdFixedEstimate ?? 0) > 0) {
-      const total = settings.householdFixedEstimate;
-      const [utilities, insurance, subscriptions, otherFixedExpenses] =
-        allocateEurosByWeights(total, [40, 35, 15, 10]);
-      setSettings({
-        useDetailedExpenses: true,
-        utilities,
-        insurance,
-        subscriptions,
-        otherFixedExpenses,
-        householdFixedIsEstimate: false,
-      });
-    } else {
-      setSettings({ useDetailedExpenses: next });
-    }
+    setSettings(patchExpenseViewMode(settings, !detailed));
   };
 
   return (
@@ -121,44 +107,13 @@ export function FixedExpensesStep({ onBack, onNext }) {
           onPercentChange={(v) => setSettings({ leisureYourSharePercent: v })}
         />
 
-        <button
-          type="button"
-          onClick={toggleDetailed}
-          className={`text-sm underline-offset-2 hover:underline ${ui.accentSoft}`}
-        >
-          {detailed
-            ? t('onboarding.expenses.useSimpleView')
-            : t('onboarding.expenses.useDetailedView')}
-        </button>
+        <ExpenseViewToggle detailed={detailed} onToggle={toggleDetailed} />
 
-        {detailed && (
-          <div className={`space-y-4 p-4 ${ui.cardDashed}`}>
-            <p className={`text-xs ${ui.textMuted}`}>
-              {t('onboarding.expenses.detailedIntro')}
-            </p>
-            <MoneyField
-              id="utilities"
-              label={t('onboarding.expenses.utilities')}
-              value={settings.utilities}
-              onChange={(v) => setSettings({ utilities: v })}
-            />
-            <MoneyField
-              id="insurance"
-              label={t('onboarding.expenses.insurance')}
-              value={settings.insurance}
-              onChange={(v) => setSettings({ insurance: v })}
-            />
-            <MoneyField
-              id="subscriptions"
-              label={t('onboarding.expenses.subscriptions')}
-              value={settings.subscriptions}
-              onChange={(v) => setSettings({ subscriptions: v })}
-            />
-            <MoneyField
-              id="other-fixed"
-              label={t('onboarding.expenses.otherFixed')}
-              value={settings.otherFixedExpenses}
-              onChange={(v) => setSettings({ otherFixedExpenses: v })}
+        {detailed ? (
+          <>
+            <DetailedHouseholdBreakdown
+              settings={settings}
+              setSettings={setSettings}
             />
             <SharedExpenseBlock
               shareOnly
@@ -174,10 +129,10 @@ export function FixedExpensesStep({ onBack, onNext }) {
                 setSettings({ householdFixedYourSharePercent: v })
               }
             />
-          </div>
-        )}
+          </>
+        ) : null}
 
-        <div className={`p-4 ${ui.card}`}>
+        <div className={`p-3 ${ui.card}`}>
           <ExpenseSubtotals settings={settings} />
         </div>
       </div>

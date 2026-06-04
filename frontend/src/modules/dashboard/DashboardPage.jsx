@@ -20,8 +20,10 @@ export function DashboardPage() {
   const usesEstimates = hasEstimatedFixedExpenses(settings);
 
   return (
-    <div className="space-y-6">
+    <div className={ui.stackPage}>
       <SaveProgressBanner />
+
+      {data.alerts.length > 0 ? <DashboardAlerts alerts={data.alerts} /> : null}
 
       {usesEstimates ? (
         <p className={`text-sm ${ui.textMuted}`}>
@@ -37,8 +39,6 @@ export function DashboardPage() {
       />
 
       <EmergencyFundCard emergencyFund={data.emergencyFund} />
-
-      {data.alerts.length > 0 ? <DashboardAlerts alerts={data.alerts} /> : null}
 
       <NetWorthChart history={data.history} />
 

@@ -8,7 +8,7 @@ export function ProjectionPage() {
   const { t } = useTranslation();
 
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-6">
       <div>
         <h2 className={`mb-2 text-2xl font-bold tracking-tight ${ui.heading}`}>
           {t('projection.title')}

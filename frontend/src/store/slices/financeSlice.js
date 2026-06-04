@@ -1,28 +1,40 @@
 import { DEFAULT_SETTINGS, normalizeProjectionYears } from '../../lib/constants';
 import { createAnnualExpense } from '../../lib/annualExpenses';
 import {
-  createSalaryHistoryEntry,
-  enrichSalaryHistoryEntry,
-} from '../../lib/salaryHistory';
+  CASHFLOW_EXPENSE_SNAPSHOT_KEYS,
+  createCashflowEntry,
+  enrichCashflowEntry,
+  syncSettingsFromCashflowHistory,
+  upsertCurrentMonthCashflowTramo,
+} from '../../lib/cashflowHistory';
 import {
   createContributionPlan,
   getTotalMonthlyContributions,
 } from '../../lib/contributionPlans';
 import { enrichSettingsWithSalary } from '../../lib/salary';
+import { getSnapshotMonthKey } from '../../lib/snapshotUtils';
 
 const createId = () =>
   crypto.randomUUID?.() ??
   `id-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
+const CASHFLOW_TOUCH_KEYS = new Set([
+  'monthlyNetSalary',
+  'salaryPaysPreset',
+  'numPagas',
+  'otherMonthlyIncome',
+  ...CASHFLOW_EXPENSE_SNAPSHOT_KEYS,
+]);
+
 function syncInvestmentFromPlans(plans) {
   return { monthlyInvestmentAmount: getTotalMonthlyContributions(plans) };
 }
 
-/** Ajustes, activos, pasivos, aportaciones y snapshots. */
+/** Settings, assets, liabilities, contributions, and snapshots. */
 export const createFinanceSlice = (set, get) => ({
   settings: { ...DEFAULT_SETTINGS },
   annualExpenses: [],
-  salaryHistory: [],
+  cashflowHistory: [],
   contributionPlans: [],
   assets: [],
   liabilities: [],
@@ -30,12 +42,12 @@ export const createFinanceSlice = (set, get) => ({
 
   setSettings: (patch) =>
     set((state) => {
-      const salaryKeys = new Set([
-        'monthlyNetSalary',
-        'salaryPaysPreset',
-        'numPagas',
-      ]);
-      const touchesSalary = Object.keys(patch).some((k) => salaryKeys.has(k));
+      const touchesCashflow = Object.keys(patch).some((k) =>
+        CASHFLOW_TOUCH_KEYS.has(k),
+      );
+      const touchesSalary = ['monthlyNetSalary', 'salaryPaysPreset', 'numPagas'].some(
+        (k) => k in patch,
+      );
 
       let next = touchesSalary
         ? enrichSettingsWithSalary(patch, state.settings)
@@ -44,6 +56,15 @@ export const createFinanceSlice = (set, get) => ({
       if (patch.projectionYears != null) {
         next.projectionYears = normalizeProjectionYears(patch.projectionYears);
       }
+
+      if (touchesCashflow) {
+        const cashflowHistory = upsertCurrentMonthCashflowTramo(
+          next,
+          get().cashflowHistory,
+        );
+        return { settings: next, cashflowHistory };
+      }
+
       return { settings: next };
     }),
 
@@ -67,22 +88,38 @@ export const createFinanceSlice = (set, get) => ({
       annualExpenses: state.annualExpenses.filter((e) => e.id !== id),
     })),
 
-  addSalaryHistoryEntry: (entry) =>
-    set((state) => ({
-      salaryHistory: [...state.salaryHistory, createSalaryHistoryEntry(entry)],
-    })),
+  addCashflowHistoryEntry: (entry) =>
+    set((state) => {
+      const cashflowHistory = [
+        ...state.cashflowHistory,
+        createCashflowEntry(entry, state.settings),
+      ];
+      return {
+        cashflowHistory,
+        settings: syncSettingsFromCashflowHistory(state.settings, cashflowHistory),
+      };
+    }),
 
-  updateSalaryHistoryEntry: (id, patch) =>
-    set((state) => ({
-      salaryHistory: state.salaryHistory.map((e) =>
-        e.id === id ? enrichSalaryHistoryEntry(patch, e) : e,
-      ),
-    })),
+  updateCashflowHistoryEntry: (id, patch) =>
+    set((state) => {
+      const cashflowHistory = state.cashflowHistory.map((e) =>
+        e.id === id ? enrichCashflowEntry(patch, e, state.settings) : e,
+      );
+      return {
+        cashflowHistory,
+        settings: syncSettingsFromCashflowHistory(state.settings, cashflowHistory),
+      };
+    }),
 
-  removeSalaryHistoryEntry: (id) =>
-    set((state) => ({
-      salaryHistory: state.salaryHistory.filter((e) => e.id !== id),
-    })),
+  removeCashflowHistoryEntry: (id) =>
+    set((state) => {
+      if (state.cashflowHistory.length <= 1) return state;
+      const cashflowHistory = state.cashflowHistory.filter((e) => e.id !== id);
+      return {
+        cashflowHistory,
+        settings: syncSettingsFromCashflowHistory(state.settings, cashflowHistory),
+      };
+    }),
 
   setContributionPlans: (plans) =>
     set({
@@ -154,5 +191,39 @@ export const createFinanceSlice = (set, get) => ({
   addSnapshot: (snapshot) =>
     set((state) => ({
       snapshots: [...state.snapshots, snapshot],
+    })),
+
+  updateAsset: (id, patch) =>
+    set((state) => ({
+      assets: state.assets.map((a) => (a.id === id ? { ...a, ...patch } : a)),
+    })),
+
+  updateLiability: (id, patch) =>
+    set((state) => ({
+      liabilities: state.liabilities.map((l) =>
+        l.id === id ? { ...l, ...patch } : l,
+      ),
+    })),
+
+  setAssetActive: (id, isActive) =>
+    set((state) => ({
+      assets: state.assets.map((a) =>
+        a.id === id ? { ...a, isActive } : a,
+      ),
+    })),
+
+  setLiabilityActive: (id, isActive) =>
+    set((state) => ({
+      liabilities: state.liabilities.map((l) =>
+        l.id === id ? { ...l, isActive } : l,
+      ),
+    })),
+
+  closeMonthSnapshots: (monthKey, newSnapshots) =>
+    set((state) => ({
+      snapshots: [
+        ...state.snapshots.filter((s) => getSnapshotMonthKey(s) !== monthKey),
+        ...newSnapshots,
+      ],
     })),
 });

@@ -1,24 +1,34 @@
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
+import {
+  BALANCE_TAB,
+  BALANCE_TABS,
+  DEFAULT_BALANCE_TAB,
+  resolveBalanceTab,
+} from '../../lib/balanceTabs';
 import { ui } from '../../lib/uiClasses';
 import { CashflowPanel } from './components/CashflowPanel';
 import { ContributionsPanel } from './components/ContributionsPanel';
-import { PatrimonyPlaceholderPanel } from './components/PatrimonyPlaceholderPanel';
+import { PatrimonyPanel } from './components/PatrimonyPanel';
 
-const TABS = ['cashflow', 'contributions', 'patrimony'];
+const TAB_PANELS = {
+  [BALANCE_TAB.CASHFLOW]: CashflowPanel,
+  [BALANCE_TAB.CONTRIBUTIONS]: ContributionsPanel,
+  [BALANCE_TAB.PATRIMONY]: PatrimonyPanel,
+};
 
 export function BalancePage() {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const tabParam = searchParams.get('tab');
-  const tab = TABS.includes(tabParam) ? tabParam : 'cashflow';
+  const tab = resolveBalanceTab(searchParams.get('tab'));
+  const ActivePanel = TAB_PANELS[tab] ?? TAB_PANELS[DEFAULT_BALANCE_TAB];
 
   const setTab = (id) => {
     setSearchParams({ tab: id }, { replace: true });
   };
 
   return (
-    <div className="space-y-6">
+    <div className={ui.stackPage}>
       <div>
         <h2 className={`mb-2 text-2xl font-bold tracking-tight ${ui.heading}`}>
           {t('balance.title')}
@@ -32,7 +42,7 @@ export function BalancePage() {
         className={`flex flex-wrap gap-2 border-b pb-3 ${ui.divider}`}
         aria-label={t('balance.tabsLabel')}
       >
-        {TABS.map((id) => (
+        {BALANCE_TABS.map((id) => (
           <button
             key={id}
             type="button"
@@ -44,9 +54,7 @@ export function BalancePage() {
         ))}
       </nav>
 
-      {tab === 'cashflow' && <CashflowPanel />}
-      {tab === 'contributions' && <ContributionsPanel />}
-      {tab === 'patrimony' && <PatrimonyPlaceholderPanel />}
+      <ActivePanel />
     </div>
   );
 }

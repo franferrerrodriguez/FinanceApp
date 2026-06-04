@@ -1,35 +1,14 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  PROFILE_AGE_ERROR_KEYS,
+  PROFILE_MAX_AGE,
+  PROFILE_MIN_AGE,
+  validateProfileForm,
+} from '../../../lib/profileValidation';
 import { ui } from '../../../lib/uiClasses';
 import { useProfile } from '../../../store/hooks';
 import { OnboardingActions } from '../components/OnboardingActions';
-
-const MIN_AGE = 18;
-const MAX_AGE = 99;
-
-function parseAge(value) {
-  const n = parseInt(value, 10);
-  if (!Number.isFinite(n) || n < MIN_AGE || n > MAX_AGE) return null;
-  return n;
-}
-
-const AGE_ERROR_I18N = {
-  required: 'onboarding.welcome.ageErrorRequired',
-  tooYoung: 'onboarding.welcome.ageErrorTooYoung',
-  tooOld: 'onboarding.welcome.ageErrorTooOld',
-  invalid: 'onboarding.welcome.ageErrorInvalid',
-};
-
-function getAgeErrorKey(ageValue) {
-  const trimmed = ageValue.trim();
-  if (!trimmed) return 'required';
-
-  const n = parseInt(trimmed, 10);
-  if (!Number.isFinite(n)) return 'invalid';
-  if (n < MIN_AGE) return 'tooYoung';
-  if (n > MAX_AGE) return 'tooOld';
-  return null;
-}
 
 export function WelcomeStep({ onNext }) {
   const { t } = useTranslation();
@@ -38,17 +17,13 @@ export function WelcomeStep({ onNext }) {
   const [age, setAge] = useState(profile?.age?.toString() ?? '');
   const [showErrors, setShowErrors] = useState(false);
 
-  const parsedAge = parseAge(age);
-  const nameMissing = name.trim().length === 0;
-  const ageErrorKey = getAgeErrorKey(age);
-  const ageInvalid = ageErrorKey != null;
-
-  const showNameError = showErrors && nameMissing;
+  const validation = validateProfileForm({ name, age });
+  const showNameError = showErrors && validation.nameMissing;
   const showAgeError =
-    (showErrors && ageErrorKey === 'required') ||
-    (age.trim().length > 0 && ageInvalid);
+    (showErrors && validation.ageErrorKey === 'required') ||
+    (age.trim().length > 0 && validation.ageErrorKey != null);
 
-  const canContinue = !nameMissing && parsedAge != null;
+  const canContinue = validation.valid;
   const inputClass = (hasError) => (hasError ? ui.inputError : ui.input);
 
   const handleNext = () => {
@@ -58,8 +33,8 @@ export function WelcomeStep({ onNext }) {
     }
     setProfile({
       ...profile,
-      name: name.trim(),
-      age: parsedAge,
+      name: validation.name,
+      age: validation.age,
     });
     onNext();
   };
@@ -104,19 +79,22 @@ export function WelcomeStep({ onNext }) {
           </p>
           <input
             type="number"
-            min={MIN_AGE}
-            max={MAX_AGE}
+            min={PROFILE_MIN_AGE}
+            max={PROFILE_MAX_AGE}
             inputMode="numeric"
             value={age}
             onChange={(e) => setAge(e.target.value)}
             placeholder={t('onboarding.welcome.agePlaceholder')}
-            className={inputClass(showAgeError)}
+            className={`${inputClass(showAgeError)} ${ui.inputNarrow}`}
             aria-invalid={showAgeError}
             aria-describedby={showAgeError ? 'age-error' : undefined}
           />
-          {showAgeError && ageErrorKey && (
+          {showAgeError && validation.ageErrorKey && (
             <p id="age-error" className="mt-2 text-sm text-red-500" role="alert">
-              {t(AGE_ERROR_I18N[ageErrorKey], { min: MIN_AGE, max: MAX_AGE })}
+              {t(PROFILE_AGE_ERROR_KEYS[validation.ageErrorKey], {
+                min: PROFILE_MIN_AGE,
+                max: PROFILE_MAX_AGE,
+              })}
             </p>
           )}
         </label>

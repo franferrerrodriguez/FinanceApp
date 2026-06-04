@@ -1,4 +1,4 @@
-/** Idiomas soportados. */
+/** Supported locales. */
 export const SUPPORTED_LOCALES = ['es', 'en'];
 
 export const DEFAULT_LOCALE = 'es';

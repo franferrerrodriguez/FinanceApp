@@ -1,314 +1,461 @@
-FINANCIA APP — Documento Funcional v1.0
+FINANCIA APP — Functional Specification v1.0
 
-Especificación técnica completa · React + Vite + Zustand + Supabase
-Versión: 1.0 · Junio 2026
-
-
-Índice
-
-Visión General del Producto
-Arquitectura Técnica
-Modelo de Datos (Supabase)
-Módulo: Onboarding
-Módulo: Dashboard
-Módulo: Balance Patrimonial
-Módulo: Proyección Futura
-Parámetros Financieros Configurables
-Motor de Cálculos Financieros
-API REST (Supabase)
-Autenticación y Persistencia Local
-Roadmap de Iteraciones
+Complete technical specification · React + Vite + Zustand + Supabase
+Version: 1.0 · June 2026
 
 
-1. Visión General del Producto
-FinanciaApp es una aplicación web de finanzas personales diseñada para que cualquier persona pueda tener una visión clara, precisa y proyectable de su patrimonio neto, cashflow y progresión financiera a lo largo del tiempo. El objetivo no es una simple hoja de cálculo, sino una herramienta inteligente que calcule, proyecte y alerte en base a datos reales del usuario.
-1.1 Propuesta de Valor
+Table of Contents
 
-Patrimonio neto en tiempo real con snapshots mensuales históricos
-Cashflow detallado: ingresos netos vs. gastos fijos vs. gastos variables vs. ahorro/inversión
-Proyección financiera a largo plazo con interés compuesto real (no solo nominal)
-Parámetros financieros auditables y modificables con valores por defecto técnicamente correctos
-Onboarding fluido con datos guardados en local antes de requerir registro
-Backend en Supabase: sin servidor propio, capa gratuita suficiente para uso personal
-
-1.2 Usuarios Objetivo
-Profesionales de 25-45 años con ingresos estables que quieren optimizar su ahorro e inversión. No se requieren conocimientos financieros avanzados, pero la herramienta está diseñada para no simplificar en exceso los cálculos subyacentes.
-1.3 Principios de Diseño
-
-Datos primero: ningún número se muestra sin que el usuario pueda ver cómo se calcula
-Modificabilidad: todos los parámetros relevantes son editables con valores por defecto razonados
-Coherencia financiera: las fórmulas respetan estándares financieros (rentabilidad real vs. nominal, inflación, ecuación de Fisher)
-Progressive disclosure: funciona sin cuenta, se enriquece al registrarse
-Mobile-first pero usable en escritorio
+1. Product Overview
+2. Technical Architecture
+3. Data Model (Supabase)
+4. Module: Onboarding
+5. Module: Dashboard
+6. Module: Net Worth Balance
+7. Module: Future Projection
+8. Configurable Financial Parameters
+9. Financial Calculation Engine
+10. REST API (Supabase)
+11. Authentication and Local Persistence
+12. Iteration Roadmap
 
 
-2. Arquitectura Técnica
-2.1 Stack Tecnológico
-CapaTecnologíaJustificaciónFrontendReact 18 + ViteSPA rápida, ecosistema maduro, fácil deploy en Hostinger/VercelEstado GlobalZustandLigero, sin boilerplate, ideal para estado financiero mutableEstilosTailwind CSSUtilidades rápidas, consistencia visual, modo oscuro sencilloGráficosRechartsComponentes React nativos, buen soporte para series temporalesBackend / DBSupabase (PostgreSQL)Capa gratuita suficiente, auth integrada, API REST auto-generadaAlmacenamiento locallocalStorage + Zustand persistDatos funcionales antes de registroDeployHostinger (static) o VercelVite build → carpeta dist → subir al hostingVariables de entorno.env (VITE_SUPABASE_URL, ANON_KEY)Nunca hardcodear credenciales
-2.2 Estructura de Carpetas del Proyecto
+1. Product Overview
+
+FinanciaApp is a personal finance web application designed so anyone can have a clear, accurate, and projectable view of their net worth, cashflow, and financial progression over time. The goal is not a simple spreadsheet, but an intelligent tool that calculates, projects, and alerts based on the user's real data.
+
+1.1 Value Proposition
+
+- Real-time net worth with historical monthly snapshots
+- Detailed cashflow: net income vs. fixed expenses vs. variable expenses vs. savings/investment
+- Long-term financial projection with real compound interest (not only nominal)
+- Auditable, modifiable financial parameters with technically correct defaults
+- Smooth onboarding with data saved locally before registration is required
+- Supabase backend: no own server, free tier sufficient for personal use
+
+1.2 Target Users
+
+Professionals aged 25–45 with stable income who want to optimize their savings and investment. Advanced financial knowledge is not required, but the tool is designed not to oversimplify the underlying calculations.
+
+1.3 Design Principles
+
+- Data first: no number is shown without the user being able to see how it is calculated
+- Modifiability: all relevant parameters are editable with reasoned defaults
+- Financial coherence: formulas respect financial standards (real vs. nominal return, inflation, Fisher equation)
+- Progressive disclosure: works without an account, enriches when the user registers
+- Mobile-first but usable on desktop
+
+
+2. Technical Architecture
+
+2.1 Technology Stack
+
+| Layer | Technology | Justification |
+|-------|------------|---------------|
+| Frontend | React 18 + Vite | Fast SPA, mature ecosystem, easy deploy on Hostinger/Vercel |
+| Global state | Zustand | Lightweight, no boilerplate, ideal for mutable financial state |
+| Styling | Tailwind CSS | Fast utilities, visual consistency, simple dark mode |
+| Charts | Recharts | Native React components, good support for time series |
+| Backend / DB | Supabase (PostgreSQL) | Free tier sufficient, integrated auth, auto-generated REST API |
+| Local storage | localStorage + Zustand persist | Functional data before registration |
+| Deploy | Hostinger (static) or Vercel | Vite build → dist folder → upload to hosting |
+| Environment variables | .env (VITE_SUPABASE_URL, ANON_KEY) | Never hardcode credentials |
+
+2.2 Project Folder Structure
+
+```
 src/
-  ├── components/         → Componentes UI reutilizables
+  ├── components/         → Reusable UI components
   ├── modules/
-  │   ├── onboarding/     → Stepper de configuración inicial
-  │   ├── dashboard/      → Vista principal con métricas
-  │   ├── balance/        → Activos, pasivos, snapshots
-  │   └── projection/     → Proyección futura configurable
+  │   ├── onboarding/     → Initial setup stepper
+  │   ├── dashboard/      → Main view with metrics
+  │   ├── balance/        → Assets, liabilities, snapshots
+  │   └── projection/     → Configurable future projection
   ├── store/              → Zustand stores (user, assets, settings)
   ├── lib/
-  │   ├── supabase.js     → Cliente Supabase
-  │   ├── calculations.js → Motor de cálculos financieros (PURO, sin side effects)
-  │   └── constants.js    → Parámetros por defecto
+  │   ├── supabase.js     → Supabase client
+  │   ├── calculations.js → Financial calculation engine (PURE, no side effects)
+  │   └── constants.js    → Default parameters
   ├── hooks/              → Custom hooks (useAssets, useProjection...)
   └── utils/              → Formatters, validators
-2.3 Flujo de Persistencia
+```
 
-Fase 1 (sin cuenta): todos los datos viven en Zustand + localStorage. El usuario trabaja con normalidad.
-Banner "guardar progreso" aparece tras 10 minutos de uso activo o al cerrar la pestaña (beforeunload).
-Al registrarse: los datos de localStorage se migran automáticamente a Supabase (upsert silencioso).
-Fase 2 (con cuenta): sincronización bidireccional. Supabase como fuente de verdad.
-Los parámetros configurables se guardan en la tabla user_settings, nunca hardcodeados en el frontend.
+2.3 Persistence Flow
+
+- Phase 1 (no account): all data lives in Zustand + localStorage. The user works normally.
+- "Save progress" banner appears after 10 minutes of active use or when closing the tab (beforeunload).
+- On registration: localStorage data is migrated automatically to Supabase (silent upsert).
+- Phase 2 (with account): bidirectional sync. Supabase as source of truth.
+- Configurable parameters are stored in the user_settings table, never hardcoded in the frontend.
 
 
-3. Modelo de Datos (Supabase / PostgreSQL)
-3.1 Tabla: profiles
-sqlCREATE TABLE profiles (
+3. Data Model (Supabase / PostgreSQL)
+
+3.1 Table: profiles
+
+```sql
+CREATE TABLE profiles (
   id             UUID PRIMARY KEY REFERENCES auth.users(id),
   name           TEXT,
   age            INTEGER,
   created_at     TIMESTAMPTZ DEFAULT NOW()
 );
-3.2 Tabla: user_settings
-Almacena todos los parámetros financieros configurables del usuario. Una fila por usuario.
-sqlCREATE TABLE user_settings (
+```
+
+3.2 Table: user_settings
+
+Stores all configurable financial parameters for the user. One row per user.
+
+```sql
+CREATE TABLE user_settings (
   id                          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id                     UUID REFERENCES profiles(id) UNIQUE NOT NULL,
 
-  -- INGRESOS
-  monthly_net_salary          NUMERIC(12,2),        -- Salario neto mensual
+  -- INCOME
+  monthly_net_salary          NUMERIC(12,2),        -- Monthly net salary
   other_monthly_income        NUMERIC(12,2) DEFAULT 0,
 
-  -- GASTOS FIJOS MENSUALES
+  -- MONTHLY FIXED EXPENSES
   mortgage_rent               NUMERIC(10,2) DEFAULT 0,
-  utilities                   NUMERIC(10,2) DEFAULT 0,   -- luz + agua + gas
+  utilities                   NUMERIC(10,2) DEFAULT 0,   -- electricity + water + gas
   insurance                   NUMERIC(10,2) DEFAULT 0,
   subscriptions               NUMERIC(10,2) DEFAULT 0,
   other_fixed_expenses        NUMERIC(10,2) DEFAULT 0,
 
-  -- PARÁMETROS DE INVERSIÓN (modificables, con defaults razonados)
+  -- INVESTMENT PARAMETERS (modifiable, with reasoned defaults)
   index_fund_nominal_return   NUMERIC(5,4) DEFAULT 0.0600,  -- 6.00%
   index_fund_real_return      NUMERIC(5,4) DEFAULT 0.0400,  -- 4.00%
-  use_real_return             BOOLEAN DEFAULT TRUE,          -- TRUE = usar rentabilidad real
-  expected_inflation          NUMERIC(5,4) DEFAULT 0.0200,  -- 2.00% (objetivo BCE)
-  pension_plan_return         NUMERIC(5,4) DEFAULT 0.0350,  -- 3.50% nominal típico España
-  savings_account_return      NUMERIC(5,4) DEFAULT 0.0250,  -- 2.50% cuentas remuneradas 2026
-  annual_salary_increase      NUMERIC(5,4) DEFAULT 0.0150,  -- 1.50% incremento salarial
+  use_real_return             BOOLEAN DEFAULT TRUE,          -- TRUE = use real return
+  expected_inflation          NUMERIC(5,4) DEFAULT 0.0200,  -- 2.00% (ECB target)
+  pension_plan_return         NUMERIC(5,4) DEFAULT 0.0350,  -- 3.50% typical nominal Spain
+  savings_account_return      NUMERIC(5,4) DEFAULT 0.0250,  -- 2.50% interest-bearing accounts 2026
+  annual_salary_increase      NUMERIC(5,4) DEFAULT 0.0150,  -- 1.50% salary increase
 
-  -- PARÁMETROS DE PROYECCIÓN
+  -- PROJECTION PARAMETERS
   projection_years            INTEGER DEFAULT 25,
-  monthly_investment_amount   NUMERIC(10,2) DEFAULT 0,      -- 0 = usar cashflow libre automático
+  monthly_investment_amount   NUMERIC(10,2) DEFAULT 0,      -- 0 = use free cashflow automatically
 
   updated_at                  TIMESTAMPTZ DEFAULT NOW()
 );
-3.3 Tabla: assets (Activos)
-sqlCREATE TABLE assets (
+```
+
+3.3 Table: assets
+
+```sql
+CREATE TABLE assets (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id     UUID REFERENCES profiles(id) NOT NULL,
-  name        TEXT NOT NULL,    -- "Santander Cuenta Corriente"
-  -- Categorías: bank | investment | real_estate | cash | pension | other
+  name        TEXT NOT NULL,    -- "Santander Current Account"
+  -- Categories: bank | investment | real_estate | cash | pension | other
   category    TEXT NOT NULL,
   provider    TEXT,             -- "Indexa Capital", "Myinvestor", "Trade Republic"...
   notes       TEXT,
   is_active   BOOLEAN DEFAULT TRUE,
   created_at  TIMESTAMPTZ DEFAULT NOW()
 );
-Categorías de activos y su tratamiento:
-CategoríaClaveRentabilidad en proyecciónCuenta corriente / débitobank0% (dinero sin rentabilidad)Cuenta remunerada / depósitobanksavings_account_return (default 2.5%)Fondos indexadosinvestmentindex_fund_real_return o nominal según configPlan de pensionespensionpension_plan_return (default 3.5%)Dinero en efectivocash0%Vivienda habitualreal_estateNo se proyecta como generador de renta (ilíquido)Inmueble de inversiónreal_estateConfigurable: rentabilidad bruta alquiler - gastosOtrosotherConfigurable individualmente
-3.4 Tabla: liabilities (Pasivos)
-sqlCREATE TABLE liabilities (
+```
+
+Asset categories and their treatment:
+
+| Category | Key | Return in projection |
+|----------|-----|----------------------|
+| Current / debit account | bank | 0% (non-yielding cash) |
+| Interest-bearing account / deposit | bank | savings_account_return (default 2.5%) |
+| Index funds | investment | index_fund_real_return or nominal per config |
+| Pension plans | pension | pension_plan_return (default 3.5%) |
+| Cash | cash | 0% |
+| Primary residence | real_estate | Not projected as income generator (illiquid) |
+| Investment property | real_estate | Configurable: gross rental yield − expenses |
+| Other | other | Individually configurable |
+
+3.4 Table: liabilities
+
+```sql
+CREATE TABLE liabilities (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id          UUID REFERENCES profiles(id) NOT NULL,
   name             TEXT NOT NULL,
-  -- Categorías: mortgage | personal_loan | credit_card | family_debt | other
+  -- Categories: mortgage | personal_loan | credit_card | family_debt | other
   category         TEXT NOT NULL,
-  monthly_payment  NUMERIC(10,2) DEFAULT 0,   -- cuota mensual (para cashflow)
-  interest_rate    NUMERIC(5,4),               -- tipo de interés anual
+  monthly_payment  NUMERIC(10,2) DEFAULT 0,   -- monthly installment (for cashflow)
+  interest_rate    NUMERIC(5,4),               -- annual interest rate
   is_active        BOOLEAN DEFAULT TRUE,
   created_at       TIMESTAMPTZ DEFAULT NOW()
 );
-3.5 Tabla: monthly_snapshots
-Cada snapshot cierra el mes y guarda el valor exacto de cada activo y pasivo. Es la fuente de la tabla histórica y de los gráficos de evolución.
-sqlCREATE TABLE monthly_snapshots (
+```
+
+3.5 Table: monthly_snapshots
+
+Each snapshot closes the month and stores the exact value of each asset and liability. It is the source for the historical table and evolution charts.
+
+```sql
+CREATE TABLE monthly_snapshots (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id      UUID REFERENCES profiles(id) NOT NULL,
-  asset_id     UUID REFERENCES assets(id),       -- NULL si es pasivo
-  liability_id UUID REFERENCES liabilities(id),  -- NULL si es activo
-  snapshot_date DATE NOT NULL,                   -- siempre último día del mes
-  value        NUMERIC(14,2) NOT NULL,            -- positivo activos, NEGATIVO pasivos
+  asset_id     UUID REFERENCES assets(id),       -- NULL if liability
+  liability_id UUID REFERENCES liabilities(id),  -- NULL if asset
+  snapshot_date DATE NOT NULL,                   -- always last day of month
+  value        NUMERIC(14,2) NOT NULL,            -- positive assets, NEGATIVE liabilities
   notes        TEXT,
   created_at   TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(asset_id, snapshot_date),
   UNIQUE(liability_id, snapshot_date)
 );
+```
 
-Nota importante: Los valores de pasivos en monthly_snapshots deben almacenarse como negativos. Esto permite calcular el patrimonio neto con una simple suma: PN = Σ(todos los values del mes).
-
-
-4. Módulo: Onboarding (Stepper)
-El onboarding se muestra únicamente la primera vez que el usuario accede (localStorage key: onboarding_completed = false). Consta de 5 pasos. Los datos se guardan en Zustand en tiempo real conforme el usuario avanza.
-4.1 Pasos del Stepper
-PasoTítuloCamposNotas UX1BienvenidaNombre, edadPantalla acogedora. CTA: "Empezar"2Tus ingresosSalario neto mensual, otros ingresos mensuales netosSiempre en NETO. Tooltip explicando diferencia bruto/neto3Gastos fijosHipoteca/alquiler, suministros, seguros, suscripciones, otrosSubtotal calculado en tiempo real mientras escribe4Tu inversiónAportación mensual a inversión, productos que usaMuestra cashflow resultante: ingresos - gastos - inversión = libre5ResumenPatrimonio inicial, cashflow, tasa de ahorro calculadaBotón: "Empezar". Opción de registrarse ya o más tarde
-4.2 Lógica del Banner "Guardar Progreso"
-
-Se activa a los 10 minutos de uso activo (timer con Zustand) o en el evento window.beforeunload.
-Muestra un modal no bloqueante con dos opciones: "Registrarme" y "Continuar sin cuenta".
-Si elige registrarse, el formulario de auth es mínimo: email + contraseña.
-Tras registro, se llama a migrateLocalToSupabase() que hace upsert de todos los datos locales.
-El banner no vuelve a aparecer si el usuario lo descarta (localStorage key: banner_dismissed).
+**Important note:** Liability values in monthly_snapshots must be stored as negative. This allows net worth to be calculated with a simple sum: NW = Σ(all values for the month).
 
 
-5. Módulo: Dashboard
-5.1 KPIs Principales
-KPICálculoFormato / AlertaPatrimonio NetoΣ(activos) + Σ(pasivos) — pasivos son negativos€ con separador de miles. Verde si sube, rojo si bajaTotal ActivosΣ(snapshots de activos del mes actual)€, desglose por categoría en tooltipTotal PasivosΣ(snapshots de pasivos, valor negativo)€ en rojoTasa de Ahorro(ahorro_mensual / ingresos_netos_totales) × 100% · ≥20% verde · 10-20% amarillo · <10% rojoCashflow Libreingresos - gastos_fijos - aportación_inversión€/mes. Si negativo → alerta visualVariación Mensual`(PN_actual - PN_anterior) /PN_anterior
-5.2 Gráficos
+4. Module: Onboarding (Stepper)
 
-Línea: Evolución del patrimonio neto (eje Y: €, eje X: meses). Dos series: "Patrimonio Neto" y "Total Activos". Últimos 12 meses disponibles.
-Barra apilada horizontal normalizada: cashflow — ingresos vs. gastos fijos vs. gastos variables vs. inversión vs. libre.
-Donut: Distribución de activos por categoría (Bancos / Inversiones / Inmuebles / Pensiones / Efectivo / Otros).
-Mini-tabla: Top 3 activos y Top 3 pasivos por peso en el patrimonio.
+Onboarding is shown only the first time the user accesses the app (localStorage key: onboarding_completed = false). It consists of 5 steps. Data is saved to Zustand in real time as the user progresses.
 
-5.3 Alertas Inteligentes
-⚠️  ALERTA 1: Cashflow libre negativo → "Tus gastos superan tus ingresos este mes"
-⚠️  ALERTA 2: Tasa de ahorro < 10% → "Estás ahorrando menos del 10% de tu salario"
-⚠️  ALERTA 3: Deuda en tarjeta > 0 → "Tienes deuda en tarjeta. Considera amortizarla primero"
-⚠️  ALERTA 4: Patrimonio neto negativo → "Tu deuda supera tus activos. Revisa tus pasivos"
+4.1 Stepper Steps
 
-6. Módulo: Balance Patrimonial
-6.1 Gestión de Activos
-El usuario puede añadir, editar y desactivar activos. Cada activo tiene una categoría que determina cómo se agrupa en los resúmenes y qué rentabilidad estimada se le aplica en las proyecciones.
-Campos del formulario de activo:
+| Step | Title | Fields | UX notes |
+|------|-------|--------|----------|
+| 1 | Welcome | Name, age | Welcoming screen. CTA: "Get started" |
+| 2 | Your income | Monthly net salary, other monthly net income | Always NET. Tooltip explaining gross vs. net |
+| 3 | Fixed expenses | Mortgage/rent, utilities, insurance, subscriptions, other | Subtotal calculated in real time as they type |
+| 4 | Your investment | Monthly investment contribution, products used | Shows resulting cashflow: income − expenses − investment = free |
+| 5 | Summary | Initial net worth, cashflow, calculated savings rate | Button: "Get started". Option to register now or later |
 
-Nombre (texto libre)
-Categoría (select con opciones predefinidas)
-Proveedor (texto libre: "Indexa Capital", "Myinvestor", "Revolut"...)
-Notas (opcional)
+4.2 "Save Progress" Banner Logic
 
-6.2 Gestión de Pasivos
-Cada pasivo tiene:
-
-Nombre y categoría
-Cuota mensual → se suma a los gastos fijos para el cálculo de cashflow
-Tipo de interés → para cálculos de amortización futura (iteración 3)
-Valor actual de la deuda → se introduce en el snapshot mensual como valor negativo
-
-6.3 Cierre Mensual (Snapshot)
-
-El "cierre mensual" es la acción por la que el usuario registra el valor actual de cada activo y pasivo. No es automático: el usuario decide cuándo cerrar el mes (idealmente el último día de cada mes).
-
-UX del cierre mensual:
-
-Botón "Cerrar mes" en la cabecera del módulo.
-Al pulsarlo, se abre un formulario con todos los activos y pasivos listados.
-Los valores del mes anterior vienen pre-rellenados — el usuario solo modifica los que hayan cambiado.
-Al confirmar, se insertan los registros en monthly_snapshots.
-
-6.4 Tabla Resumen Histórica
-La tabla muestra columnas por mes (máximo 12 meses visibles, scroll horizontal) y filas por activo/pasivo.
-Filas de resumen calculadas automáticamente:
-
-Total por categoría: Bancos, Inversiones, Inmuebles, Pensiones, Efectivo, Otros
-Total Activos, Total Pasivos, Patrimonio Neto
-Variación mes a mes en € y en %
+- Activates after 10 minutes of active use (timer with Zustand) or on window.beforeunload.
+- Shows a non-blocking modal with two options: "Sign up" and "Continue without account".
+- If they choose to sign up, the auth form is minimal: email + password.
+- After registration, migrateLocalToSupabase() is called, which upserts all local data.
+- The banner does not appear again if the user dismisses it (localStorage key: banner_dismissed).
 
 
-7. Módulo: Proyección Futura
-7.1 Inputs del Módulo
-ParámetroDefaultRangoDescripciónAños a proyectar255–50Horizonte temporalAportación mensualauto (cashflow libre)manualPor defecto = cashflow libre del dashboardTipo de rentabilidadRealReal / NominalSelector con explicación en tooltipRentabilidad fondos (real)4.00%0–15%Después de inflación. Default: media histórica MSCI World realRentabilidad fondos (nominal)6.00%0–18%Sin descontar inflaciónInflación esperada2.00%0–8%Objetivo BCE a largo plazoRentabilidad plan de pensiones3.50%0–10%Estimación conservadora para PP en EspañaRentabilidad cuenta remunerada2.50%0–6%Cuentas remuneradas típicas España junio 2026Incremento salarial anual1.50%0–10%Estimación conservadora: IPC objetivo BCE% salario a inversiónauto0–100%Si activo, la aportación crece con el salario
-7.2 Escenarios Predefinidos
-EscenarioRent. fondos (real)InflaciónInc. salarialDescripciónConservador3.00%2.50%1.00%Mercados planos, inflación alta, sin ascensosModerado4.00%2.00%1.50%Escenario base realista para España 2026+Optimista6.00%1.50%2.50%Buen ciclo bursátil, carrera en ascensoPersonalizadolibrelibrelibreEl usuario configura cada parámetro
-7.3 Outputs de la Proyección
+5. Module: Dashboard
 
-Gráfico de área: patrimonio proyectado vs. solo aportaciones (sin rentabilidad) → visualiza el poder del interés compuesto.
-Interés compuesto generado: patrimonio_final_proyectado − suma_de_aportaciones_totales
-Hitos automáticos marcados en el gráfico: ×2 patrimonio actual, ×5, ×10.
-Tabla anual detallada: año | patrimonio inicio | aportación anual | rentabilidad generada | patrimonio final.
-Indicador FIRE (Financial Independence Retire Early): año estimado en que los rendimientos anuales igualan los gastos anuales.
+5.1 Main KPIs
 
+| KPI | Calculation | Format / Alert |
+|-----|-------------|----------------|
+| Net Worth | Σ(assets) + Σ(liabilities) — liabilities are negative | € with thousands separator. Green if up, red if down |
+| Total Assets | Σ(current month asset snapshots) | €, breakdown by category in tooltip |
+| Total Liabilities | Σ(liability snapshots, negative value) | € in red |
+| Savings Rate | (monthly_savings / total_net_income) × 100 | ≥20% green · 10–20% yellow · <10% red |
+| Free Cashflow | income − fixed_expenses − investment_contribution | €/month. If negative → visual alert |
+| Monthly Change | (NW_current − NW_previous) / NW_previous | |
 
-8. Parámetros Financieros Configurables
-8.1 Rentabilidad Nominal vs. Real — Concepto Fundamental
+5.2 Charts
 
-CRÍTICO para el equipo de desarrollo: esta distinción debe estar clara en la UI y en todos los cálculos.
+- Line: Net worth evolution (Y axis: €, X axis: months). Two series: "Net Worth" and "Total Assets". Last 12 months available.
+- Horizontal stacked bar (normalized): cashflow — income vs. fixed expenses vs. variable expenses vs. investment vs. free.
+- Donut: Asset distribution by category (Banks / Investments / Real estate / Pensions / Cash / Other).
+- Mini-table: Top 3 assets and Top 3 liabilities by weight in net worth.
 
-Rentabilidad NOMINAL: lo que el fondo reporta oficialmente, sin descontar inflación.
-Rentabilidad REAL:    poder adquisitivo real ganado.
+5.3 Smart Alerts
 
-Fórmula de Fisher:
-  r_real = (1 + r_nominal) / (1 + inflación) - 1
-
-Ejemplo con los defaults de la app:
-  Nominal:   6.00%
-  Inflación: 2.00%
-  Real:      (1.06 / 1.02) - 1 = 3.92% ≈ 4.00%
-¿Cuándo usar cada una?
-
-Rentabilidad real → proyecciones a largo plazo donde los gastos futuros se expresan en euros de HOY (poder adquisitivo constante). Es el modo por defecto y el correcto.
-Rentabilidad nominal → útil para comparar con otras inversiones o productos financieros que reportan en nominal.
-
-La UI debe comunicar esto con un banner informativo cuando el usuario cambia entre modos.
-8.2 Justificación de los Valores por Defecto
-ParámetroDefaultJustificación técnicaRentabilidad nominal fondos indexados6.00%Media histórica MSCI World en EUR ~7% anual últimos 50 años. Se usa 6% descontando costes de producto (~0.5-1% TER típico en Indexa/Myinvestor)Rentabilidad real fondos indexados4.00%Fórmula de Fisher: (1.06/1.02)-1 = 3.92%, redondeado a 4%. Coherente con estudios de Vanguard y Research Affiliates para carteras globales diversificadasInflación esperada2.00%Objetivo oficial del BCE. Estándar para planificación financiera a largo plazo en la EurozonaRentabilidad plan de pensiones3.50%Conservadora para PP renta variable/mixto en España. Los PP tienen mayor fiscalidad en el rescate, por lo que un retorno esperado algo menor que fondos libres está justificadoRentabilidad cuenta remunerada2.50%Oferta media en España junio 2026 (Openbank, Revolut, Trade Republic, MyInvestor). Revisar cada 6 meses según política BCEIncremento salarial anual1.50%IPC objetivo (2%) menos un pequeño descuento. Conservador como base de planificación
-8.3 Pantalla de Configuración de Parámetros
-Accesible desde: Perfil > Parámetros financieros
-Cada parámetro muestra:
-
-Slider + campo numérico editable simultáneamente
-Tooltip con la explicación y justificación del valor por defecto
-Botón "Restaurar default" individual
-Botón "Restaurar todos los defaults" al pie de la pantalla
-La proyección se recalcula en tiempo real al cambiar cualquier parámetro (debounce 300ms)
-Aviso contextual: "Estás usando rentabilidad real. Los resultados se expresan en euros de hoy (poder adquisitivo constante)."
+```
+⚠️  ALERT 1: Negative free cashflow → "Your expenses exceed your income this month"
+⚠️  ALERT 2: Savings rate < 10% → "You are saving less than 10% of your salary"
+⚠️  ALERT 3: Credit card debt > 0 → "You have credit card debt. Consider paying it off first"
+⚠️  ALERT 4: Negative net worth → "Your debt exceeds your assets. Review your liabilities"
+```
 
 
-9. Motor de Cálculos Financieros
+6. Module: Net Worth Balance
 
-Todas las fórmulas residen en src/lib/calculations.js como funciones puras (sin side effects, sin acceso a estado global). Esto facilita el testing unitario y la depuración.
+6.1 Asset Management
 
-9.1 Fórmulas del Dashboard
-ConceptoFórmulaNotasPatrimonio NetoPN = Σ(activos_mes) + Σ(pasivos_mes)Pasivos son negativos. PN puede ser negativoVariación PN((PN_actual - PN_anterior) / |PN_anterior|) × 100Usar valor absoluto del denominadorTasa de Ahorro(ahorro_mensual / ingresos_netos_totales) × 100ahorro = ingresos - gastos_fijos - gastos_varCashflow LibreCF = ingresos_netos - gastos_fijos - inversión_mensualPuede ser negativo (alerta)
-9.2 Fórmulas de Proyección
-ConceptoFórmulaNotasValor Futuro (aportaciones)FV = C × [((1+r)^n - 1) / r]C=aportación periódica, r=tasa por periodo, n=periodosValor Futuro (capital inicial)FV_0 = PV × (1+r)^nPV=patrimonio actual, r=tasa anual, n=añosFV TotalFV_total = FV_0 + FV_aportacionesSuma capital actual proyectado + aportacionesRentabilidad real (Fisher)r_real = (1 + r_nom) / (1 + inflación) - 1Aplicar siempre cuando use_real_return = TRUETasa mensual desde anualr_mes = (1 + r_anual)^(1/12) - 1Conversión correcta. NUNCA dividir por 12Interés compuesto generadoIC = FV_total - (patrimonio_inicial + aportaciones_totales)Lo que genera la inversión por sí solaFIRE yearAño en que FV × r_real >= gastos_anualesgastos_anuales = (gastos_fijos + variables) × 12Salario con incrementoS_n = S_0 × (1 + inc_salarial)^nActualiza aportación si % del salario está activo
+The user can add, edit, and deactivate assets. Each asset has a category that determines how it is grouped in summaries and what estimated return is applied in projections.
 
-⚠️ CRÍTICO — Tasa mensual:
-CORRECTO:   r_mes = (1 + 0.06)^(1/12) - 1 = 0.004868 (0.4868%)
-INCORRECTO: r_mes = 0.06 / 12 = 0.005 (0.5%)
-La diferencia acumulada en 25 años puede ser de miles de euros.
+Asset form fields:
 
-9.3 Código de Referencia — src/lib/calculations.js
-javascript// src/lib/calculations.js — FUNCIONES PURAS, sin imports de estado global
+- Name (free text)
+- Category (select with predefined options)
+- Provider (free text: "Indexa Capital", "Myinvestor", "Revolut"...)
+- Notes (optional)
+
+6.2 Liability Management
+
+Each liability has:
+
+- Name and category
+- Monthly payment → added to fixed expenses for cashflow calculation
+- Interest rate → for future amortization calculations (iteration 3)
+- Current debt value → entered in the monthly snapshot as a negative value
+
+6.3 Monthly Close (Snapshot)
+
+The "monthly close" is the action by which the user records the current value of each asset and liability. It is not automatic: the user decides when to close the month (ideally the last day of each month).
+
+Monthly close UX:
+
+- "Close month" button in the module header.
+- When clicked, a form opens listing all assets and liabilities.
+- Previous month's values are pre-filled — the user only changes what has changed.
+- On confirm, records are inserted into monthly_snapshots.
+
+6.4 Historical Summary Table
+
+The table shows columns per month (maximum 12 months visible, horizontal scroll) and rows per asset/liability.
+
+Automatically calculated summary rows:
+
+- Total per category: Banks, Investments, Real estate, Pensions, Cash, Other
+- Total Assets, Total Liabilities, Net Worth
+- Month-over-month change in € and %
+
+
+7. Module: Future Projection
+
+7.1 Module Inputs
+
+| Parameter | Default | Range | Description |
+|-----------|---------|-------|-------------|
+| Years to project | 25 | 5–50 | Time horizon |
+| Monthly contribution | auto (free cashflow) | manual | Default = dashboard free cashflow |
+| Return type | Real | Real / Nominal | Selector with tooltip explanation |
+| Fund return (real) | 4.00% | 0–15% | After inflation. Default: MSCI World historical real average |
+| Fund return (nominal) | 6.00% | 0–18% | Without discounting inflation |
+| Expected inflation | 2.00% | 0–8% | Long-term ECB target |
+| Pension plan return | 3.50% | 0–10% | Conservative estimate for pension plans in Spain |
+| Interest-bearing account return | 2.50% | 0–6% | Typical interest-bearing accounts Spain June 2026 |
+| Annual salary increase | 1.50% | 0–10% | Conservative estimate: ECB inflation target |
+| % of salary to investment | auto | 0–100% | If active, contribution grows with salary |
+
+7.2 Predefined Scenarios
+
+| Scenario | Fund return (real) | Inflation | Salary increase | Description |
+|----------|-------------------|-----------|-----------------|-------------|
+| Conservative | 3.00% | 2.50% | 1.00% | Flat markets, high inflation, no promotions |
+| Moderate | 4.00% | 2.00% | 1.50% | Realistic base scenario for Spain 2026+ |
+| Optimistic | 6.00% | 1.50% | 2.50% | Strong equity cycle, career growth |
+| Custom | free | free | free | User configures each parameter |
+
+7.3 Projection Outputs
+
+- Area chart: projected net worth vs. contributions only (no return) → visualizes the power of compound interest.
+- Compound interest generated: projected_final_net_worth − sum_of_total_contributions
+- Automatic milestones on the chart: ×2 current net worth, ×5, ×10.
+- Detailed annual table: year | opening net worth | annual contribution | return generated | closing net worth.
+- FIRE indicator (Financial Independence Retire Early): estimated year when annual returns equal annual expenses.
+
+
+8. Configurable Financial Parameters
+
+8.1 Nominal vs. Real Return — Fundamental Concept
+
+**CRITICAL for the development team:** this distinction must be clear in the UI and in all calculations.
+
+- **Nominal return:** what the fund reports officially, without discounting inflation.
+- **Real return:** actual purchasing power gained.
+
+Fisher equation:
+
+```
+r_real = (1 + r_nominal) / (1 + inflation) - 1
+```
+
+Example with app defaults:
+
+```
+Nominal:   6.00%
+Inflation: 2.00%
+Real:      (1.06 / 1.02) - 1 = 3.92% ≈ 4.00%
+```
+
+When to use each:
+
+- **Real return** → long-term projections where future expenses are expressed in TODAY's euros (constant purchasing power). Default mode and the correct one.
+- **Nominal return** → useful to compare with other investments or financial products that report in nominal terms.
+
+The UI must communicate this with an informational banner when the user switches between modes.
+
+8.2 Justification of Default Values
+
+| Parameter | Default | Technical justification |
+|-----------|---------|-------------------------|
+| Index fund nominal return | 6.00% | Historical MSCI World average in EUR ~7% annual over last 50 years. 6% used discounting product costs (~0.5–1% typical TER at Indexa/Myinvestor) |
+| Index fund real return | 4.00% | Fisher: (1.06/1.02)−1 = 3.92%, rounded to 4%. Consistent with Vanguard and Research Affiliates studies for diversified global portfolios |
+| Expected inflation | 2.00% | Official ECB target. Standard for long-term financial planning in the Eurozone |
+| Pension plan return | 3.50% | Conservative for equity/mixed pension plans in Spain. Pension plans have higher tax on withdrawal, so somewhat lower expected return than free funds is justified |
+| Interest-bearing account return | 2.50% | Average offer in Spain June 2026 (Openbank, Revolut, Trade Republic, MyInvestor). Review every 6 months per ECB policy |
+| Annual salary increase | 1.50% | Inflation target (2%) minus a small discount. Conservative as planning baseline |
+
+8.3 Parameters Configuration Screen
+
+Accessible from: Profile > Financial parameters
+
+Each parameter shows:
+
+- Slider + numeric field editable at the same time
+- Tooltip with explanation and justification of the default value
+- Individual "Restore default" button
+- "Restore all defaults" button at the bottom of the screen
+- Projection recalculates in real time when any parameter changes (debounce 300ms)
+- Contextual notice: "You are using real return. Results are expressed in today's euros (constant purchasing power)."
+
+
+9. Financial Calculation Engine
+
+All formulas live in `src/lib/calculations.js` as pure functions (no side effects, no access to global state). This facilitates unit testing and debugging.
+
+9.1 Dashboard Formulas
+
+| Concept | Formula | Notes |
+|---------|---------|-------|
+| Net Worth | NW = Σ(assets_month) + Σ(liabilities_month) | Liabilities are negative. NW can be negative |
+| NW Change | ((NW_current − NW_previous) / \|NW_previous\|) × 100 | Use absolute value of denominator |
+| Savings Rate | (monthly_savings / total_net_income) × 100 | savings = income − fixed_expenses − var_expenses |
+| Free Cashflow | CF = net_income − fixed_expenses − monthly_investment | Can be negative (alert) |
+
+9.2 Projection Formulas
+
+| Concept | Formula | Notes |
+|---------|---------|-------|
+| Future Value (contributions) | FV = C × [((1+r)^n − 1) / r] | C=periodic contribution, r=rate per period, n=periods |
+| Future Value (initial capital) | FV_0 = PV × (1+r)^n | PV=current net worth, r=annual rate, n=years |
+| Total FV | FV_total = FV_0 + FV_contributions | Sum projected current capital + contributions |
+| Real return (Fisher) | r_real = (1 + r_nom) / (1 + inflation) − 1 | Always apply when use_real_return = TRUE |
+| Monthly rate from annual | r_month = (1 + r_annual)^(1/12) − 1 | Correct conversion. NEVER divide by 12 |
+| Compound interest generated | IC = FV_total − (initial_net_worth + total_contributions) | What investment generates on its own |
+| FIRE year | Year when FV × r_real >= annual_expenses | annual_expenses = (fixed + variable expenses) × 12 |
+| Salary with increase | S_n = S_0 × (1 + salary_increase)^n | Updates contribution if % of salary is active |
+
+**CRITICAL — Monthly rate:**
+
+```
+CORRECT:   r_month = (1 + 0.06)^(1/12) - 1 = 0.004868 (0.4868%)
+INCORRECT: r_month = 0.06 / 12 = 0.005 (0.5%)
+```
+
+The accumulated difference over 25 years can be thousands of euros.
+
+9.3 Reference Code — src/lib/calculations.js
+
+```javascript
+// src/lib/calculations.js — PURE FUNCTIONS, no imports from global state
 
 /**
- * Convierte rentabilidad nominal a real usando la ecuación de Fisher
- * @param {number} nominalRate - Tasa nominal anual (0.06 = 6%)
- * @param {number} inflationRate - Inflación anual (0.02 = 2%)
- * @returns {number} Tasa real anual
+ * Converts nominal return to real using the Fisher equation
+ * @param {number} nominalRate - Annual nominal rate (0.06 = 6%)
+ * @param {number} inflationRate - Annual inflation (0.02 = 2%)
+ * @returns {number} Annual real rate
  */
 export const nominalToReal = (nominalRate, inflationRate) =>
   (1 + nominalRate) / (1 + inflationRate) - 1;
 
 /**
- * Tasa mensual desde anual — método correcto (raíz doceava, NO dividir por 12)
- * @param {number} annualRate - Tasa anual efectiva
- * @returns {number} Tasa mensual efectiva
+ * Monthly rate from annual — correct method (twelfth root, NOT divide by 12)
+ * @param {number} annualRate - Effective annual rate
+ * @returns {number} Effective monthly rate
  */
 export const annualToMonthly = (annualRate) =>
   Math.pow(1 + annualRate, 1 / 12) - 1;
 
 /**
- * Valor Futuro de aportaciones periódicas mensuales (anuidades ordinarias)
- * @param {number} monthlyContrib - Aportación mensual en €
- * @param {number} annualRate     - Tasa anual efectiva (ya convertida: real o nominal)
- * @param {number} years          - Horizonte en años
- * @returns {number} Valor futuro en €
+ * Future Value of periodic monthly contributions (ordinary annuities)
+ * @param {number} monthlyContrib - Monthly contribution in €
+ * @param {number} annualRate     - Effective annual rate (already converted: real or nominal)
+ * @param {number} years          - Horizon in years
+ * @returns {number} Future value in €
  */
 export const futureValueContributions = (monthlyContrib, annualRate, years) => {
   const r = annualToMonthly(annualRate);
@@ -318,25 +465,25 @@ export const futureValueContributions = (monthlyContrib, annualRate, years) => {
 };
 
 /**
- * Valor Futuro de un capital inicial (sin aportaciones adicionales)
- * @param {number} presentValue - Capital inicial en €
- * @param {number} annualRate   - Tasa anual efectiva
- * @param {number} years        - Horizonte en años
- * @returns {number} Valor futuro en €
+ * Future Value of initial capital (no additional contributions)
+ * @param {number} presentValue - Initial capital in €
+ * @param {number} annualRate   - Effective annual rate
+ * @param {number} years        - Horizon in years
+ * @returns {number} Future value in €
  */
 export const futureValueLumpSum = (presentValue, annualRate, years) =>
   presentValue * Math.pow(1 + annualRate, years);
 
 /**
- * Proyección año a año completa — devuelve tabla con todos los datos intermedios
+ * Full year-by-year projection — returns table with all intermediate data
  *
  * @param {object} params
- * @param {number} params.initialPatrimony          - Patrimonio neto actual en €
- * @param {number} params.monthlyContrib            - Aportación mensual en €
- * @param {number} params.annualRate                - Tasa ya convertida (real o nominal según config)
- * @param {number} params.years                     - Años a proyectar
- * @param {number} params.annualSalaryIncrease       - Incremento salarial anual (0.015 = 1.5%)
- * @param {boolean} params.contribGrowsWithSalary    - Si true, la aportación crece con el salario
+ * @param {number} params.initialPatrimony          - Current net worth in €
+ * @param {number} params.monthlyContrib            - Monthly contribution in €
+ * @param {number} params.annualRate                - Rate already converted (real or nominal per config)
+ * @param {number} params.years                     - Years to project
+ * @param {number} params.annualSalaryIncrease       - Annual salary increase (0.015 = 1.5%)
+ * @param {boolean} params.contribGrowsWithSalary    - If true, contribution grows with salary
  * @returns {Array<{year, patrimonioInicio, aportacionAnual, rentabilidadGenerada, patrimonioFin, totalAportaciones, interesCompuestoTotal}>}
  */
 export const buildProjectionTable = ({
@@ -385,13 +532,13 @@ export const buildProjectionTable = ({
 };
 
 /**
- * Calcula el año FIRE: cuando los rendimientos anuales proyectados
- * cubren los gastos anuales del usuario
+ * Calculates FIRE year: when projected annual returns
+ * cover the user's annual expenses
  *
- * @param {Array}  projectionTable  - Output de buildProjectionTable()
- * @param {number} annualExpenses   - Gastos anuales en € (gastos_fijos + variables) × 12
- * @param {number} annualRate       - Tasa de rentabilidad anual usada en la proyección
- * @returns {number|null} Año FIRE o null si no se alcanza en el horizonte
+ * @param {Array}  projectionTable  - Output from buildProjectionTable()
+ * @param {number} annualExpenses   - Annual expenses in € (fixed + variable expenses) × 12
+ * @param {number} annualRate       - Annual return rate used in projection
+ * @returns {number|null} FIRE year or null if not reached within horizon
  */
 export const calcFIREYear = (projectionTable, annualExpenses, annualRate) => {
   return projectionTable.find(
@@ -400,19 +547,19 @@ export const calcFIREYear = (projectionTable, annualExpenses, annualRate) => {
 };
 
 /**
- * Calcula el patrimonio neto actual desde un array de snapshots
- * @param {Array<{value: number}>} snapshots - Snapshots del mes actual
- * @returns {number} Patrimonio neto (activos positivos + pasivos negativos)
+ * Calculates current net worth from an array of snapshots
+ * @param {Array<{value: number}>} snapshots - Current month snapshots
+ * @returns {number} Net worth (positive assets + negative liabilities)
  */
 export const calcNetWorth = (snapshots) =>
   snapshots.reduce((sum, s) => sum + s.value, 0);
 
 /**
- * Tasa de ahorro mensual
- * @param {number} totalIncome    - Ingresos netos totales mensuales
- * @param {number} fixedExpenses  - Gastos fijos mensuales
- * @param {number} varExpenses    - Gastos variables mensuales (estimados)
- * @returns {number} Tasa de ahorro entre 0 y 1
+ * Monthly savings rate
+ * @param {number} totalIncome    - Total monthly net income
+ * @param {number} fixedExpenses  - Monthly fixed expenses
+ * @param {number} varExpenses    - Monthly variable expenses (estimated)
+ * @returns {number} Savings rate between 0 and 1
  */
 export const calcSavingsRate = (totalIncome, fixedExpenses, varExpenses = 0) => {
   if (totalIncome <= 0) return 0;
@@ -421,102 +568,129 @@ export const calcSavingsRate = (totalIncome, fixedExpenses, varExpenses = 0) => 
 };
 
 /**
- * Cashflow libre mensual
- * @param {number} totalIncome         - Ingresos netos totales
- * @param {number} fixedExpenses       - Gastos fijos mensuales
- * @param {number} monthlyInvestment   - Aportación mensual a inversión
- * @returns {number} Cashflow libre (puede ser negativo)
+ * Monthly free cashflow
+ * @param {number} totalIncome         - Total net income
+ * @param {number} fixedExpenses       - Monthly fixed expenses
+ * @param {number} monthlyInvestment   - Monthly investment contribution
+ * @returns {number} Free cashflow (can be negative)
  */
 export const calcFreeCashflow = (totalIncome, fixedExpenses, monthlyInvestment) =>
   totalIncome - fixedExpenses - monthlyInvestment;
-9.4 Constantes por Defecto — src/lib/constants.js
-javascript// src/lib/constants.js
+```
+
+9.4 Default Constants — src/lib/constants.js
+
+```javascript
+// src/lib/constants.js
 
 export const DEFAULT_SETTINGS = {
-  // Rentabilidad inversiones
-  indexFundNominalReturn:  0.0600,  // 6.00% — MSCI World media histórica en EUR ajustada por costes
+  // Investment returns
+  indexFundNominalReturn:  0.0600,  // 6.00% — MSCI World historical average in EUR adjusted for costs
   indexFundRealReturn:     0.0400,  // 4.00% — Fisher: (1.06/1.02)-1 = 3.92% ≈ 4%
-  useRealReturn:           true,    // Proyecciones en poder adquisitivo constante por defecto
-  expectedInflation:       0.0200,  // 2.00% — Objetivo oficial BCE
-  pensionPlanReturn:       0.0350,  // 3.50% — PP conservador España (nominal)
-  savingsAccountReturn:    0.0250,  // 2.50% — Cuentas remuneradas España junio 2026
+  useRealReturn:           true,    // Projections in constant purchasing power by default
+  expectedInflation:       0.0200,  // 2.00% — Official ECB target
+  pensionPlanReturn:       0.0350,  // 3.50% — Conservative pension plan Spain (nominal)
+  savingsAccountReturn:    0.0250,  // 2.50% — Interest-bearing accounts Spain June 2026
 
-  // Proyección
+  // Projection
   projectionYears:         25,
-  annualSalaryIncrease:    0.0150,  // 1.50% — IPC objetivo menos descuento
+  annualSalaryIncrease:    0.0150,  // 1.50% — Inflation target minus discount
 
-  // Benchmarks de tasa de ahorro para alertas de color en dashboard
-  SAVINGS_RATE_GREEN:      0.20,    // ≥20% = verde
-  SAVINGS_RATE_YELLOW:     0.10,    // 10-20% = amarillo
-                                    // <10% = rojo
+  // Savings rate benchmarks for dashboard color alerts
+  SAVINGS_RATE_GREEN:      0.20,    // ≥20% = green
+  SAVINGS_RATE_YELLOW:     0.10,    // 10-20% = yellow
+                                    // <10% = red
 };
 
 export const ASSET_CATEGORIES = [
-  { value: 'bank',         label: 'Banco / Cuenta corriente' },
-  { value: 'investment',   label: 'Fondos indexados / ETF' },
-  { value: 'pension',      label: 'Plan de pensiones' },
-  { value: 'cash',         label: 'Efectivo' },
-  { value: 'real_estate',  label: 'Inmueble' },
-  { value: 'other',        label: 'Otro activo' },
+  { value: 'bank',         label: 'Bank / Current account' },
+  { value: 'investment',   label: 'Index funds / ETF' },
+  { value: 'pension',      label: 'Pension plan' },
+  { value: 'cash',         label: 'Cash' },
+  { value: 'real_estate',  label: 'Real estate' },
+  { value: 'other',        label: 'Other asset' },
 ];
 
 export const LIABILITY_CATEGORIES = [
-  { value: 'mortgage',      label: 'Hipoteca' },
-  { value: 'personal_loan', label: 'Préstamo personal' },
-  { value: 'credit_card',   label: 'Tarjeta de crédito' },
-  { value: 'family_debt',   label: 'Deuda familiar' },
-  { value: 'other',         label: 'Otra deuda' },
+  { value: 'mortgage',      label: 'Mortgage' },
+  { value: 'personal_loan', label: 'Personal loan' },
+  { value: 'credit_card',   label: 'Credit card' },
+  { value: 'family_debt',   label: 'Family debt' },
+  { value: 'other',         label: 'Other debt' },
 ];
 
 export const PROJECTION_SCENARIOS = {
   conservative: {
-    label:               'Conservador',
+    label:               'Conservative',
     indexFundRealReturn: 0.0300,
     expectedInflation:   0.0250,
     annualSalaryIncrease:0.0100,
   },
   moderate: {
-    label:               'Moderado',
+    label:               'Moderate',
     indexFundRealReturn: 0.0400,
     expectedInflation:   0.0200,
     annualSalaryIncrease:0.0150,
   },
   optimistic: {
-    label:               'Optimista',
+    label:               'Optimistic',
     indexFundRealReturn: 0.0600,
     expectedInflation:   0.0150,
     annualSalaryIncrease:0.0250,
   },
 };
+```
 
-10. API REST (Supabase)
-Supabase auto-genera una API REST para cada tabla con Row Level Security (RLS) activado. El cliente en React usa el SDK @supabase/supabase-js. Toda la lógica de negocio vive en el frontend (calculations.js) o en Edge Functions para operaciones críticas.
-10.1 Endpoints Principales
-EndpointMétodoAuthDescripción/rest/v1/user_settingsGET / PATCHJWTObtener o actualizar parámetros financieros/rest/v1/assetsGET / POST / PATCH / DELETEJWTCRUD de activos/rest/v1/liabilitiesGET / POST / PATCH / DELETEJWTCRUD de pasivos/rest/v1/monthly_snapshotsGET / POSTJWTObtener histórico o insertar cierre mensual/rest/v1/profilesGET / PATCHJWTPerfil del usuario/auth/v1/signupPOSTanon keyRegistro con email + contraseña/auth/v1/tokenPOSTanon keyLogin, obtener JWT/functions/v1/migrate-localPOSTJWTEdge Function: migrar localStorage → Supabase
-10.2 Seguridad — Row Level Security (RLS)
-sql-- Activar RLS en todas las tablas
+10. REST API (Supabase)
+
+Supabase auto-generates a REST API for each table with Row Level Security (RLS) enabled. The React client uses the @supabase/supabase-js SDK. All business logic lives in the frontend (calculations.js) or in Edge Functions for critical operations.
+
+10.1 Main Endpoints
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| /rest/v1/user_settings | GET / PATCH | JWT | Get or update financial parameters |
+| /rest/v1/assets | GET / POST / PATCH / DELETE | JWT | Assets CRUD |
+| /rest/v1/liabilities | GET / POST / PATCH / DELETE | JWT | Liabilities CRUD |
+| /rest/v1/monthly_snapshots | GET / POST | JWT | Get history or insert monthly close |
+| /rest/v1/profiles | GET / PATCH | JWT | User profile |
+| /auth/v1/signup | POST | anon key | Registration with email + password |
+| /auth/v1/token | POST | anon key | Login, obtain JWT |
+| /functions/v1/migrate-local | POST | JWT | Edge Function: migrate localStorage → Supabase |
+
+10.2 Security — Row Level Security (RLS)
+
+```sql
+-- Enable RLS on all tables
 ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE assets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE liabilities ENABLE ROW LEVEL SECURITY;
 ALTER TABLE monthly_snapshots ENABLE ROW LEVEL SECURITY;
 
--- Política estándar: el usuario solo puede acceder a sus propios datos
+-- Standard policy: user can only access their own data
 CREATE POLICY "user_own_data" ON user_settings
   FOR ALL USING (auth.uid() = user_id);
 
--- (Repetir para assets, liabilities, monthly_snapshots)
+-- (Repeat for assets, liabilities, monthly_snapshots)
+```
 
-⚠️ Nunca usar la service_role key en el frontend. Solo en Edge Functions o scripts de migración de servidor.
+**Never use the service_role key in the frontend.** Only in Edge Functions or server migration scripts.
 
-10.3 Cliente Supabase — src/lib/supabase.js
-javascriptimport { createClient } from '@supabase/supabase-js';
+10.3 Supabase Client — src/lib/supabase.js
+
+```javascript
+import { createClient } from '@supabase/supabase-js';
 
 export const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_ANON_KEY
 );
-10.4 Migración localStorage → Supabase
-javascript// src/lib/migrateLocalToSupabase.js
+```
+
+10.4 localStorage → Supabase Migration
+
+```javascript
+// src/lib/migrateLocalToSupabase.js
 import { supabase } from './supabase';
 import { useAppStore } from '../store/appStore';
 
@@ -555,22 +729,33 @@ export const migrateLocalToSupabase = async (userId) => {
       );
     }
 
-    // 5. Limpiar localStorage tras migración exitosa
+    // 5. Clear localStorage after successful migration
     localStorage.removeItem('financia_app_data');
     return { success: true };
 
   } catch (error) {
     console.error('Migration failed:', error);
-    // Los datos locales se conservan para reintentarlo en el próximo login
+    // Local data is kept to retry on next login
     return { success: false, error };
   }
 };
+```
 
-11. Autenticación y Persistencia Local
-11.1 Estados de Sesión
-EstadoDescripciónComportamientoguest_no_dataPrimera visita, sin datosMuestra onboarding stepperguest_with_dataCompletó onboarding, sin cuentaApp funcional con localStorage. Banner de guardado activoauthenticatedRegistrado y logueadoDatos en Supabase. Banner desaparece. Sincronización activareturning_guestTiene localStorage de sesión anteriorCarga datos locales directamente, sin onboarding
-11.2 Zustand Store Principal
-javascript// src/store/appStore.js
+11. Authentication and Local Persistence
+
+11.1 Session States
+
+| State | Description | Behavior |
+|-------|-------------|----------|
+| guest_no_data | First visit, no data | Shows onboarding stepper |
+| guest_with_data | Completed onboarding, no account | App functional with localStorage. Save banner active |
+| authenticated | Registered and logged in | Data in Supabase. Banner gone. Active sync |
+| returning_guest | Has localStorage from previous session | Loads local data directly, no onboarding |
+
+11.2 Main Zustand Store
+
+```javascript
+// src/store/appStore.js
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -586,7 +771,7 @@ export const useAppStore = create(
       bannerDismissed: false,
       activeMinutes: 0,
 
-      // Datos financieros
+      // Financial data
       settings: null,       // user_settings
       assets: [],           // assets[]
       liabilities: [],      // liabilities[]
@@ -615,49 +800,50 @@ export const useAppStore = create(
     }
   )
 );
+```
 
-12. Roadmap de Iteraciones
-Iteración 1 — MVP (4-6 semanas)
+12. Iteration Roadmap
 
- Onboarding stepper (5 pasos) + persistencia localStorage
- Dashboard con 6 KPIs + gráfico evolución PN + barra cashflow
- Balance patrimonial: CRUD activos y pasivos + cierre mensual + tabla histórica
- Proyección futura: motor de cálculo + gráfico + tabla anual
- Parámetros configurables con valores por defecto justificados
- Auth básica Supabase (registro + login) + migración datos locales
- Banner "guardar progreso"
+**Iteration 1 — MVP (4–6 weeks)**
 
-Iteración 2 — Enriquecimiento (3-4 semanas)
+- Onboarding stepper (5 steps) + localStorage persistence
+- Dashboard with 6 KPIs + net worth evolution chart + cashflow bar
+- Net worth balance: assets and liabilities CRUD + monthly close + historical table
+- Future projection: calculation engine + chart + annual table
+- Configurable parameters with justified defaults
+- Basic Supabase auth (signup + login) + local data migration
+- "Save progress" banner
 
- Indicador FIRE con hito visual en gráfico de proyección
- Alertas inteligentes en dashboard
- Donut chart distribución de activos
- Modo oscuro
- PWA para acceso móvil sin instalación
- Exportar balance a PDF / CSV
+**Iteration 2 — Enrichment (3–4 weeks)**
 
-Iteración 3 — Potencia (4-6 semanas)
+- FIRE indicator with visual milestone on projection chart
+- Smart alerts on dashboard
+- Donut chart asset distribution
+- Dark mode
+- PWA for mobile access without installation
+- Export balance to PDF / CSV
 
- Seguimiento de inversiones: rentabilidades reales vs. estimadas
- Calculadora de amortización anticipada de hipoteca
- Módulo de metas financieras (fondo emergencia, compra, viaje...)
- Notificación mensual para cerrar el mes
+**Iteration 3 — Power features (4–6 weeks)**
 
-Iteración 4 — Avanzado
+- Investment tracking: actual vs. estimated returns
+- Early mortgage amortization calculator
+- Financial goals module (emergency fund, purchase, travel...)
+- Monthly notification to close the month
 
- Importación extractos bancarios CSV/OFX
- Análisis de gastos por categoría (gráficos Sankey)
- Multi-divisa básico (USD, GBP con tipo de cambio)
- Modo familia: varios perfiles bajo una cuenta
+**Iteration 4 — Advanced**
 
-
-Notas para Cursor AI
-
-Cómo usar este documento eficientemente:
+- Bank statement import CSV/OFX
+- Expense analysis by category (Sankey charts)
+- Basic multi-currency (USD, GBP with exchange rate)
+- Family mode: multiple profiles under one account
 
 
-Empieza siempre pasando la Sección 3 (modelo de datos) y la Sección 9 (motor de cálculos) como contexto base antes de construir cualquier módulo.
-Por módulo: añade la sección correspondiente (4 para onboarding, 5 para dashboard, etc.) al contexto cuando vayas a construir ese módulo.
-El archivo calculations.js de la sección 9.3 debe crearse primero y no debe importar nada de fuera de lib/. Es la fuente de verdad matemática de toda la app.
-Los defaults de constants.js (sección 9.4) son los valores que poblarán user_settings cuando un usuario nuevo complete el onboarding.
-RLS en Supabase debe activarse antes de hacer cualquier prueba con datos reales (sección 10.2).
+Notes for Cursor AI
+
+How to use this document efficiently:
+
+- Always start by passing Section 3 (data model) and Section 9 (calculation engine) as base context before building any module.
+- Per module: add the corresponding section (4 for onboarding, 5 for dashboard, etc.) to context when building that module.
+- The calculations.js file in section 9.3 must be created first and must not import anything from outside lib/. It is the mathematical source of truth for the entire app.
+- The constants.js defaults (section 9.4) are the values that will populate user_settings when a new user completes onboarding.
+- RLS in Supabase must be enabled before any testing with real data (section 10.2).

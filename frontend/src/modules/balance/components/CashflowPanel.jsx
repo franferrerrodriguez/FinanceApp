@@ -1,10 +1,22 @@
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import { PercentRow } from '../../../components/PercentRow';
+import { CashflowTramosSection } from '../../../components/CashflowTramosSection';
 import {
-  calcTotalFixedExpenses,
-  calcTotalIncome,
-  calcTotalVariableExpenses,
+  createCashflowEntryFromSettings,
+  getCashflowTotalsForDate,
+  getCurrentMonthKey,
+} from '../../../lib/cashflowHistory';
+import { ui } from '../../../lib/uiClasses';
+import { useFinanceData } from '../../../store/hooks';
+import { formatMoney, formatPercent } from '../../../utils/formatters';
+import { AnnualExpensesSection } from '../../../components/AnnualExpensesSection';
+import { EmergencyFundSection } from '../../../components/EmergencyFundSection';
+import { FinanceAlerts } from '../../../components/FinanceAlerts';
+import { useFinanceAlerts } from '../../../hooks/useFinanceAlerts';
+import { ExpenseSubtotals } from '../../onboarding/components/ExpenseSubtotals';
+import { SharedExpenseBlock } from '../../onboarding/components/SharedExpenseBlock';
+import {
   getEffectiveGroceries,
   getEffectiveHouseholdExpenses,
   getEffectiveLeisureExpenses,
@@ -14,17 +26,12 @@ import {
   getLeisureTotal,
   getMortgageRentTotal,
 } from '../../../lib/calculations';
-import { allocateEurosByWeights } from '../../../lib/money';
-import { ui } from '../../../lib/uiClasses';
-import { useFinanceData } from '../../../store/hooks';
-import { formatMoney, formatPercent } from '../../../utils/formatters';
-import { AnnualExpensesSection } from '../../../components/AnnualExpensesSection';
-import { EmergencyFundSection } from '../../../components/EmergencyFundSection';
-import { SalaryFields } from '../../../components/SalaryFields';
-import { SalaryHistorySection } from '../../../components/SalaryHistorySection';
-import { MoneyField } from '../../onboarding/components/MoneyField';
-import { ExpenseSubtotals } from '../../onboarding/components/ExpenseSubtotals';
-import { SharedExpenseBlock } from '../../onboarding/components/SharedExpenseBlock';
+import {
+  isLikelyAutoAllocatedBreakdown,
+  patchExpenseViewMode,
+} from '../../../lib/expenseViewMode';
+import { DetailedHouseholdBreakdown } from '../../onboarding/components/DetailedHouseholdBreakdown';
+import { ExpenseViewToggle } from '../../onboarding/components/ExpenseViewToggle';
 
 export function CashflowPanel() {
   const { t } = useTranslation();
@@ -32,86 +39,63 @@ export function CashflowPanel() {
     settings,
     setSettings,
     annualExpenses,
-    salaryHistory,
+    cashflowHistory,
     addAnnualExpense,
     updateAnnualExpense,
     removeAnnualExpense,
-    addSalaryHistoryEntry,
-    updateSalaryHistoryEntry,
-    removeSalaryHistoryEntry,
+    addCashflowHistoryEntry,
+    updateCashflowHistoryEntry,
+    removeCashflowHistoryEntry,
   } = useFinanceData();
+  const { alerts } = useFinanceAlerts();
 
-  const income = calcTotalIncome(settings);
-  const fixed = calcTotalFixedExpenses(settings);
-  const leisure = calcTotalVariableExpenses(settings);
-  const savingsFromSalary = income - fixed - leisure;
-  const savingsRate = income > 0 ? Math.max(0, savingsFromSalary / income) : 0;
+  useEffect(() => {
+    if (cashflowHistory.length > 0) return;
+    addCashflowHistoryEntry(
+      createCashflowEntryFromSettings(settings, getCurrentMonthKey()),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- bootstrap once
+  }, [cashflowHistory.length, addCashflowHistoryEntry]);
+
+  const totals = useMemo(
+    () => getCashflowTotalsForDate(settings, cashflowHistory, new Date()),
+    [settings, cashflowHistory],
+  );
+
   const detailed = settings.useDetailedExpenses ?? false;
 
+  useEffect(() => {
+    if (!detailed || !isLikelyAutoAllocatedBreakdown(settings)) return;
+    setSettings(patchExpenseViewMode(settings, true));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- clear legacy auto-split once
+  }, []);
+
   const toggleDetailed = () => {
-    const next = !detailed;
-    if (next && (settings.householdFixedEstimate ?? 0) > 0) {
-      const total = settings.householdFixedEstimate;
-      const [utilities, insurance, subscriptions, otherFixedExpenses] =
-        allocateEurosByWeights(total, [40, 35, 15, 10]);
-      setSettings({
-        useDetailedExpenses: true,
-        utilities,
-        insurance,
-        subscriptions,
-        otherFixedExpenses,
-      });
-    } else {
-      setSettings({ useDetailedExpenses: next });
-    }
+    setSettings(patchExpenseViewMode(settings, !detailed));
   };
 
   return (
-    <div className="space-y-6">
-      <div className={`${ui.chartCard} grid gap-3 sm:grid-cols-2 lg:grid-cols-4`}>
-        <Stat label={t('balance.cashflow.income')} value={formatMoney(income)} />
-        <Stat label={t('balance.cashflow.fixed')} value={formatMoney(fixed)} />
-        <Stat label={t('balance.cashflow.leisure')} value={formatMoney(leisure)} />
-        <Stat
-          label={t('balance.cashflow.savings')}
-          value={formatMoney(savingsFromSalary)}
-          sub={formatPercent(savingsRate)}
-        />
+    <div className={ui.stackPage}>
+      {alerts.length > 0 ? (
+        <FinanceAlerts alerts={alerts} className={ui.chartCard} />
+      ) : null}
+
+      <div className={`${ui.chartCard} ${ui.stackSection}`}>
+        <p className={`text-sm ${ui.textMuted}`}>{t('balance.cashflow.summaryHint')}</p>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <Stat label={t('balance.cashflow.income')} value={formatMoney(totals.income)} />
+          <Stat label={t('balance.cashflow.fixed')} value={formatMoney(totals.fixed)} />
+          <Stat label={t('balance.cashflow.leisure')} value={formatMoney(totals.leisure)} />
+          <Stat
+            label={t('balance.cashflow.savings')}
+            value={formatMoney(totals.savings)}
+            sub={formatPercent(totals.savingsRate)}
+          />
+        </div>
       </div>
 
-      <section className={`${ui.chartCard} space-y-5`}>
-        <div>
-          <h3 className={`text-base font-semibold ${ui.heading}`}>
-            {t('balance.cashflow.incomeTitle')}
-          </h3>
-          <p className={`mt-1 text-sm ${ui.textMuted}`}>
-            {t('balance.cashflow.incomeSubtitle')}
-          </p>
-        </div>
-        <div className="grid gap-5 lg:grid-cols-2">
-          <SalaryFields
-            settings={settings}
-            setSettings={setSettings}
-            idPrefix="balance"
-          />
-          <MoneyField
-            id="balance-other-income"
-            label={t('onboarding.income.otherIncome')}
-            hint={t('onboarding.income.otherIncomeHint')}
-            value={settings.otherMonthlyIncome}
-            onChange={(v) => setSettings({ otherMonthlyIncome: v })}
-          />
-        </div>
-        <SalaryHistorySection
-          items={salaryHistory}
-          onAdd={addSalaryHistoryEntry}
-          onUpdate={updateSalaryHistoryEntry}
-          onRemove={removeSalaryHistoryEntry}
-        />
-      </section>
-
-      <section className={`${ui.chartCard} space-y-4`}>
-        <div>
+      <section className={`${ui.chartCard} ${ui.stackSection}`}>
+        <div className={`border-b pb-3 ${ui.divider}`}>
           <h3 className={`text-base font-semibold ${ui.heading}`}>
             {t('balance.cashflow.expensesTitle')}
           </h3>
@@ -120,6 +104,7 @@ export function CashflowPanel() {
           </p>
         </div>
 
+        <div className={ui.stackBlocks}>
         <SharedExpenseBlock
           id="balance-mortgage"
           label={t('onboarding.expenses.mortgageRentTotal')}
@@ -188,57 +173,38 @@ export function CashflowPanel() {
             setSettings({ leisureEstimate: v, leisureIsEstimate: true })
           }
           onSharedChange={(v) => setSettings({ leisureShared: v })}
-          onPercentChange={(v) => setSettings({ leisureYourSharePercent: v })}
+          onPercentChange={(v) =>
+            setSettings({ leisureYourSharePercent: v })
+          }
         />
 
-        <button
-          type="button"
-          onClick={toggleDetailed}
-          className={`text-sm font-medium ${ui.accentSoft} hover:underline`}
-        >
-          {detailed
-            ? t('onboarding.expenses.useSimpleView')
-            : t('onboarding.expenses.useDetailedView')}
-        </button>
+        <ExpenseViewToggle detailed={detailed} onToggle={toggleDetailed} />
 
         {detailed ? (
-          <div className="grid gap-4 sm:grid-cols-2">
-            <MoneyField
-              id="balance-utilities"
-              label={t('onboarding.expenses.utilities')}
-              value={settings.utilities}
-              onChange={(v) => setSettings({ utilities: v })}
-            />
-            <MoneyField
-              id="balance-insurance"
-              label={t('onboarding.expenses.insurance')}
-              value={settings.insurance}
-              onChange={(v) => setSettings({ insurance: v })}
-            />
-            <MoneyField
-              id="balance-subscriptions"
-              label={t('onboarding.expenses.subscriptions')}
-              value={settings.subscriptions}
-              onChange={(v) => setSettings({ subscriptions: v })}
-            />
-            <MoneyField
-              id="balance-other-fixed"
-              label={t('onboarding.expenses.otherFixed')}
-              value={settings.otherFixedExpenses}
-              onChange={(v) => setSettings({ otherFixedExpenses: v })}
-            />
-          </div>
+          <DetailedHouseholdBreakdown
+            settings={settings}
+            setSettings={setSettings}
+          />
         ) : null}
 
-        <div className={`rounded-xl ${ui.cardInset}`}>
-          <ExpenseSubtotals settings={settings} />
+        <ExpenseSubtotals settings={settings} />
         </div>
+      </section>
 
-        <AnnualExpensesSection
-          items={annualExpenses}
-          onAdd={addAnnualExpense}
-          onUpdate={updateAnnualExpense}
-          onRemove={removeAnnualExpense}
+      <AnnualExpensesSection
+        items={annualExpenses}
+        onAdd={addAnnualExpense}
+        onUpdate={updateAnnualExpense}
+        onRemove={removeAnnualExpense}
+      />
+
+      <section className={`${ui.chartCard} ${ui.stackSection}`}>
+        <CashflowTramosSection
+          items={cashflowHistory}
+          settings={settings}
+          onAdd={addCashflowHistoryEntry}
+          onUpdate={updateCashflowHistoryEntry}
+          onRemove={removeCashflowHistoryEntry}
         />
       </section>
 
@@ -247,68 +213,13 @@ export function CashflowPanel() {
         setSettings={setSettings}
         annualExpenses={annualExpenses}
       />
-
-      <section className={`${ui.chartCard} space-y-4`}>
-        <div>
-          <h3 className={`text-base font-semibold ${ui.heading}`}>
-            {t('balance.cashflow.projectionGrowthTitle')}
-          </h3>
-          <p className={`mt-1 text-sm ${ui.textMuted}`}>
-            {t('balance.cashflow.projectionGrowthSubtitle')}
-          </p>
-        </div>
-        <div className={`divide-y ${ui.divider}`}>
-          <PercentRow
-            label={t('balance.cashflow.expenseIncrease')}
-            hint={t('balance.cashflow.expenseIncreaseHint')}
-            value={settings.projectionAnnualExpenseIncrease}
-            onChange={(v) =>
-              setSettings({ projectionAnnualExpenseIncrease: v })
-            }
-          />
-        </div>
-        <label className="block">
-          <span className={`mb-1.5 block text-sm font-medium ${ui.textLabel}`}>
-            {t('balance.cashflow.initialPatrimony')}
-          </span>
-          <input
-            type="number"
-            min={0}
-            step="100"
-            value={settings.initialPatrimony ?? 0}
-            onChange={(e) =>
-              setSettings({
-                initialPatrimony: Math.max(0, parseFloat(e.target.value) || 0),
-              })
-            }
-            className={`${ui.input} ${ui.inputCompact} max-w-xs`}
-          />
-        </label>
-      </section>
-
-      <p className={`text-sm ${ui.textMuted}`}>
-        {t('balance.cashflow.usedBy')}{' '}
-        <Link
-          to="/proyeccion"
-          className="font-medium text-emerald-600 hover:underline dark:text-emerald-400"
-        >
-          {t('nav.projection')}
-        </Link>
-        {' · '}
-        <Link
-          to="/dashboard"
-          className="font-medium text-emerald-600 hover:underline dark:text-emerald-400"
-        >
-          {t('nav.dashboard')}
-        </Link>
-      </p>
     </div>
   );
 }
 
 function Stat({ label, value, sub }) {
   return (
-    <div className={`rounded-xl border px-3 py-2.5 ${ui.cardMuted}`}>
+    <div className={`${ui.block} px-3 py-2.5`}>
       <p className={`text-xs ${ui.textMuted}`}>{label}</p>
       <p className={`mt-0.5 text-lg font-bold tabular-nums ${ui.heading}`}>
         {value}

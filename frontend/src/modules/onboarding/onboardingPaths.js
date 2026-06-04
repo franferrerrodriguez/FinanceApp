@@ -1,6 +1,6 @@
 import { ONBOARDING_STEP_IDS } from './constants';
 
-/** Slug en URL por índice de paso (0 = solo `/onboarding`). */
+/** URL slug by step index (0 = `/onboarding` only). */
 const STEP_TO_SLUG = {
   0: null,
   1: 'income',
@@ -19,14 +19,14 @@ export function onboardingPathForStep(stepIndex) {
   return slug ? `/onboarding/${slug}` : '/onboarding';
 }
 
-/** @returns {number | null} índice del paso, o null si el slug no es válido */
+/** @returns {number | null} step index, or null if slug is invalid */
 export function onboardingStepFromSlug(stepSlug) {
   if (!stepSlug) return 0;
   const step = SLUG_TO_STEP[stepSlug];
   return step !== undefined ? step : null;
 }
 
-/** @returns {number | null} índice del paso, o null si el slug no es válido */
+/** @returns {number | null} step index, or null if slug is invalid */
 export function onboardingStepFromPathname(pathname) {
   const base = '/onboarding';
   if (pathname === base || pathname === `${base}/`) return 0;

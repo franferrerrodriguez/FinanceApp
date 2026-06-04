@@ -7,7 +7,7 @@ import {
 } from '../lib/theme';
 import { useAppStore } from '../store/appStore';
 
-/** Aplica locale y tema del store al DOM e i18n. */
+/** Applies store locale and theme to the DOM and i18n. */
 export function useAppPreferencesSync() {
   const locale = useAppStore((s) => s.locale);
   const theme = useAppStore((s) => s.theme);

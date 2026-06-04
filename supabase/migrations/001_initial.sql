@@ -1,7 +1,7 @@
--- FinanciaApp — esquema inicial + RLS
--- Ejecutar en Supabase SQL Editor (proyecto nuevo o vacío)
+-- FinanciaApp — initial schema + RLS
+-- Run in Supabase SQL Editor (new or empty project)
 
--- Perfil (1:1 con auth.users)
+-- Profile (1:1 with auth.users)
 CREATE TABLE IF NOT EXISTS profiles (
   id         UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   name       TEXT,
@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Parámetros financieros + extensiones JSON del cliente
+-- Financial parameters + client JSON extensions
 CREATE TABLE IF NOT EXISTS user_settings (
   id                          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id                     UUID REFERENCES profiles(id) ON DELETE CASCADE UNIQUE NOT NULL,
@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS monthly_snapshots (
   UNIQUE(liability_id, snapshot_date)
 );
 
--- Perfil automático al registrarse
+-- Auto-create profile on sign-up
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER
 LANGUAGE plpgsql

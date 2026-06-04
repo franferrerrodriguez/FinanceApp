@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import {
   CONTRIBUTION_CATEGORIES,
   PROVIDER_META,
@@ -46,8 +45,8 @@ export function ContributionsPanel() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className={`${ui.chartCard} space-y-4`}>
+    <div className={ui.stackPage}>
+      <div className={`${ui.chartCard} ${ui.stackSection}`}>
         <div>
           <h3 className={`text-base font-semibold ${ui.heading}`}>
             {t('balance.contributions.title')}
@@ -68,56 +67,70 @@ export function ContributionsPanel() {
             hint={t('balance.contributions.weightedReturnHint')}
           />
         </div>
+
+        <label className="block max-w-xs">
+          <span className={`mb-1.5 block text-sm font-medium ${ui.textLabel}`}>
+            {t('balance.contributions.initialPatrimony')}
+          </span>
+          <span className={`mb-2 block text-xs ${ui.textMuted}`}>
+            {t('balance.contributions.initialPatrimonyHint')}
+          </span>
+          <input
+            type="number"
+            min={0}
+            step="100"
+            value={settings.initialPatrimony ?? 0}
+            onChange={(e) =>
+              setSettings({
+                initialPatrimony: Math.max(0, parseFloat(e.target.value) || 0),
+              })
+            }
+            className={`${ui.input} ${ui.inputAmount}`}
+          />
+        </label>
       </div>
 
-      {contributionPlans.length === 0 ? (
-        <div className={`p-8 text-center ${ui.cardDashed}`}>
-          <p className={ui.text}>{t('balance.contributions.empty')}</p>
-          <button
-            type="button"
-            className={`mt-4 ${ui.btnPrimary} px-6`}
-            onClick={handleAdd}
-          >
-            {t('balance.contributions.addFirst')}
-          </button>
+      <section className={`${ui.chartCard} ${ui.stackSection}`}>
+        <div className={`border-b pb-3 ${ui.divider}`}>
+          <h3 className={`text-base font-semibold ${ui.heading}`}>
+            {t('balance.contributions.plansTitle')}
+          </h3>
+          <p className={`mt-1 text-sm ${ui.textMuted}`}>
+            {t('balance.contributions.plansSubtitle')}
+          </p>
         </div>
-      ) : (
-        <ul className="space-y-4">
-          {contributionPlans.map((plan) => (
-            <ContributionPlanCard
-              key={plan.id}
-              plan={plan}
-              settings={settings}
-              onChange={(patch) => updateContributionPlan(plan.id, patch)}
-              onRemove={() => removeContributionPlan(plan.id)}
-            />
-          ))}
-        </ul>
-      )}
 
-      {contributionPlans.length > 0 ? (
-        <button type="button" className={ui.btnSecondary} onClick={handleAdd}>
-          {t('balance.contributions.addAnother')}
-        </button>
-      ) : null}
+        {contributionPlans.length === 0 ? (
+          <div className={`px-6 py-8 text-center ${ui.cardDashed}`}>
+            <p className={ui.text}>{t('balance.contributions.empty')}</p>
+            <button
+              type="button"
+              className={`mt-4 ${ui.btnPrimary}`}
+              onClick={handleAdd}
+            >
+              {t('balance.contributions.addFirst')}
+            </button>
+          </div>
+        ) : (
+          <ul className={ui.stackBlocks}>
+            {contributionPlans.map((plan) => (
+              <ContributionPlanCard
+                key={plan.id}
+                plan={plan}
+                settings={settings}
+                onChange={(patch) => updateContributionPlan(plan.id, patch)}
+                onRemove={() => removeContributionPlan(plan.id)}
+              />
+            ))}
+          </ul>
+        )}
 
-      <p className={`text-sm ${ui.textMuted}`}>
-        {t('balance.contributions.incomeLink')}{' '}
-        <Link
-          to="/balance?tab=cashflow"
-          className="font-medium text-emerald-600 underline-offset-2 hover:underline dark:text-emerald-400"
-        >
-          {t('balance.tabs.cashflow')}
-        </Link>
-        {' · '}
-        {t('balance.contributions.projectionLink')}{' '}
-        <Link
-          to="/proyeccion"
-          className="font-medium text-emerald-600 underline-offset-2 hover:underline dark:text-emerald-400"
-        >
-          {t('nav.projection')}
-        </Link>
-      </p>
+        {contributionPlans.length > 0 ? (
+          <button type="button" className={ui.btnSecondary} onClick={handleAdd}>
+            {t('balance.contributions.addAnother')}
+          </button>
+        ) : null}
+      </section>
     </div>
   );
 }
@@ -127,7 +140,7 @@ function ContributionPlanCard({ plan, settings, onChange, onRemove }) {
   const planReturn = getPlanAnnualReturn(settings, plan);
 
   return (
-    <li className={`${ui.chartCard} space-y-4`}>
+    <li className={`${ui.block} ${ui.stackSection}`}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <label className="flex items-center gap-2">
           <input
@@ -149,7 +162,7 @@ function ContributionPlanCard({ plan, settings, onChange, onRemove }) {
         </button>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Field label={t('balance.contributions.provider')}>
           <select
             value={plan.providerId}
@@ -191,7 +204,7 @@ function ContributionPlanCard({ plan, settings, onChange, onRemove }) {
             value={plan.label ?? ''}
             placeholder={t(`balance.providers.${plan.providerId}`)}
             onChange={(e) => onChange({ label: e.target.value })}
-            className={ui.input}
+            className={`${ui.input} ${ui.inputMedium}`}
           />
         </Field>
 
@@ -206,7 +219,7 @@ function ContributionPlanCard({ plan, settings, onChange, onRemove }) {
                 monthlyAmount: Math.max(0, parseFloat(e.target.value) || 0),
               })
             }
-            className={ui.input}
+            className={`${ui.input} ${ui.inputAmount}`}
           />
         </Field>
 
@@ -238,7 +251,7 @@ function ContributionPlanCard({ plan, settings, onChange, onRemove }) {
                   rampPerMonth: Math.max(0, parseFloat(e.target.value) || 0),
                 })
               }
-              className={ui.input}
+              className={`${ui.input} ${ui.inputAmount}`}
             />
           </Field>
         ) : null}
@@ -288,7 +301,7 @@ function PercentInput({ value, onChange, allowEmpty = false }) {
     value == null && allowEmpty ? '' : pctToDisplay(value ?? 0);
 
   return (
-    <div className="relative">
+    <div className="relative inline-block shrink-0">
       <input
         type="number"
         step="0.1"
@@ -304,10 +317,10 @@ function PercentInput({ value, onChange, allowEmpty = false }) {
           }
           onChange(displayToPct(raw) ?? 0);
         }}
-        className={`${ui.input} pr-9`}
+        className={`${ui.inputPercent} pr-7`}
       />
       <span
-        className={`pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm ${ui.textMuted}`}
+        className={`pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs ${ui.textMuted}`}
       >
         %
       </span>
@@ -317,7 +330,7 @@ function PercentInput({ value, onChange, allowEmpty = false }) {
 
 function Stat({ label, value, hint }) {
   return (
-    <div className={`rounded-xl border px-4 py-3 ${ui.cardMuted}`}>
+    <div className={`${ui.block} px-3 py-2.5`}>
       <p className={`text-xs font-medium ${ui.textMuted}`}>{label}</p>
       <div className={`mt-1 text-lg font-bold ${ui.heading}`}>{value}</div>
       {hint ? <p className={`mt-1 text-xs ${ui.textMuted}`}>{hint}</p> : null}

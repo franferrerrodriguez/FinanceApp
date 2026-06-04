@@ -43,7 +43,7 @@ export function SharePercentInput({ id, value, onChange }) {
         setDraft(raw);
         if (raw !== '') commit(raw);
       }}
-      className={`w-20 py-2 text-center ${ui.input}`}
+      className={`${ui.inputPercent} text-center`}
     />
   );
 }

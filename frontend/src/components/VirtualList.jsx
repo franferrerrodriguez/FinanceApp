@@ -7,7 +7,7 @@ function assignRef(ref, el) {
 }
 
 /**
- * Lista virtual con un único contenedor overflow-auto (vertical + horizontal).
+ * Virtual list with a single overflow-auto container (vertical + horizontal).
  * Evita scroll anidado que obliga a “hacer scroll dos veces”.
  */
 export function VirtualList({
@@ -19,6 +19,7 @@ export function VirtualList({
   minWidth,
   overscan = 6,
   className = '',
+  scrollClassName = '',
   scrollRef,
   onScroll: onScrollProp,
   children,
@@ -55,7 +56,7 @@ export function VirtualList({
   return (
     <div
       ref={setScrollRef}
-      className={`overflow-auto overscroll-contain ${className}`}
+      className={`w-full max-w-full overflow-auto overscroll-contain ${scrollClassName} ${className}`}
       style={{
         maxHeight,
         WebkitOverflowScrolling: 'touch',
@@ -63,9 +64,10 @@ export function VirtualList({
       onScroll={onScroll}
     >
       <div
+        className={minWidth ? 'w-full' : undefined}
         style={{
           minWidth: minWidth ?? undefined,
-          width: minWidth ? 'max-content' : '100%',
+          width: '100%',
         }}
       >
         {header ? (

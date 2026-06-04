@@ -17,7 +17,7 @@ function ChevronIcon() {
   );
 }
 
-/** Select nativo con flecha visible y padding derecho cómodo. */
+/** Native select with visible arrow and comfortable right padding. */
 export function SelectField({ id, className = '', wrapperClassName = '', children, ...props }) {
   return (
     <div className={`relative ${wrapperClassName}`}>

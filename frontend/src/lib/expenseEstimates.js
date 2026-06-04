@@ -5,7 +5,7 @@ import {
   getMortgageRentTotal,
 } from './calculations';
 
-/** Hay importes que son medias orientativas (vista simple u ocio). */
+/** Some amounts are indicative averages (simple view or leisure). */
 export function hasEstimatedFixedExpenses(settings) {
   if (!settings) return false;
 

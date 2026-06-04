@@ -1,4 +1,4 @@
-/** Proveedores predefinidos (Balance, aportaciones, activos). */
+/** Predefined providers (Balance, contributions, assets). */
 export const INVESTMENT_PROVIDER_IDS = [
   'indexa',
   'myinvestor',

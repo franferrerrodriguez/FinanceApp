@@ -14,7 +14,7 @@ export function AnnualExpensesSection({
   const { t } = useTranslation();
 
   return (
-    <section className={`${ui.chartCard} space-y-4 border-t-0`}>
+    <section className={`${ui.chartCard} ${ui.stackSection}`}>
       <div>
         <h3 className={`text-base font-semibold ${ui.heading}`}>
           {t('balance.cashflow.annualExpensesTitle')}
@@ -29,11 +29,11 @@ export function AnnualExpensesSection({
           {t('balance.cashflow.annualExpensesEmpty')}
         </p>
       ) : (
-        <ul className="space-y-3">
+        <ul className={ui.stackBlocks}>
           {items.map((item) => (
             <li
               key={item.id}
-              className={`rounded-xl border p-3 ${ui.cardMuted}`}
+              className={`${ui.block} ${ui.stackSection} p-4`}
             >
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <label className="block sm:col-span-2">
@@ -47,7 +47,7 @@ export function AnnualExpensesSection({
                       onUpdate(item.id, { name: e.target.value })
                     }
                     placeholder={t('balance.cashflow.annualExpenseNamePlaceholder')}
-                    className={`${ui.input} ${ui.inputCompact} w-full`}
+                    className={`${ui.input} ${ui.inputCompact} ${ui.inputMedium}`}
                   />
                 </label>
                 <label className="block">
@@ -64,7 +64,7 @@ export function AnnualExpensesSection({
                         amount: Math.max(0, parseFloat(e.target.value) || 0),
                       })
                     }
-                    className={`${ui.input} ${ui.inputCompact} w-full`}
+                    className={`${ui.input} ${ui.inputCompact} ${ui.inputAmount}`}
                   />
                 </label>
                 <label className="block">
@@ -78,7 +78,7 @@ export function AnnualExpensesSection({
                         month: parseInt(e.target.value, 10),
                       })
                     }
-                    className={`${ui.input} ${ui.inputCompact} w-full`}
+                    className={`${ui.input} ${ui.inputCompact} ${ui.inputNarrow}`}
                   >
                     {MONTH_OPTIONS.map((m) => (
                       <option key={m} value={m}>

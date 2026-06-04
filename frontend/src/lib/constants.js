@@ -55,17 +55,23 @@ export const DEFAULT_SETTINGS = {
 
 export const PROJECTION_YEARS_DEFAULT = 20;
 
-/** Vuelve a mostrar el aviso de registro tras pulsar «Más tarde». */
+/** Emergency fund runway choices (months of expenses). */
+export const EMERGENCY_FUND_MONTH_OPTIONS = [3, 4, 6, 9, 12, 18, 24];
+
+/** Typical expert guideline for stable employment (3–6 months; 6 is common). */
+export const EMERGENCY_FUND_RECOMMENDED_MONTHS = 6;
+
+/** Show register prompt again after user taps "Later". */
 export const SAVE_BANNER_SNOOZE_MS = 24 * 60 * 60 * 1000;
 
-/** Horizonte de proyección (1–50 años; default 20). */
+/** Projection horizon (1–50 years; default 20). */
 export function normalizeProjectionYears(value) {
   const n = Number(value);
   if (!Number.isFinite(n) || n < 1) return PROJECTION_YEARS_DEFAULT;
   return Math.min(50, Math.max(1, Math.round(n)));
 }
 
-/** Valores inválidos o legacy (p. ej. 2 de pruebas) → default de producto. */
+/** Invalid or legacy values (e.g. test value 2) → product default. */
 export function resolveProjectionYearsFromPersist(value) {
   const n = Number(value);
   if (!Number.isFinite(n) || n < 1) return PROJECTION_YEARS_DEFAULT;
@@ -90,7 +96,7 @@ export const LIABILITY_CATEGORY_VALUES = [
   'other',
 ];
 
-/** Solo ajustan rentabilidad de fondos; ingresos/gastos se editan en Patrimonio. */
+/** Only adjust fund returns; income/expenses are edited under Balance. */
 export const PROJECTION_SCENARIOS = {
   conservative: { indexFundRealReturn: 0.03 },
   moderate: { indexFundRealReturn: 0.04 },

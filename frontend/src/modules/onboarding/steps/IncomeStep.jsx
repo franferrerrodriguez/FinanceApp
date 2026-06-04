@@ -29,17 +29,28 @@ export function IncomeStep({ onBack, onNext }) {
       </p>
 
       <div className="space-y-5">
+        <div className="grid gap-5 sm:grid-cols-2 sm:items-start">
+          <MoneyField
+            id="onboarding-monthly-salary"
+            label={t('balance.cashflow.salaryNormalLabel')}
+            hint={t('balance.cashflow.salaryNormalHint')}
+            value={settings.monthlyNetSalary}
+            onChange={(v) => setSettings({ monthlyNetSalary: v })}
+            required
+          />
+          <MoneyField
+            id="other-monthly-income"
+            label={t('onboarding.income.otherIncome')}
+            hint={t('onboarding.income.otherIncomeHint')}
+            value={settings.otherMonthlyIncome}
+            onChange={(v) => setSettings({ otherMonthlyIncome: v })}
+          />
+        </div>
         <SalaryFields
           settings={settings}
           setSettings={setSettings}
           idPrefix="onboarding"
-        />
-        <MoneyField
-          id="other-monthly-income"
-          label={t('onboarding.income.otherIncome')}
-          hint={t('onboarding.income.otherIncomeHint')}
-          value={settings.otherMonthlyIncome}
-          onChange={(v) => setSettings({ otherMonthlyIncome: v })}
+          includeSalaryInput={false}
         />
         <LiveTotal
           label={t('onboarding.income.totalIncome')}

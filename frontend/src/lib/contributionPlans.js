@@ -1,7 +1,7 @@
 import { sumEuros } from './money.js';
 import { getProjectionAnnualRate } from './projectionRates.js';
 
-/** Metadatos por proveedor (destino de la aportación). */
+/** Metadata per provider (contribution destination). */
 export const PROVIDER_META = {
   indexa: { category: 'investment', returnKey: 'indexFund' },
   myinvestor: { category: 'investment', returnKey: 'indexFund' },
@@ -20,7 +20,7 @@ export const CONTRIBUTION_CATEGORIES = [
   'other',
 ];
 
-/** Categorías que cuentan como inversión adicional en la proyección. */
+/** Categories counted as additional investment in projection. */
 export const PROJECTION_INVESTMENT_CATEGORIES = ['investment', 'pension'];
 
 export function createContributionPlan(partial = {}) {

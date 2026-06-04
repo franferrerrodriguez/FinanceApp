@@ -50,12 +50,12 @@ export function useHorizontalScrollEdges(scrollRef, deps = []) {
   return { ...scroll, updateEdges };
 }
 
-/** Aviso de scroll horizontal (colocar encima de la tabla completa, no solo la parte scrollable). */
+/** Horizontal scroll hint (place above the full table, not only the scrollable part). */
 export function ScrollHintBanner({ hint, show }) {
   if (!hint || !show) return null;
 
   return (
-    <p className="mb-3 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/90 px-3 py-2 text-xs font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300 md:hidden">
+    <p className="mb-0 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/90 px-3 py-2 text-xs font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300 md:hidden">
       <ScrollHintIcon />
       <span>{hint}</span>
     </p>
@@ -63,8 +63,8 @@ export function ScrollHintBanner({ hint, show }) {
 }
 
 /**
- * Contenedor con scroll horizontal y degradado derecho en móvil.
- * El aviso (ScrollHintBanner) debe ir fuera si hay columnas fijas al lado.
+ * Container with horizontal scroll and right fade on mobile.
+ * Place ScrollHintBanner outside when there are sticky columns beside it.
  */
 export const HorizontalScrollRegion = forwardRef(function HorizontalScrollRegion(
   { children, className = '', onScrollEdgesChange },

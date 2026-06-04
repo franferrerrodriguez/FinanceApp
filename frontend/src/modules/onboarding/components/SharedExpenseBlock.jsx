@@ -20,7 +20,7 @@ export function SharedExpenseBlock({
   const { t } = useTranslation();
 
   return (
-    <div className={`space-y-3 p-4 ${ui.cardMuted}`}>
+    <div className={`${ui.block} space-y-3 p-4`}>
       {!shareOnly && (
         <MoneyField
           id={id}

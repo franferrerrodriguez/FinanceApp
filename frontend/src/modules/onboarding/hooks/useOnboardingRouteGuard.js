@@ -7,8 +7,8 @@ import { useProfile, useSettings } from '../../../store/hooks';
 import { onboardingPathForStep } from '../onboardingPaths';
 
 /**
- * Alinea la URL del onboarding con los datos disponibles.
- * Si no hay datos y la URL apunta a un paso avanzado, vuelve al paso 1 (bienvenida).
+ * Aligns onboarding URL with available data.
+ * If data is missing and the URL points to an advanced step, go back to step 0 (welcome).
  */
 export function useOnboardingRouteGuard(stepFromUrl) {
   const navigate = useNavigate();

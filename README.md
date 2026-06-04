@@ -1,59 +1,85 @@
 # FinanciaApp
 
-Aplicación web de finanzas personales (React + Vite + Zustand + Supabase).
+Personal finance web application (React + Vite + Zustand + Supabase).
 
-Repositorio: [github.com/franferrerrodriguez/FinanceApp](https://github.com/franferrerrodriguez/FinanceApp)
+Repository: [github.com/franferrerrodriguez/FinanceApp](https://github.com/franferrerrodriguez/FinanceApp)
 
-## Estructura
+## Structure
 
-| Carpeta | Descripción |
-|---------|-------------|
-| `frontend/` | SPA (código de la app) |
-| `supabase/` | SQL inicial y notas de configuración del backend |
+| Folder | Description |
+|--------|-------------|
+| `frontend/` | SPA + Ionic/Capacitor (Android & iOS) |
+| `supabase/` | Initial SQL and backend setup notes |
 
-La especificación funcional está en [`frontend/functional.md`](frontend/functional.md).
+The functional specification is in [`frontend/functional.md`](frontend/functional.md).
 
-## Inicio rápido
+## Quick start
 
 ```bash
 cd frontend
 cp .env.example .env
-# Edita .env con tu proyecto Supabase (URL + anon key)
+# Edit .env with your Supabase project (URL + anon key)
 npm install
 npm run dev
 ```
 
-Abre la URL que muestre Vite (por defecto `http://localhost:5173`).
+Open the URL shown by Vite (default `http://localhost:5173`).
 
-Si ves **Outdated Optimize Dep**: para el servidor, borra `node_modules/.vite` y ejecuta `npm run dev:force`.
+If you see **Outdated Optimize Dep**: stop the dev server, delete `node_modules/.vite`, and run `npm run dev:force`.
+
+## Mobile (Android & iOS)
+
+Same React app wrapped with **Ionic + Capacitor**. Full guide: [`frontend/docs/MOBILE.md`](frontend/docs/MOBILE.md).
+
+```bash
+cd frontend
+npm install
+npm run build:mobile    # build + sync native projects
+npm run cap:open:android   # Android Studio → Run
+```
+
+Requires Android Studio (Android) or Xcode on macOS (iOS).
+
+## Authentication
+
+**Recommended:** Supabase with **Confirm email disabled** → email/password registration without sending emails. Guide: [`supabase/SETUP.md` §2](supabase/SETUP.md) or `npm run auth:no-email-confirm` with an [access token](https://supabase.com/dashboard/account/tokens).
+
+Cloud-free alternative: `VITE_AUTH_MODE=simple` in `frontend/.env` (account stored only in the browser). See [`frontend/docs/AUTH.md`](frontend/docs/AUTH.md).
 
 ## Supabase
 
-1. Crea un proyecto en [supabase.com](https://supabase.com).
-2. En **SQL Editor**, ejecuta el script [`supabase/migrations/001_initial.sql`](supabase/migrations/001_initial.sql).
-3. En **Authentication → URL Configuration**, añade `http://localhost:5173` (y tu dominio de producción).
-4. Copia **Project URL** y **anon public key** a `frontend/.env`.
+Project: `ceduxgxizgkyiexkdyqp` — detailed guide in [`supabase/SETUP.md`](supabase/SETUP.md).
+
+1. `cd frontend && cp .env.example .env` — **public** keys only (publishable/anon). **Do not** commit `.env` to GitHub.
+2. In **SQL Editor**, run [`supabase/migrations/001_initial.sql`](supabase/migrations/001_initial.sql) (and `002` if applicable).
+3. **Authentication → URL Configuration**: `http://localhost:5173`.
+4. CLI (optional): `supabase login` → `supabase link --project-ref ceduxgxizgkyiexkdyqp` → `supabase db push`.
+
+**Never** in the repo or in Vite: Postgres password, `service_role`, or `DATABASE_URL` with a password.
 
 ## Scripts (`frontend/`)
 
-| Comando | Uso |
-|---------|-----|
-| `npm run dev` | Desarrollo |
-| `npm run dev:force` | Dev con reoptimización de dependencias |
-| `npm run build` | Build de producción (`dist/`) |
-| `npm test` | Tests del motor de cálculos |
+| Command | Purpose |
+|---------|---------|
+| `npm run dev` | Development |
+| `npm run dev:force` | Dev with dependency re-optimization |
+| `npm run build` | Production build (`dist/`) |
+| `npm test` | Calculation engine tests |
 | `npm run lint` | ESLint |
+| `npm run build:mobile` | Production build + Capacitor sync |
+| `npm run cap:open:android` | Open Android Studio |
+| `npm run cap:open:ios` | Open Xcode (macOS) |
 
-## Despliegue
+## Deployment
 
-Build estático desde `frontend/`:
+Static build from `frontend/`:
 
 ```bash
 cd frontend && npm run build
 ```
 
-Sube el contenido de `frontend/dist/` a Hostinger, Vercel, Netlify, etc. Define las mismas variables `VITE_SUPABASE_*` en el panel del hosting.
+Upload the contents of `frontend/dist/` to Hostinger, Vercel, Netlify, etc. Set the same `VITE_SUPABASE_*` variables in the hosting panel.
 
-## Licencia
+## License
 
-Proyecto personal — uso privado salvo que indiques lo contrario.
+Personal project — private use unless stated otherwise.

@@ -52,4 +52,9 @@ const rows = buildMonthlyProjectionTable({
 assert.equal(rows[0].salary, 2500);
 assert.equal(rows[5].salary, 2800);
 
+assert.equal(
+  resolveMonthlySalaryForDate(settings, [], new Date(2026, 2, 1)),
+  3000,
+);
+
 console.log('salaryHistory.test.js: ok');

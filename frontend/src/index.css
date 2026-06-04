@@ -7,11 +7,116 @@
   --font-serif: 'Playfair Display', ui-serif, Georgia, serif;
 }
 
-body {
-  @apply min-h-screen antialiased;
+html {
+  overflow-x: hidden;
 }
 
-/* Ocultar flechas de inputs type="number" */
+body {
+  @apply min-h-screen antialiased;
+  overflow-x: hidden;
+}
+
+html.native-app body {
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+.financia-profile-trigger {
+  border-radius: 9999px !important;
+  overflow: hidden;
+}
+
+.financia-profile-avatar {
+  border-radius: 9999px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden;
+}
+
+/* Bottom navigation */
+.financia-bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 200;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  border-top: 1px solid rgb(226 232 240);
+  background: rgb(255 255 255 / 0.96);
+  padding-bottom: env(safe-area-inset-bottom);
+  backdrop-filter: blur(12px);
+}
+
+html.dark .financia-bottom-nav {
+  border-top-color: rgb(51 65 85);
+  background: rgb(15 23 42 / 0.96);
+}
+
+.financia-bottom-nav__item {
+  position: relative;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  min-height: 3.25rem;
+  padding: 0.35rem 0.15rem 0.5rem;
+  text-decoration: none;
+  color: rgb(100 116 139);
+  font-size: 0.65rem;
+  font-weight: 500;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html.dark .financia-bottom-nav__item {
+  color: rgb(148 163 184);
+}
+
+.financia-bottom-nav__item--active {
+  color: rgb(5 150 105);
+  font-weight: 600;
+}
+
+html.dark .financia-bottom-nav__item--active {
+  color: rgb(52 211 153);
+}
+
+.financia-bottom-nav__icon {
+  font-size: 1.35rem;
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.financia-bottom-nav__label {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  line-height: 1.1;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.financia-bottom-nav__indicator {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1.75rem;
+  height: 2px;
+  transform: translateX(-50%);
+  border-radius: 9999px;
+  background: rgb(16 185 129);
+}
+
+/* Hide number input spinners */
 input[type='number']::-webkit-inner-spin-button,
 input[type='number']::-webkit-outer-spin-button {
   -webkit-appearance: none;

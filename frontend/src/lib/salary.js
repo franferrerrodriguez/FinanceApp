@@ -1,4 +1,4 @@
-/** Nómina: paga normal y número de pagas → salario mensual efectivo uniforme. */
+/** Payroll: base pay and number of pays → uniform effective monthly salary. */
 
 export function resolveNumPagas(settings) {
   const preset = settings?.salaryPaysPreset ?? '12';
@@ -11,14 +11,14 @@ export function resolveNumPagas(settings) {
   return 12;
 }
 
-/** (paga × num_pagas) / 12 — usar en dashboard, proyección y cashflow. */
+/** (pay × num_pays) / 12 — used in dashboard, projection, and cashflow. */
 export function computeMonthlyNetSalaryEffective(settings) {
   const paga = Math.max(0, settings?.monthlyNetSalary ?? 0);
   const numPagas = resolveNumPagas(settings);
   return Math.round(((paga * numPagas) / 12) * 100) / 100;
 }
 
-/** Ingreso mensual de nómina efectivo (alias explícito). */
+/** Effective monthly payroll income (explicit alias). */
 export function getEffectiveMonthlySalary(settings) {
   if (settings?.monthlyNetSalaryEffective != null) {
     return settings.monthlyNetSalaryEffective;

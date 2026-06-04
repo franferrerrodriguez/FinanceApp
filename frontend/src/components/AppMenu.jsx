@@ -1,39 +1,42 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useAuthModal } from '../context/AuthModalContext';
 import { LOCALE_LABELS, SUPPORTED_LOCALES } from '../i18n/config';
 import { isAuthAvailable, signOutFromSupabase } from '../lib/auth';
 import { ui } from '../lib/uiClasses';
-import { usePreferences, useSessionMeta } from '../store/hooks';
+import { getDisplayName, getInitials } from '../lib/userDisplay';
+import { usePreferences, useProfile, useSessionMeta } from '../store/hooks';
 
 export function AppMenu({ className = '' }) {
   const { t } = useTranslation();
   const { locale, theme, setLocale, setTheme } = usePreferences();
+  const { profile } = useProfile();
   const { user, sessionStatus, logout } = useSessionMeta();
   const { openRegister, openLogin } = useAuthModal();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const menuId = useId();
   const panelRef = useRef(null);
-  const buttonRef = useRef(null);
 
   const isAuthenticated = sessionStatus === 'authenticated' && user != null;
+  const displayName = getDisplayName({
+    profile,
+    user,
+    fallback: t('dashboard.profileFallback'),
+  });
+  const initials = getInitials(displayName);
 
   useEffect(() => {
     if (!open) return undefined;
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
 
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') setOpen(false);
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      document.removeEventListener('keydown', handleKeyDown);
-    };
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, [open]);
 
   const close = () => setOpen(false);
@@ -57,22 +60,36 @@ export function AppMenu({ className = '' }) {
     openLogin();
   };
 
+  const handleAccount = () => {
+    close();
+    navigate('/cuenta');
+  };
+
   return (
     <>
       <div className={className}>
         <button
-          ref={buttonRef}
           type="button"
-          className={`inline-flex h-11 w-11 items-center justify-center ${
-            open ? ui.menuTriggerActive : ui.menuTrigger
-          }`}
+          className={`financia-profile-trigger inline-flex shrink-0 items-center justify-center rounded-full border transition ${
+            open
+              ? 'border-emerald-500/60 bg-emerald-500/10 ring-2 ring-emerald-500/25'
+              : `${ui.profileChip} hover:border-slate-300 dark:hover:border-slate-600`
+          } h-11 w-11 p-0.5 sm:h-auto sm:w-auto sm:gap-0.5 sm:px-1.5 sm:py-1`}
           aria-expanded={open}
           aria-haspopup="dialog"
           aria-controls={open ? menuId : undefined}
-          aria-label={t('menu.open')}
+          aria-label={t('menu.openProfile')}
           onClick={() => setOpen((value) => !value)}
         >
-          <MenuIcon open={open} />
+          <span
+            className={`financia-profile-avatar flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold ${ui.profileAvatar}`}
+            aria-hidden
+          >
+            {isAuthenticated ? initials : <UserIcon />}
+          </span>
+          <span className="hidden shrink-0 sm:inline-flex">
+            <ChevronIcon open={open} />
+          </span>
         </button>
       </div>
 
@@ -94,14 +111,44 @@ export function AppMenu({ className = '' }) {
               aria-label={t('menu.title')}
               className={ui.menuPanel}
             >
-              <div className={`flex items-center justify-between border-b px-4 py-3 ${ui.divider}`}>
-                <p className={`text-sm font-semibold ${ui.heading}`}>
-                  {t('menu.title')}
-                </p>
+              <div className={`relative border-b px-4 py-4 ${ui.divider}`}>
+                {isAuthenticated ? (
+                  <div className="flex items-center gap-3 pr-8">
+                    <span
+                      className={`financia-profile-avatar flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-sm font-bold ${ui.profileAvatar}`}
+                      aria-hidden
+                    >
+                      {initials}
+                    </span>
+                    <div className="min-w-0">
+                      <p className={`truncate text-base font-semibold ${ui.heading}`}>
+                        {displayName}
+                      </p>
+                      {user.email ? (
+                        <p className={`truncate text-sm ${ui.textMuted}`}>{user.email}</p>
+                      ) : null}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3 pr-8">
+                    <span
+                      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${ui.profileAvatar}`}
+                      aria-hidden
+                    >
+                      <UserIcon large />
+                    </span>
+                    <div className="min-w-0">
+                      <p className={`text-base font-semibold ${ui.heading}`}>
+                        {t('menu.guestTitle')}
+                      </p>
+                      <p className={`text-sm ${ui.textMuted}`}>{t('menu.guestHint')}</p>
+                    </div>
+                  </div>
+                )}
                 <button
                   type="button"
                   onClick={close}
-                  className={`inline-flex h-9 w-9 items-center justify-center ${ui.menuTrigger}`}
+                  className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                   aria-label={t('menu.close')}
                 >
                   <CloseIcon />
@@ -109,7 +156,29 @@ export function AppMenu({ className = '' }) {
               </div>
 
               <div className="max-h-[min(70vh,calc(100dvh-6rem))] overflow-y-auto p-2">
-                <MenuSection title={t('menu.preferences')} first>
+                {isAuthenticated && (
+                  <MenuSection title={t('menu.account')} first>
+                    <MenuButton onClick={handleAccount}>
+                      {t('menu.accountSettings')}
+                    </MenuButton>
+                    <MenuButton onClick={handleLogout} variant="danger">
+                      {t('menu.logout')}
+                    </MenuButton>
+                  </MenuSection>
+                )}
+
+                {!isAuthenticated && (
+                  <MenuSection title={t('menu.session')} first>
+                    <MenuButton onClick={handleRegister} variant="primary">
+                      {t('menu.register')}
+                    </MenuButton>
+                    <MenuButton onClick={handleLogin}>
+                      {t('menu.login')}
+                    </MenuButton>
+                  </MenuSection>
+                )}
+
+                <MenuSection title={t('menu.preferences')} first={!isAuthenticated}>
                   <MenuRow label={t('menu.language')}>
                     <select
                       id="app-menu-locale"
@@ -149,36 +218,6 @@ export function AppMenu({ className = '' }) {
                     </div>
                   </MenuRow>
                 </MenuSection>
-
-                {isAuthenticated ? (
-                  <MenuSection title={t('menu.account')}>
-                    <p className={`px-3 py-2 text-sm ${ui.text}`} role="presentation">
-                      {user.email ?? user.id}
-                    </p>
-                    <MenuButton
-                      onClick={close}
-                      disabled
-                      hint={t('common.nextIteration')}
-                    >
-                      {t('menu.accountSettings')}
-                    </MenuButton>
-                    <MenuButton onClick={handleLogout} variant="danger">
-                      {t('menu.logout')}
-                    </MenuButton>
-                  </MenuSection>
-                ) : (
-                  <MenuSection title={t('menu.session')}>
-                    <p className={`px-3 py-2 text-xs leading-relaxed ${ui.textMuted}`}>
-                      {t('menu.guestHint')}
-                    </p>
-                    <MenuButton onClick={handleRegister} variant="primary">
-                      {t('menu.register')}
-                    </MenuButton>
-                    <MenuButton onClick={handleLogin}>
-                      {t('menu.login')}
-                    </MenuButton>
-                  </MenuSection>
-                )}
               </div>
             </div>
           </div>,
@@ -188,36 +227,41 @@ export function AppMenu({ className = '' }) {
   );
 }
 
-function MenuIcon({ open }) {
-  if (open) {
-    return (
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        aria-hidden="true"
-      >
-        <path d="M6 6l12 12M18 6L6 18" />
-      </svg>
-    );
-  }
-
+function UserIcon({ large = false }) {
+  const size = large ? 22 : 18;
   return (
     <svg
-      width="20"
-      height="20"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      aria-hidden
+    >
+      <circle cx="12" cy="8" r="4" />
+      <path d="M5 20c0-4 3.5-6 7-6s7 2 7 6" />
+    </svg>
+  );
+}
+
+function ChevronIcon({ open }) {
+  return (
+    <svg
+      width="16"
+      height="16"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
-      aria-hidden="true"
+      className={`text-slate-500 transition dark:text-slate-400 ${
+        open ? 'rotate-180' : ''
+      }`}
+      aria-hidden
     >
-      <path d="M4 7h16M4 12h16M4 17h16" />
+      <path d="M6 9l6 6 6-6" />
     </svg>
   );
 }
@@ -232,7 +276,7 @@ function CloseIcon() {
       stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
-      aria-hidden="true"
+      aria-hidden
     >
       <path d="M6 6l12 12M18 6L6 18" />
     </svg>

@@ -5,13 +5,26 @@ import {
   calcTotalFixedExpenses,
   calcTotalIncome,
   calcTotalVariableExpenses,
-} from './calculations';
-import { sumEuros } from './money';
+} from './calculations.js';
+import { sumEuros } from './money.js';
 import {
   getAnnualExpensesMonthlyAverage,
   getAnnualExpensesYearlyTotal,
-} from './annualExpenses';
-import { computeEmergencyFundMetrics } from './emergencyFund';
+} from './annualExpenses.js';
+import {
+  computeEmergencyFundMetrics,
+  getEmergencyFundAlert,
+} from './emergencyFund.js';
+import {
+  getMonthlyCloseAlert,
+  getMonthlyCloseStatus,
+} from './monthlyClose.js';
+import { SNAPSHOT_ITEM_TYPE } from './snapshotItemTypes.js';
+import {
+  getSnapshotAssetId,
+  getSnapshotLiabilityId,
+  groupSnapshotsByMonth,
+} from './snapshotUtils.js';
 
 const ASSET_CATEGORY_ORDER = [
   'bank',
@@ -38,15 +51,7 @@ export function getLastNMonthKeys(n = 12, fromDate = new Date()) {
   return keys;
 }
 
-export function groupSnapshotsByMonth(snapshots) {
-  return snapshots.reduce((acc, snap) => {
-    const key = (snap.snapshot_date ?? '').slice(0, 7);
-    if (!key) return acc;
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(snap);
-    return acc;
-  }, {});
-}
+export { groupSnapshotsByMonth } from './snapshotUtils.js';
 
 export function calcMonthTotals(monthSnapshots) {
   if (!monthSnapshots?.length) {
@@ -61,7 +66,7 @@ export function calcMonthTotals(monthSnapshots) {
 
   for (const s of monthSnapshots) {
     const value = Number(s.value) || 0;
-    if (s.liability_id) {
+    if (getSnapshotLiabilityId(s)) {
       liabilityValues.push(value);
     } else {
       assetValues.push(value);
@@ -189,7 +194,7 @@ export function buildAssetDistribution(
   monthKey = getCurrentMonthKey(),
 ) {
   const monthSnaps = groupSnapshotsByMonth(snapshots)[monthKey] ?? [];
-  const assetSnaps = monthSnaps.filter((s) => s.asset_id && !s.liability_id);
+  const assetSnaps = monthSnaps.filter((s) => getSnapshotAssetId(s) && !getSnapshotLiabilityId(s));
 
   if (!assetSnaps.length) return [];
 
@@ -197,7 +202,7 @@ export function buildAssetDistribution(
   const byCategory = {};
 
   for (const snap of assetSnaps) {
-    const asset = assetMap[snap.asset_id];
+    const asset = assetMap[getSnapshotAssetId(snap)];
     const category = asset?.category ?? 'other';
     const value = Math.max(0, Number(snap.value) || 0);
     byCategory[category] = (byCategory[category] ?? 0) + value;
@@ -224,22 +229,24 @@ export function getTopHoldings(
 
   const items = monthSnaps
     .map((snap) => {
-      if (snap.asset_id) {
-        const asset = assetMap[snap.asset_id];
+      const assetId = getSnapshotAssetId(snap);
+      if (assetId) {
+        const asset = assetMap[assetId];
         return {
-          id: snap.asset_id,
+          id: assetId,
           name: asset?.name ?? '—',
           value: Number(snap.value) || 0,
-          type: 'asset',
+          type: SNAPSHOT_ITEM_TYPE.ASSET,
         };
       }
-      if (snap.liability_id) {
-        const liability = liabilityMap[snap.liability_id];
+      const liabilityId = getSnapshotLiabilityId(snap);
+      if (liabilityId) {
+        const liability = liabilityMap[liabilityId];
         return {
-          id: snap.liability_id,
+          id: liabilityId,
           name: liability?.name ?? '—',
           value: Number(snap.value) || 0,
-          type: 'liability',
+          type: SNAPSHOT_ITEM_TYPE.LIABILITY,
         };
       }
       return null;
@@ -247,12 +254,12 @@ export function getTopHoldings(
     .filter(Boolean);
 
   const topAssets = items
-    .filter((i) => i.type === 'asset')
+    .filter((i) => i.type === SNAPSHOT_ITEM_TYPE.ASSET)
     .sort((a, b) => b.value - a.value)
     .slice(0, limit);
 
   const topLiabilities = items
-    .filter((i) => i.type === 'liability')
+    .filter((i) => i.type === SNAPSHOT_ITEM_TYPE.LIABILITY)
     .sort((a, b) => a.value - b.value)
     .slice(0, limit);
 
@@ -294,7 +301,7 @@ export function getDashboardAlerts({
   if (creditCardIds.size > 0) {
     const hasCardDebt = snapshots.some(
       (s) =>
-        creditCardIds.has(s.liability_id) && Number(s.value) < 0,
+        creditCardIds.has(getSnapshotLiabilityId(s)) && Number(s.value) < 0,
     );
     const hasCardLiability = liabilities.some(
       (l) =>
@@ -313,12 +320,25 @@ export function getDashboardAlerts({
   return alerts;
 }
 
+export function appendEmergencyFundAlert(alerts, emergencyFund) {
+  const alert = getEmergencyFundAlert(emergencyFund);
+  if (!alert) return alerts;
+  return [alert, ...alerts];
+}
+
+export function appendMonthlyCloseAlert(alerts, monthlyCloseStatus, locale = 'es') {
+  const alert = getMonthlyCloseAlert(monthlyCloseStatus, locale);
+  if (!alert) return alerts;
+  return [alert, ...alerts];
+}
+
 export function computeDashboardKpis({
   settings,
   snapshots,
   assets,
   liabilities,
   annualExpenses = [],
+  locale = 'es',
 }) {
   const income = calcTotalIncome(settings);
   const fixedExpenses = calcTotalFixedExpenses(settings);
@@ -339,17 +359,6 @@ export function computeDashboardKpis({
     variableExpenses,
   );
 
-  const alerts = getDashboardAlerts({
-    income,
-    fixedExpenses,
-    variableExpenses,
-    monthlyInvestment,
-    savingsRate,
-    netWorth: latest.netWorth,
-    liabilities,
-    snapshots,
-  });
-
   const annualExpensesYearly = getAnnualExpensesYearlyTotal(annualExpenses);
   const annualExpensesMonthlyAvg =
     getAnnualExpensesMonthlyAverage(annualExpenses);
@@ -359,6 +368,26 @@ export function computeDashboardKpis({
     assets,
     annualExpenses,
   });
+
+  const monthlyClose = getMonthlyCloseStatus(snapshots, assets, liabilities);
+
+  const alerts = appendMonthlyCloseAlert(
+    appendEmergencyFundAlert(
+      getDashboardAlerts({
+        income,
+        fixedExpenses,
+        variableExpenses,
+        monthlyInvestment,
+        savingsRate,
+        netWorth: latest.netWorth,
+        liabilities,
+        snapshots,
+      }),
+      emergencyFund,
+    ),
+    monthlyClose,
+    locale,
+  );
 
   return {
     income,
@@ -383,6 +412,7 @@ export function computeDashboardKpis({
     ),
     assetDistribution: buildAssetDistribution(snapshots, assets),
     topHoldings: getTopHoldings(snapshots, assets, liabilities),
+    monthlyClose,
     alerts,
   };
 }

@@ -4,7 +4,11 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  base: './',
+  build: {
+    outDir: 'dist',
+  },
   optimizeDeps: {
-    include: ['@supabase/supabase-js'],
+    include: ['@supabase/supabase-js', '@ionic/react', '@capacitor/core'],
   },
 })

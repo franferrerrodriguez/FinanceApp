@@ -1,6 +1,6 @@
 import { useAppStore } from '../store/appStore';
 import { PERSIST_STORAGE_KEY } from '../store/persistConfig';
-import { mapSettingsToUserSettingsRow } from './mapSettingsToDb';
+import { buildAppDataPayload, mapSettingsToUserSettingsRow } from './mapSettingsToDb';
 import { supabase } from './supabase';
 
 function mapAssetRow(asset, userId) {
@@ -44,8 +44,8 @@ export async function migrateLocalToSupabase(userId) {
     return { success: false, error: new Error('supabase_not_configured') };
   }
 
-  const { assets, liabilities, snapshots, settings, profile } =
-    useAppStore.getState();
+  const state = useAppStore.getState();
+  const { assets, liabilities, snapshots, settings, profile } = state;
 
   try {
     if (profile?.name || profile?.age != null) {
@@ -61,9 +61,14 @@ export async function migrateLocalToSupabase(userId) {
 
     const settingsRow = mapSettingsToUserSettingsRow(userId, settings);
     if (settingsRow) {
-      const { error } = await supabase
-        .from('user_settings')
-        .upsert(settingsRow, { onConflict: 'user_id' });
+      const { error } = await supabase.from('user_settings').upsert(
+        {
+          ...settingsRow,
+          app_data: buildAppDataPayload(state),
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_id' },
+      );
       if (error) throw error;
     }
 
@@ -91,6 +96,7 @@ export async function migrateLocalToSupabase(userId) {
     }
 
     localStorage.removeItem(PERSIST_STORAGE_KEY);
+    useAppStore.setState({ sessionStatus: 'authenticated', cloudSyncStatus: 'ready' });
     return { success: true };
   } catch (error) {
     console.error('Migration failed:', error);

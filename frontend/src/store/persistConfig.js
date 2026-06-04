@@ -7,11 +7,18 @@ import {
   resolveProjectionYearsFromPersist,
 } from '../lib/constants';
 import { enrichSettingsWithSalary } from '../lib/salary';
-import { createSalaryHistoryEntryFromSettings } from '../lib/salaryHistory';
+import {
+  createCashflowEntry,
+  createCashflowEntryFromSettings,
+  getCurrentMonthKey,
+  migrateSalaryHistoryToCashflow,
+  syncSettingsFromCashflowHistory,
+  upsertCurrentMonthCashflowTramo,
+} from '../lib/cashflowHistory';
 import { ONBOARDING_STEP_IDS } from '../modules/onboarding/constants';
 
 export const PERSIST_STORAGE_KEY = 'financia_app_data';
-export const PERSIST_VERSION = 10;
+export const PERSIST_VERSION = 12;
 
 const MAX_ONBOARDING_STEP = ONBOARDING_STEP_IDS.length - 1;
 
@@ -24,7 +31,7 @@ export function partializePersistedState(state) {
     theme: state.theme,
     settings: state.settings,
     annualExpenses: state.annualExpenses,
-    salaryHistory: state.salaryHistory,
+    cashflowHistory: state.cashflowHistory,
     contributionPlans: state.contributionPlans,
     assets: state.assets,
     liabilities: state.liabilities,
@@ -49,7 +56,10 @@ export function mergePersistedState(persisted, current) {
       ),
     },
     annualExpenses: persisted.annualExpenses ?? current.annualExpenses ?? [],
-    salaryHistory: persisted.salaryHistory ?? current.salaryHistory ?? [],
+    cashflowHistory:
+      persisted.cashflowHistory ??
+      current.cashflowHistory ??
+      [],
     contributionPlans:
       persisted.contributionPlans ?? current.contributionPlans ?? [],
     assets: persisted.assets ?? current.assets,
@@ -137,7 +147,7 @@ export function migratePersistedState(persisted, version) {
       (settings.monthlyNetSalary ?? 0) > 0
     ) {
       next.salaryHistory = [
-        createSalaryHistoryEntryFromSettings(settings, '2020-01'),
+        createCashflowEntryFromSettings(settings, '2020-01'),
       ];
     }
     if (next.settings) {
@@ -145,10 +155,80 @@ export function migratePersistedState(persisted, version) {
     }
   }
 
+  if (version < 11) {
+    let salaryHistory = next.salaryHistory ?? [];
+    let settings = enrichSettingsWithSalary(
+      {},
+      { ...DEFAULT_SETTINGS, ...next.settings },
+    );
+
+    if (!salaryHistory.length) {
+      salaryHistory =
+        (settings.monthlyNetSalary ?? 0) > 0
+          ? [
+              createCashflowEntryFromSettings(
+                settings,
+                getCurrentMonthKey(),
+              ),
+            ]
+          : [
+              createCashflowEntry(
+                { effectiveFrom: getCurrentMonthKey() },
+                settings,
+              ),
+            ];
+    } else {
+      salaryHistory = upsertCurrentMonthCashflowTramo(settings, salaryHistory);
+    }
+
+    settings = syncSettingsFromCashflowHistory(settings, salaryHistory);
+    next.salaryHistory = salaryHistory;
+    next.settings = settings;
+  }
+
+  if (version < 12) {
+    let cashflowHistory =
+      next.cashflowHistory ??
+      migrateSalaryHistoryToCashflow(next.salaryHistory, {
+        ...DEFAULT_SETTINGS,
+        ...next.settings,
+      });
+
+    let settings = enrichSettingsWithSalary(
+      {},
+      { ...DEFAULT_SETTINGS, ...next.settings },
+    );
+
+    if (!cashflowHistory.length) {
+      cashflowHistory =
+        (settings.monthlyNetSalary ?? 0) > 0 ||
+        calcHasAnyExpense(settings)
+          ? [createCashflowEntryFromSettings(settings, getCurrentMonthKey())]
+          : [createCashflowEntry({ effectiveFrom: getCurrentMonthKey() }, settings)];
+    } else {
+      cashflowHistory = upsertCurrentMonthCashflowTramo(settings, cashflowHistory);
+    }
+
+    settings = syncSettingsFromCashflowHistory(settings, cashflowHistory);
+    next.cashflowHistory = cashflowHistory;
+    next.settings = settings;
+    delete next.salaryHistory;
+  }
+
   return next;
 }
 
-/** Tras rehidratar, asegura horizonte ≥ 20 si quedó un valor legacy en memoria. */
+function calcHasAnyExpense(settings) {
+  return (
+    (settings.mortgageRent ?? 0) > 0 ||
+    (settings.mortgageRentTotal ?? 0) > 0 ||
+    (settings.householdFixedEstimate ?? 0) > 0 ||
+    (settings.leisureEstimate ?? 0) > 0 ||
+    (settings.groceriesEstimate ?? 0) > 0
+  );
+}
+
+/** After rehydrate, ensure horizon ≥ 20 if a legacy value remained in memory. */
 export function onRehydrateProjectionYears(state) {
   if (!state?.settings) return state;
   const resolved = resolveProjectionYearsFromPersist(state.settings.projectionYears);

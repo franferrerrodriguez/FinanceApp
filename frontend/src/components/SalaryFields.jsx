@@ -9,7 +9,12 @@ import { MoneyField } from '../modules/onboarding/components/MoneyField';
 
 const PAY_PRESETS = ['12', '14', 'other'];
 
-export function SalaryFields({ settings, setSettings, idPrefix = 'salary' }) {
+export function SalaryFields({
+  settings,
+  setSettings,
+  idPrefix = 'salary',
+  includeSalaryInput = true,
+}) {
   const { t } = useTranslation();
   const preset = settings.salaryPaysPreset ?? '12';
   const effective = computeMonthlyNetSalaryEffective(settings);
@@ -17,13 +22,16 @@ export function SalaryFields({ settings, setSettings, idPrefix = 'salary' }) {
 
   return (
     <div className="space-y-4">
-      <MoneyField
-        id={`${idPrefix}-monthly-salary`}
-        label={t('balance.cashflow.salaryNormalLabel')}
-        value={settings.monthlyNetSalary}
-        onChange={(v) => setSettings({ monthlyNetSalary: v })}
-        required
-      />
+      {includeSalaryInput ? (
+        <MoneyField
+          id={`${idPrefix}-monthly-salary`}
+          label={t('balance.cashflow.salaryNormalLabel')}
+          hint={t('balance.cashflow.salaryNormalHint')}
+          value={settings.monthlyNetSalary}
+          onChange={(v) => setSettings({ monthlyNetSalary: v })}
+          required
+        />
+      ) : null}
 
       <fieldset>
         <legend className={`mb-2 block text-sm font-medium ${ui.textLabel}`}>

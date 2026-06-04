@@ -11,7 +11,7 @@ import { ui } from '../../../lib/uiClasses';
 import { formatMoney } from '../../../utils/formatters';
 import { ChartCard } from './ChartCard';
 
-/** Orden y colores alineados con la referencia visual */
+/** Order and colors aligned with the visual reference */
 const SEGMENT_ORDER = ['fixed', 'variable', 'investment', 'free'];
 
 const SEGMENT_COLORS = {

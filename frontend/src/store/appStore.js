@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import { appStorage } from '../lib/appStorage';
 import { DEFAULT_SETTINGS } from '../lib/constants';
 import {
   onRehydrateProjectionYears,
@@ -11,9 +12,9 @@ import { createPreferencesSlice } from './slices/preferencesSlice';
 import { createSessionSlice } from './slices/sessionSlice';
 
 /**
- * Store global de la app (Zustand).
- * - Estado en memoria: fuente de verdad para React.
- * - persist + localStorage: sincronización automática al cambiar el estado.
+ * Global app store (Zustand).
+ * - In-memory state: source of truth for React.
+ * - persist + appStorage (localStorage; mirrored to Preferences on native).
  */
 export const useAppStore = create(
   persist(
@@ -37,7 +38,7 @@ export const useAppStore = create(
           settings: { ...DEFAULT_SETTINGS },
           contributionPlans: [],
           annualExpenses: [],
-          salaryHistory: [],
+          cashflowHistory: [],
           assets: [],
           liabilities: [],
           snapshots: [],
@@ -45,6 +46,7 @@ export const useAppStore = create(
     }),
     {
       ...persistOptions,
+      storage: createJSONStorage(() => appStorage),
       onRehydrateStorage: () => (state) => {
         const next = onRehydrateProjectionYears(state);
         if (next && next !== state) {

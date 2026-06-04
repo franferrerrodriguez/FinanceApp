@@ -2,7 +2,7 @@ import { calcTotalIncome } from './calculations.js';
 
 const MIN_PROFILE_AGE = 18;
 
-/** Paso 0 (bienvenida) completado: nombre y edad válidos. */
+/** Step 0 (welcome) complete: valid name and age. */
 export function hasCompletedWelcome(profile) {
   const name = profile?.name?.trim();
   const age = Number(profile?.age);
@@ -10,7 +10,7 @@ export function hasCompletedWelcome(profile) {
 }
 
 /**
- * Paso más avanzado al que puede ir el usuario según datos guardados.
+ * Furthest step the user can open based on saved data.
  * 0 = bienvenida, 1 = ingresos, 2 = gastos, 3 = resumen.
  */
 export function getMaxAccessibleOnboardingStep(settings, profile) {

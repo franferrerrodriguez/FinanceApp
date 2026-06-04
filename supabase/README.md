@@ -1,16 +1,19 @@
 # Supabase — FinanciaApp
 
-## Aplicar esquema
+Step-by-step setup (security and CLI): **[SETUP.md](SETUP.md)**
 
-1. Abre tu proyecto en Supabase → **SQL Editor**.
-2. Pega y ejecuta [`migrations/001_initial.sql`](migrations/001_initial.sql).
+## Apply schema
+
+1. Open your project in Supabase → **SQL Editor**.
+2. Paste and run [`migrations/001_initial.sql`](migrations/001_initial.sql).
+3. If the table already existed without JSON: [`migrations/002_app_data_column.sql`](migrations/002_app_data_column.sql).
 
 ## Auth
 
-- **Site URL**: `http://localhost:5173` (desarrollo).
-- **Redirect URLs**: misma URL + dominio de producción.
-- Email confirmation: si está activado, el usuario debe confirmar el email antes de tener sesión completa.
+- **Site URL**: `http://localhost:5173` (development).
+- **Redirect URLs**: same URL + production domain.
+- **Confirm email**: disabled in production (see [SETUP.md §2](SETUP.md)) — registration without sending emails.
 
-## Columna `app_data`
+## `app_data` column
 
-JSON con datos del cliente que aún no tienen columnas propias (`salaryHistory`, `annualExpenses`, `contributionPlans`, gastos compartidos, etc.). La migración desde el frontend puede ampliarse para leer/escribir este campo.
+JSON with client data that does not yet have dedicated columns (`salaryHistory`, `annualExpenses`, `contributionPlans`, shared expenses, etc.). Frontend migration can be extended to read/write this field.

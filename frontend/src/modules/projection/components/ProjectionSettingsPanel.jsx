@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { PercentRow } from '../../../components/PercentRow';
 import { SelectField } from '../../../components/SelectField';
 import { normalizeProjectionYears } from '../../../lib/constants';
 import { ui } from '../../../lib/uiClasses';
@@ -107,6 +108,17 @@ export function ProjectionSettingsPanel() {
               : t('projection.settings.nominalReturnHint')}
           </p>
         </label>
+      </div>
+
+      <div className={`mt-5 max-w-2xl border-t pt-5 ${ui.divider}`}>
+        <PercentRow
+          label={t('projection.settings.expenseIncrease')}
+          hint={t('projection.settings.expenseIncreaseHint')}
+          value={settings.projectionAnnualExpenseIncrease}
+          onChange={(v) =>
+            setSettings({ projectionAnnualExpenseIncrease: v })
+          }
+        />
       </div>
     </section>
   );

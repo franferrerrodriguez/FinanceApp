@@ -42,16 +42,56 @@ export function ProjectionSummary({ summary, configuredAnnualRate }) {
         />
       </div>
 
-      <p
-        className={`rounded-xl border px-4 py-3 text-sm tabular-nums ${ui.cardMuted} ${ui.text}`}
+      <div
+        className={`rounded-xl border px-4 py-3 text-sm ${ui.cardMuted}`}
+        aria-label={t('projection.summary.breakdownTitle')}
       >
-        {t('projection.summary.equation', {
-          final: formatMoney(finalPatrimony),
-          contributed: formatMoney(totalNetContributed),
-          returnAmount: formatMoney(totalReturnGenerated),
-          initial: formatMoney(initialPatrimony),
-        })}
-      </p>
+        <p className={`mb-3 font-medium ${ui.heading}`}>
+          {t('projection.summary.breakdownTitle')}
+        </p>
+        <dl className="space-y-2">
+          {initialPatrimony > 0 ? (
+            <BreakdownRow
+              label={t('projection.summary.breakdownInitial')}
+              value={formatMoney(initialPatrimony)}
+            />
+          ) : null}
+          <BreakdownRow
+            label={t('projection.summary.breakdownContributed')}
+            value={`+ ${formatMoney(totalNetContributed)}`}
+          />
+          <BreakdownRow
+            label={t('projection.summary.breakdownReturn')}
+            value={`+ ${formatMoney(totalReturnGenerated)}`}
+          />
+          <BreakdownRow
+            label={t('projection.summary.breakdownFinal')}
+            value={formatMoney(finalPatrimony)}
+            emphasis
+          />
+        </dl>
+      </div>
+    </div>
+  );
+}
+
+function BreakdownRow({ label, value, emphasis = false }) {
+  return (
+    <div
+      className={`flex items-baseline justify-between gap-4 tabular-nums ${
+        emphasis ? `border-t pt-2 ${ui.divider}` : ''
+      }`}
+    >
+      <dt className={`min-w-0 text-left ${emphasis ? ui.heading : ui.text}`}>
+        {label}
+      </dt>
+      <dd
+        className={`shrink-0 text-right font-semibold ${
+          emphasis ? ui.heading : ui.textLabel
+        }`}
+      >
+        {value}
+      </dd>
     </div>
   );
 }

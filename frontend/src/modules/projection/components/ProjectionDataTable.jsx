@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ScrollHintBanner,
@@ -16,45 +16,67 @@ import { ui } from '../../../lib/uiClasses';
 import { useFinanceData } from '../../../store/hooks';
 import { formatProjectionDate } from '../../../utils/projectionDate';
 import { formatMoney } from '../../../utils/formatters';
+import {
+  PROJECTION_COLUMN,
+  buildProjectionColumnKeys,
+  columnFlexStyle,
+  getTableMinWidth,
+  headerLabelKey,
+  tableRowLayoutStyle,
+} from '../projectionTableColumns';
 import { ProjectionSummary } from './ProjectionSummary';
 
-const ROW_HEIGHT = 44;
-const HEAD_HEIGHT = 48;
+const MOBILE_MEDIA = '(max-width: 767px)';
+const ROW_HEIGHT_NARROW = 42;
+const ROW_HEIGHT_WIDE = 44;
+const HEAD_HEIGHT_NARROW = 64;
+const HEAD_HEIGHT_WIDE = 48;
 const LIST_MAX_HEIGHT = 480;
-const TABLE_MAX_HEIGHT = HEAD_HEIGHT + LIST_MAX_HEIGHT;
-const TABLE_MIN_WIDTH = 54 * 16;
-
-const BASE_COLUMNS = [
-  'date',
-  'salary',
-  'fixed',
-  'variable',
-  'netContribution',
-  'investments',
-  'monthlyReturn',
-  'patrimony',
-];
-const PUNCTUAL_COLUMN = 'punctual';
 
 function rowBg(isEven) {
   return isEven ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800';
 }
 
+function headBg() {
+  return 'bg-slate-50 dark:bg-slate-900';
+}
+
+function stickyDateShadow(scrolledX) {
+  return scrolledX
+    ? 'shadow-[4px_0_10px_-2px_rgba(15,23,42,0.12)] dark:shadow-[4px_0_10px_-2px_rgba(0,0,0,0.45)]'
+    : '';
+}
+
 export function ProjectionDataTable() {
   const { t } = useTranslation();
-  const { settings, contributionPlans, annualExpenses, salaryHistory } =
+  const { settings, contributionPlans, annualExpenses, cashflowHistory } =
     useFinanceData();
   const scrollRef = useRef(null);
+  const [narrowViewport, setNarrowViewport] = useState(() =>
+    typeof window !== 'undefined'
+      ? window.matchMedia(MOBILE_MEDIA).matches
+      : false,
+  );
+  const [scrolledX, setScrolledX] = useState(false);
+
   const showPunctual = annualExpenses.length > 0;
-  const columns = useMemo(() => {
-    if (!showPunctual) return BASE_COLUMNS;
-    const idx = BASE_COLUMNS.indexOf('netContribution');
-    return [
-      ...BASE_COLUMNS.slice(0, idx),
-      PUNCTUAL_COLUMN,
-      ...BASE_COLUMNS.slice(idx),
-    ];
-  }, [showPunctual]);
+  const columns = useMemo(
+    () => buildProjectionColumnKeys(showPunctual),
+    [showPunctual],
+  );
+  const tableMinWidth = getTableMinWidth(columns, narrowViewport);
+  const headHeight = narrowViewport ? HEAD_HEIGHT_NARROW : HEAD_HEIGHT_WIDE;
+  const rowHeight = narrowViewport ? ROW_HEIGHT_NARROW : ROW_HEIGHT_WIDE;
+  const tableMaxHeight = headHeight + LIST_MAX_HEIGHT;
+
+  useEffect(() => {
+    const mq = window.matchMedia(MOBILE_MEDIA);
+    const onChange = () => setNarrowViewport(mq.matches);
+    mq.addEventListener('change', onChange);
+    setNarrowViewport(mq.matches);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
   const projectionYears = normalizeProjectionYears(settings.projectionYears);
   const initialPatrimony = settings.initialPatrimony ?? 0;
   const annualRate = getProjectionAnnualRate(settings);
@@ -65,7 +87,7 @@ export function ProjectionDataTable() {
         settings,
         contributionPlans,
         annualExpenses,
-        salaryHistory,
+        cashflowHistory,
         years: projectionYears,
         initialPatrimony,
       }),
@@ -73,7 +95,7 @@ export function ProjectionDataTable() {
       settings,
       contributionPlans,
       annualExpenses,
-      salaryHistory,
+      cashflowHistory,
       projectionYears,
       initialPatrimony,
     ],
@@ -86,55 +108,56 @@ export function ProjectionDataTable() {
 
   const hasInvestmentPlans = hasProjectionInvestmentPlans(contributionPlans);
 
-  const { overflow: canScrollX, updateEdges } = useHorizontalScrollEdges(
-    scrollRef,
-    [rows.length, columns.length, showPunctual],
-  );
+  const { overflow: canScrollX, right: canScrollRight, updateEdges } =
+    useHorizontalScrollEdges(scrollRef, [
+      rows.length,
+      columns.length,
+      showPunctual,
+      narrowViewport,
+      tableMinWidth,
+    ]);
+
+  const handleScroll = (event) => {
+    updateEdges();
+    setScrolledX(event.currentTarget.scrollLeft > 2);
+  };
 
   if (!rows.length) return null;
 
-  const headerLabels = {
-    date: t('projection.table.date'),
-    salary: t('projection.table.salary'),
-    fixed: t('projection.table.fixed'),
-    variable: t('projection.table.variable'),
-    punctual: t('projection.table.punctual'),
-    netContribution: t('projection.table.netContribution'),
-    investments: t('projection.table.investments'),
-    monthlyReturn: t('projection.table.monthlyReturn'),
-    patrimony: t('projection.table.patrimony'),
-  };
-
-  const colClass = {
-    date: 'w-[7rem] shrink-0',
-    salary: 'w-[6.5rem] shrink-0 text-right',
-    fixed: 'w-[6.5rem] shrink-0 text-right',
-    variable: 'w-[6.5rem] shrink-0 text-right',
-    punctual: 'w-[6.5rem] shrink-0 text-right',
-    netContribution: 'w-[7rem] shrink-0 text-right',
-    investments: 'w-[7rem] shrink-0 text-right',
-    monthlyReturn: 'w-[7rem] shrink-0 text-right',
-    patrimony:
-      'w-[8rem] shrink-0 text-right font-semibold text-emerald-700 dark:text-emerald-400',
-  };
-
   const tableHeader = (
     <div
-      className={`flex border-b ${ui.divider} ${headBg()}`}
-      style={{ height: HEAD_HEIGHT, minWidth: TABLE_MIN_WIDTH }}
+      className={`flex w-full border-b ${ui.divider} ${headBg()}`}
+      style={{ height: headHeight, ...tableRowLayoutStyle(tableMinWidth) }}
     >
-      {columns.map((key) => (
-        <div
-          key={key}
-          className={`flex h-full items-center px-3 text-xs font-semibold uppercase tracking-wide whitespace-nowrap ${ui.textMuted} ${colClass[key]} ${
-            key === 'date'
-              ? `sticky left-0 z-30 border-r ${ui.divider} ${headBg()}`
-              : ''
-          } ${key === 'patrimony' ? ui.heading : ''}`}
-        >
-          {headerLabels[key]}
-        </div>
-      ))}
+      {columns.map((key) => {
+        const isDate = key === PROJECTION_COLUMN.DATE;
+        const isPatrimony = key === PROJECTION_COLUMN.PATRIMONY;
+        const alignRight = key !== PROJECTION_COLUMN.DATE;
+
+        return (
+          <div
+            key={key}
+            style={columnFlexStyle(key, narrowViewport)}
+            className={`flex shrink-0 items-center overflow-hidden px-2 py-1 sm:px-3 ${
+              alignRight ? 'justify-end text-right' : 'justify-start text-left'
+            } ${
+              isDate
+                ? `sticky left-0 z-30 border-r ${ui.divider} ${headBg()} ${stickyDateShadow(scrolledX)}`
+                : ''
+            }`}
+          >
+            <span
+              className={`block w-full font-semibold text-slate-600 dark:text-slate-400 ${
+                narrowViewport
+                  ? 'text-[10px] leading-snug tracking-normal whitespace-normal'
+                  : 'text-xs uppercase leading-tight tracking-wide whitespace-nowrap'
+              } ${isPatrimony ? ui.heading : ''}`}
+            >
+              {t(headerLabelKey(key, narrowViewport))}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 
@@ -153,51 +176,71 @@ export function ProjectionDataTable() {
         </p>
       ) : null}
 
-      <div className={`${ui.chartCard} !p-0`}>
-        <div className="p-4 pb-0 sm:p-5 sm:pb-0">
-          <ScrollHintBanner
-            hint={t('projection.table.scrollHint')}
-            show={canScrollX}
-          />
+      <div className={`${ui.chartCard} w-full !p-0`}>
+        {canScrollX && narrowViewport ? (
+          <div className={`border-b px-4 py-3 sm:px-5 ${ui.divider}`}>
+            <ScrollHintBanner
+              hint={t('projection.table.scrollHint')}
+              show
+            />
+          </div>
+        ) : null}
+
+        <div className="relative w-full min-w-0 overflow-hidden">
+          {canScrollRight && narrowViewport ? (
+            <div
+              className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-white via-white/95 to-transparent dark:from-slate-900 dark:via-slate-900/95"
+              aria-hidden
+            />
+          ) : null}
 
           <VirtualList
             scrollRef={scrollRef}
-            onScroll={updateEdges}
+            onScroll={handleScroll}
             itemCount={rows.length}
-            itemHeight={ROW_HEIGHT}
-            maxHeight={TABLE_MAX_HEIGHT}
-            headerHeight={HEAD_HEIGHT}
+            itemHeight={rowHeight}
+            maxHeight={tableMaxHeight}
+            headerHeight={headHeight}
             header={tableHeader}
-            minWidth={TABLE_MIN_WIDTH}
+            minWidth={tableMinWidth}
+            scrollClassName="overscroll-x-contain [-webkit-overflow-scrolling:touch]"
           >
             {({ index, style }) => (
               <ProjectionRow
                 row={rows[index]}
                 style={style}
                 columns={columns}
-                colClass={colClass}
+                tableMinWidth={tableMinWidth}
+                narrowViewport={narrowViewport}
+                scrolledX={scrolledX}
                 isEven={index % 2 === 0}
               />
             )}
           </VirtualList>
         </div>
-      </div>
 
-      <p className={`px-4 text-xs leading-snug sm:px-5 ${ui.textMuted}`}>
-        {t('projection.table.monthCount', {
-          count: rows.length,
-          years: projectionYears,
-        })}
-      </p>
+        <p
+          className={`border-t px-4 py-3 text-xs leading-snug sm:px-5 ${ui.divider} ${ui.textMuted}`}
+        >
+          {t('projection.table.monthCount', {
+            count: rows.length,
+            years: projectionYears,
+          })}
+        </p>
+      </div>
     </div>
   );
 }
 
-function headBg() {
-  return 'bg-slate-50 dark:bg-slate-900';
-}
-
-function ProjectionRow({ row, style, columns, colClass, isEven }) {
+function ProjectionRow({
+  row,
+  style,
+  columns,
+  tableMinWidth,
+  narrowViewport,
+  scrolledX,
+  isEven,
+}) {
   const bg = rowBg(isEven);
   const january = row.isJanuary
     ? 'bg-slate-100/90 dark:bg-slate-800/90'
@@ -218,25 +261,36 @@ function ProjectionRow({ row, style, columns, colClass, isEven }) {
     patrimony: formatMoney(row.patrimonyEnd),
   };
 
+  const textSize = narrowViewport ? 'text-xs' : 'text-sm';
+
   return (
     <div
-      style={{ ...style, minWidth: TABLE_MIN_WIDTH }}
-      className={`flex items-center border-b ${ui.divider} ${bg} ${january}`}
+      style={{ ...style, ...tableRowLayoutStyle(tableMinWidth) }}
+      className={`flex w-full items-center border-b ${ui.divider} ${bg} ${january}`}
     >
-      {columns.map((key) => (
-        <div
-          key={key}
-          className={`px-3 text-sm tabular-nums whitespace-nowrap ${colClass[key]} ${
-            key === 'date'
-              ? `sticky left-0 z-10 border-r ${ui.divider} ${bg} ${january} ${ui.textLabel}`
-              : key === 'patrimony'
-                ? ''
-                : ui.textLabel
-          }`}
-        >
-          {cells[key]}
-        </div>
-      ))}
+      {columns.map((key) => {
+        const isDate = key === PROJECTION_COLUMN.DATE;
+        const isPatrimony = key === PROJECTION_COLUMN.PATRIMONY;
+        const alignRight = !isDate;
+
+        return (
+          <div
+            key={key}
+            style={columnFlexStyle(key, narrowViewport)}
+            className={`flex shrink-0 items-center overflow-hidden px-2 tabular-nums sm:px-3 ${textSize} whitespace-nowrap ${
+              alignRight ? 'justify-end text-right' : 'justify-start text-left'
+            } ${
+              isDate
+                ? `sticky left-0 z-10 border-r ${ui.divider} ${bg} ${january} ${ui.textLabel} ${stickyDateShadow(scrolledX)}`
+                : isPatrimony
+                  ? 'font-semibold text-emerald-700 dark:text-emerald-400'
+                  : ui.textLabel
+            }`}
+          >
+            {cells[key]}
+          </div>
+        );
+      })}
     </div>
   );
 }

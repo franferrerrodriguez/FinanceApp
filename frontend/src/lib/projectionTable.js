@@ -13,12 +13,13 @@ export {
 } from './calculations.js';
 
 /**
- * Construye la tabla mensual leyendo settings + aportaciones de Patrimonio.
+ * Builds the monthly table from settings + Balance contributions.
  */
 export function buildMonthlyProjectionTable({
   settings,
   contributionPlans = [],
   annualExpenses = [],
+  cashflowHistory = [],
   salaryHistory = [],
   initialPatrimony,
   startDate,
@@ -30,6 +31,7 @@ export function buildMonthlyProjectionTable({
     settings,
     contributionPlans,
     annualExpenses,
+    cashflowHistory,
     salaryHistory,
     initialPatrimony,
     startDate,
@@ -39,7 +41,7 @@ export function buildMonthlyProjectionTable({
   });
 }
 
-/** @deprecated Usa summarizeProjectionRows */
+/** @deprecated Use summarizeProjectionRows */
 export function summarizeMonthlyProjection(rows, initialPatrimony = 0) {
   const summary = summarizeProjectionRows(rows, initialPatrimony);
   return {

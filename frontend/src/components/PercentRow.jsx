@@ -18,7 +18,7 @@ export function PercentRow({ label, hint, value, onChange }) {
           <p className={`mt-0.5 text-xs leading-snug ${ui.textMuted}`}>{hint}</p>
         ) : null}
       </div>
-      <div className="relative w-[4.5rem] shrink-0">
+      <div className="relative shrink-0">
         <input
           type="number"
           step="0.1"
@@ -26,7 +26,7 @@ export function PercentRow({ label, hint, value, onChange }) {
           max={30}
           value={pctToDisplay(value)}
           onChange={(e) => onChange(displayToPct(e.target.value))}
-          className={`${ui.input} ${ui.inputCompact} w-full py-2 pl-2 pr-6 text-right tabular-nums`}
+          className={`${ui.inputPercent} pr-6`}
         />
         <span
           className={`pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs ${ui.textMuted}`}

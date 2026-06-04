@@ -1,23 +1,23 @@
 /**
- * Aritmética monetaria en céntimos (enteros) para evitar errores de coma flotante.
- * Los importes en estado/UI siguen en euros; las operaciones críticas pasan por aquí.
+ * Money arithmetic in integer cents to avoid floating-point errors.
+ * Amounts in state/UI stay in euros; critical operations go through here.
  */
 
 export const CENTS_PER_EURO = 100;
 
-/** Convierte euros a céntimos (redondeo al céntimo más cercano, half-up). */
+/** Convert euros to cents (round to nearest cent, half-up). */
 export function toCents(euros) {
   const n = Number(euros);
   if (!Number.isFinite(n)) return 0;
   return Math.round(n * CENTS_PER_EURO);
 }
 
-/** Convierte céntimos a euros (número con precisión de céntimo). */
+/** Convert cents to euros (cent-precision number). */
 export function fromCents(cents) {
   return cents / CENTS_PER_EURO;
 }
 
-/** Normaliza un valor en euros tras entrada de usuario o cálculo intermedio. */
+/** Normalize a euro value after user input or intermediate calculation. */
 export function normalizeEuros(euros) {
   return fromCents(toCents(euros));
 }
@@ -28,7 +28,7 @@ export function clampPercent(percent, min = 1, max = 100) {
   return Math.min(max, Math.max(min, Math.round(p)));
 }
 
-/** Parte proporcional en céntimos (redondeo half-up al céntimo). */
+/** Proportional share in cents (half-up to the cent). */
 export function shareCents(totalCents, percent) {
   if (totalCents <= 0) return 0;
   const pct = clampPercent(percent);
@@ -36,10 +36,10 @@ export function shareCents(totalCents, percent) {
 }
 
 /**
- * Tu parte de un gasto compartido, en euros.
- * @param {number} totalEuros - Importe total del gasto
- * @param {boolean} shared - Si el gasto se reparte
- * @param {number} percent - Porcentaje que te corresponde (1–100)
+ * Your share of a shared expense, in euros.
+ * @param {number} totalEuros - Total expense amount
+ * @param {boolean} shared - Whether the expense is split
+ * @param {number} percent - Your share percentage (1–100)
  */
 export function applyShareEuros(totalEuros, shared, percent) {
   const totalCents = toCents(totalEuros);
@@ -47,13 +47,13 @@ export function applyShareEuros(totalEuros, shared, percent) {
   return fromCents(shareCents(totalCents, percent));
 }
 
-/** Suma de importes en euros, resultado normalizado al céntimo. */
+/** Sum euro amounts, result normalized to the cent. */
 export function sumEuros(...amounts) {
   const totalCents = amounts.reduce((acc, e) => acc + toCents(e), 0);
   return fromCents(totalCents);
 }
 
-/** Resta en euros: minuendo − subtraendos, normalizado al céntimo. */
+/** Subtract in euros: minuend − subtrahends, normalized to the cent. */
 export function subtractEuros(minuend, ...subtrahends) {
   const resultCents =
     toCents(minuend) -
@@ -61,7 +61,7 @@ export function subtractEuros(minuend, ...subtrahends) {
   return fromCents(resultCents);
 }
 
-/** Parsea texto de input monetario y devuelve euros normalizados (≥ 0). */
+/** Parse money input text and return normalized euros (≥ 0). */
 export function parseMoneyEuros(raw) {
   const n = parseFloat(String(raw).replace(',', '.'));
   if (!Number.isFinite(n) || n < 0) return 0;
@@ -69,8 +69,8 @@ export function parseMoneyEuros(raw) {
 }
 
 /**
- * Reparte un total en céntimos según pesos enteros (p. ej. 40, 35, 15, 10).
- * Usa el método del resto mayor para que la suma coincida exactamente con el total.
+ * Split a total in cents by integer weights (e.g. 40, 35, 15, 10).
+ * Uses largest remainder so parts sum exactly to the total.
  */
 export function allocateCents(totalCents, weights) {
   if (!weights.length) return [];
@@ -94,7 +94,7 @@ export function allocateCents(totalCents, weights) {
   return result;
 }
 
-/** Reparte euros según pesos; devuelve array de euros normalizados. */
+/** Split euros by weights; returns array of normalized euro amounts. */
 export function allocateEurosByWeights(totalEuros, weights) {
   return allocateCents(toCents(totalEuros), weights).map(fromCents);
 }

@@ -1,25 +1,36 @@
 # FinanciaApp — Frontend
 
-React 19 + Vite 8 + Zustand + Tailwind + Supabase Auth.
+React 19 + Vite 8 + Zustand + Tailwind + Supabase Auth + Ionic/Capacitor (Android/iOS).
 
-## Variables de entorno
+## Environment variables
 
-Copia `.env.example` a `.env`:
+Copy `.env.example` to `.env`:
 
 ```env
-VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
-VITE_SUPABASE_ANON_KEY=tu-anon-key
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
 ```
 
-Nunca subas `.env` al repositorio.
+Never commit `.env` to the repository.
 
-## Desarrollo
+## Development
 
 ```bash
 npm install
 npm run dev
 ```
 
-## Documentación
+## Mobile
 
-Ver [`functional.md`](functional.md) para modelo de datos, módulos y roadmap.
+```bash
+npm run build:mobile
+npm run cap:open:android   # or cap:run:android
+```
+
+See [`docs/MOBILE.md`](docs/MOBILE.md).
+
+## Documentation
+
+- [`functional.md`](functional.md) — data model, modules, roadmap
+- [`docs/MOBILE.md`](docs/MOBILE.md) — Android / iOS workflow
+- [`docs/AUTH.md`](docs/AUTH.md) — auth and privacy notes

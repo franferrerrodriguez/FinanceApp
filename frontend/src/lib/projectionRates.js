@@ -1,4 +1,4 @@
-/** Tasas anuales usadas en proyección (fondos, pensiones, etc.). */
+/** Annual rates used in projection (funds, pensions, etc.). */
 
 export function getProjectionAnnualRate(settings) {
   if (!settings) return 0.04;

@@ -18,7 +18,7 @@ export function getAnnualExpensesMonthlyAverage(items = []) {
   return total / 12;
 }
 
-/** Gastos puntuales que caen en el mes calendario de `date` (1–12). */
+/** One-off expenses in the calendar month of `date` (1–12). */
 export function getPunctualExpensesForDate(items, date) {
   if (!date || !items?.length) return 0;
   const calendarMonth = date.getMonth() + 1;

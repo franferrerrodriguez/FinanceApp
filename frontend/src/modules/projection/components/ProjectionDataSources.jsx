@@ -1,10 +1,8 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import {
-  calcTotalFixedExpenses,
-  calcTotalIncome,
-  calcTotalVariableExpenses,
-} from '../../../lib/calculations';
+import { BALANCE_TAB, balancePath } from '../../../lib/balanceTabs';
+import { getCashflowTotalsForDate } from '../../../lib/cashflowHistory';
 import {
   getTotalMonthlyContributions,
   hasProjectionInvestmentPlans,
@@ -17,11 +15,12 @@ import { formatMoney, formatPercent } from '../../../utils/formatters';
 
 export function ProjectionDataSources() {
   const { t } = useTranslation();
-  const { settings, contributionPlans, salaryHistory } = useFinanceData();
+  const { settings, contributionPlans, cashflowHistory } = useFinanceData();
 
-  const income = calcTotalIncome(settings);
-  const fixed = calcTotalFixedExpenses(settings);
-  const variable = calcTotalVariableExpenses(settings);
+  const totals = useMemo(
+    () => getCashflowTotalsForDate(settings, cashflowHistory, new Date()),
+    [settings, cashflowHistory],
+  );
   const investments = resolveInvestmentContributionsForMonth(
     contributionPlans,
     0,
@@ -42,44 +41,44 @@ export function ProjectionDataSources() {
       <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <SourceItem
           label={t('projection.sources.income')}
-          value={formatMoney(income)}
-          editTo="/balance?tab=cashflow"
+          value={formatMoney(totals.income)}
+          editTo={balancePath(BALANCE_TAB.CASHFLOW)}
         />
         <SourceItem
           label={t('projection.sources.fixed')}
-          value={formatMoney(fixed)}
-          editTo="/balance?tab=cashflow"
+          value={formatMoney(totals.fixed)}
+          editTo={balancePath(BALANCE_TAB.CASHFLOW)}
         />
         <SourceItem
           label={t('projection.sources.variable')}
-          value={formatMoney(variable)}
-          editTo="/balance?tab=cashflow"
+          value={formatMoney(totals.leisure)}
+          editTo={balancePath(BALANCE_TAB.CASHFLOW)}
         />
         <SourceItem
-          label={t('projection.sources.salaryHistory')}
+          label={t('projection.sources.cashflowTramos')}
           value={
-            salaryHistory.length > 0
-              ? t('projection.sources.salaryHistoryCount', {
-                  count: salaryHistory.length,
+            cashflowHistory.length > 0
+              ? t('projection.sources.cashflowTramosCount', {
+                  count: cashflowHistory.length,
                 })
-              : t('projection.sources.salaryHistoryFlat')
+              : t('projection.sources.cashflowTramosFlat')
           }
-          editTo="/balance?tab=cashflow"
+          editTo={balancePath(BALANCE_TAB.CASHFLOW)}
         />
         <SourceItem
           label={t('projection.sources.expenseIncrease')}
           value={formatPercent(settings.projectionAnnualExpenseIncrease ?? 0)}
-          editTo="/balance?tab=cashflow"
+          editTo="/projection"
         />
         <SourceItem
           label={t('projection.sources.investments')}
           value={formatMoney(investments)}
-          editTo="/balance?tab=contributions"
+          editTo={balancePath(BALANCE_TAB.CONTRIBUTIONS)}
         />
         <SourceItem
           label={t('projection.sources.patrimony')}
           value={formatMoney(settings.initialPatrimony ?? 0)}
-          editTo="/balance?tab=cashflow"
+          editTo={balancePath(BALANCE_TAB.CONTRIBUTIONS)}
         />
         <SourceItem
           label={t('projection.sources.return')}

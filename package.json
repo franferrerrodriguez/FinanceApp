@@ -1,0 +1,30 @@
+{
+  "name": "financeapp",
+  "version": "1.0.0",
+  "description": "Personal finance web app (React + Vite + Zustand + Supabase).",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "db:migrate": "node scripts/apply-supabase-migrations.mjs",
+    "db:verify": "node scripts/verify-supabase-client.mjs",
+    "db:delete-user": "node scripts/delete-supabase-user.mjs",
+    "auth:no-email-confirm": "node scripts/disable-email-confirmation.mjs",
+    "mobile:build": "npm run build:mobile --prefix frontend",
+    "mobile:android": "npm run cap:open:android --prefix frontend",
+    "mobile:ios": "npm run cap:open:ios --prefix frontend"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/franferrerrodriguez/FinanceApp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/franferrerrodriguez/FinanceApp/issues"
+  },
+  "homepage": "https://github.com/franferrerrodriguez/FinanceApp#readme",
+  "devDependencies": {
+    "pg": "^8.21.0"
+  }
+}

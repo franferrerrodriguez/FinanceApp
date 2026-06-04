@@ -2,7 +2,7 @@ import { ONBOARDING_STEP_IDS } from '../../modules/onboarding/constants';
 
 const MAX_ONBOARDING_STEP = ONBOARDING_STEP_IDS.length - 1;
 
-/** Flujo de onboarding (paso actual + completado). */
+/** Onboarding flow (current step + completed flag). */
 export const createOnboardingSlice = (set) => ({
   onboardingCompleted: false,
   onboardingStep: 0,

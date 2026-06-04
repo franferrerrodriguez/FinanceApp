@@ -1,10 +1,11 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthModal } from './components/AuthModal';
 import { Layout } from './components/Layout';
+import { RequireAuth } from './components/RequireAuth';
 import { RequireOnboarding } from './components/RequireOnboarding';
+import { AccountPage } from './modules/account/AccountPage';
 import { AuthModalProvider } from './context/AuthModalContext';
 import { useAppPreferencesSync } from './hooks/useAppPreferencesSync';
-import { useSupabaseSession } from './hooks/useSupabaseSession';
 import { BalancePage } from './modules/balance/BalancePage';
 import { DashboardPage } from './modules/dashboard/DashboardPage';
 import { OnboardingGate } from './modules/onboarding/OnboardingGate';
@@ -20,7 +21,6 @@ function HomeRedirect() {
 
 function AppRoutes() {
   useAppPreferencesSync();
-  useSupabaseSession();
 
   return (
     <Routes>
@@ -44,10 +44,20 @@ function AppRoutes() {
           }
         />
         <Route
-          path="proyeccion"
+          path="projection"
           element={
             <RequireOnboarding>
               <ProjectionPage />
+            </RequireOnboarding>
+          }
+        />
+        <Route
+          path="cuenta"
+          element={
+            <RequireOnboarding>
+              <RequireAuth>
+                <AccountPage />
+              </RequireAuth>
             </RequireOnboarding>
           }
         />
