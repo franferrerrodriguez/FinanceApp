@@ -103,6 +103,13 @@ export function getPendingCloseMonths(
   );
 }
 
+/** Prefer current month; otherwise the most recent pending month. */
+export function pickSuggestedCloseMonthKey(pendingMonths, currentKey) {
+  if (!pendingMonths?.length) return null;
+  if (pendingMonths.includes(currentKey)) return currentKey;
+  return pendingMonths[pendingMonths.length - 1];
+}
+
 export function getMonthlyCloseStatus(
   snapshots,
   assets,
@@ -142,7 +149,7 @@ export function getMonthlyCloseStatus(
   return {
     pendingMonths,
     overdueMonths,
-    suggestedMonthKey: pendingMonths[0],
+    suggestedMonthKey: pickSuggestedCloseMonthKey(pendingMonths, currentKey),
     urgency,
     daysLeftInMonth: daysLeft,
     currentMonthPending,
@@ -176,26 +183,17 @@ export function getMonthlyCloseMonthOptions(
     }));
 }
 
+export function isMonthlyCloseAlert(alert) {
+  return (
+    alert?.id === 'monthly_close_due' || alert?.id === 'monthly_close_overdue'
+  );
+}
+
 export function getMonthlyCloseAlert(status, locale = 'es') {
   if (!status?.suggestedMonthKey || status.urgency === 'none') return null;
 
   const monthLabel = formatMonthKey(status.suggestedMonthKey, locale);
   const href = balanceClosePath(status.suggestedMonthKey);
-
-  if (status.overdueMonths.length > 0) {
-    const oldest = status.overdueMonths[0];
-    return {
-      id: 'monthly_close_overdue',
-      severity: 'danger',
-      actionKey: 'alerts.monthlyCloseAction',
-      params: {
-        count: status.pendingMonths.length,
-        month: formatMonthKey(oldest, locale),
-      },
-      href,
-      monthKey: status.suggestedMonthKey,
-    };
-  }
 
   if (status.urgency === 'warn' && status.currentMonthPending) {
     return {

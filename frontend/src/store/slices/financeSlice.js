@@ -12,6 +12,7 @@ import {
   getTotalMonthlyContributions,
 } from '../../lib/contributionPlans';
 import { dedupeFinanceList } from '../../lib/mergeFinanceLists';
+import { dedupeSnapshots } from '../../lib/snapshotPersist.js';
 import {
   deleteAssetFromCloud,
   deleteLiabilityFromCloud,
@@ -252,9 +253,9 @@ export const createFinanceSlice = (set, get) => ({
 
   closeMonthSnapshots: (monthKey, newSnapshots) =>
     set((state) => ({
-      snapshots: [
+      snapshots: dedupeSnapshots([
         ...state.snapshots.filter((s) => getSnapshotMonthKey(s) !== monthKey),
         ...newSnapshots,
-      ],
+      ]),
     })),
 });

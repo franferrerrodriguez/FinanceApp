@@ -3,9 +3,9 @@ import { buildAppDataPayload, mapSettingsToUserSettingsRow } from './mapSettings
 import {
   mapAssetRow,
   mapLiabilityRow,
-  mapSnapshotRow,
 } from './patrimonyDb';
 import { filterDraftAssets, filterDraftLiabilities } from './patrimonyDrafts';
+import { upsertSnapshotsToSupabase } from './snapshotPersist';
 import { supabase, supabaseConfigured } from './supabase';
 
 /** Saves profile, settings, app_data and patrimony lists to Supabase. */
@@ -62,11 +62,7 @@ export async function persistUserToSupabase(userId) {
     }
 
     if (snapshots.length) {
-      const { error } = await supabase.from('monthly_snapshots').upsert(
-        snapshots.map((s) => mapSnapshotRow(s, userId)),
-        { onConflict: 'id' },
-      );
-      if (error) throw error;
+      await upsertSnapshotsToSupabase(supabase, snapshots, userId);
     }
 
     useAppStore.setState({ cloudSyncStatus: 'ready' });

@@ -5,21 +5,19 @@ import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import {
   notifyAfterSave,
-  saveToCloudQuiet,
   useToast,
 } from '../../../context/ToastContext';
 import { FinanceAlerts } from '../../../components/FinanceAlerts';
 import { useFinanceAlerts } from '../../../hooks/useFinanceAlerts';
 import { getAssetCategories, getLiabilityCategories } from '../../../lib/categoryLabels';
 import { getCurrentMonthKey } from '../../../lib/dashboardMetrics';
-import { isMonthKey } from '../../../lib/monthlyClose';
+import { isMonthKey, isMonthlyCloseAlert } from '../../../lib/monthlyClose';
 import {
   countSnapshotMonthsForAsset,
   countSnapshotMonthsForLiability,
 } from '../../../lib/snapshotUtils';
 import { formatInstitutionLabel } from '../../../lib/institutions';
 import {
-  buildCurrentBalanceRows,
   createAsset,
   createLiability,
   getActiveAssets,
@@ -50,7 +48,6 @@ import { LiabilityEditModal } from './LiabilityEditModal';
 import { PatrimonyDeleteConfirmModal } from './PatrimonyDeleteConfirmModal';
 import { MonthlyCloseModal } from './MonthlyCloseModal';
 import { PatrimonyCatalogTable } from './PatrimonyCatalogTable';
-import { PatrimonyCurrentBalances } from './PatrimonyCurrentBalances';
 import { PatrimonyEvolutionSection } from './PatrimonyEvolutionSection';
 import { PatrimonyHistoryTable } from './PatrimonyHistoryTable';
 
@@ -59,6 +56,10 @@ export function PatrimonyPanel() {
   const { locale } = usePreferences();
   const [searchParams, setSearchParams] = useSearchParams();
   const { alerts, monthlyClose } = useFinanceAlerts();
+  const patrimonyAlerts = useMemo(
+    () => alerts.filter((alert) => !isMonthlyCloseAlert(alert)),
+    [alerts],
+  );
   const {
     settings,
     assets,
@@ -66,11 +67,9 @@ export function PatrimonyPanel() {
     snapshots,
     addAsset,
     updateAsset,
-    setAssetActive,
     removeAsset,
     addLiability,
     updateLiability,
-    setLiabilityActive,
     removeLiability,
     closeMonthSnapshots,
   } = useFinanceData();
@@ -107,10 +106,7 @@ export function PatrimonyPanel() {
   const hasAccounts =
     getActiveAssets(assets).length > 0 || getActiveLiabilities(liabilities).length > 0;
 
-  const { rows: currentBalanceRows, hasAnyBalance } = useMemo(
-    () => buildCurrentBalanceRows(assets, liabilities, snapshots, currentMonthKey),
-    [assets, liabilities, snapshots, currentMonthKey],
-  );
+  const hasAnyBalance = summary.hasClose;
 
   const asOfLabel = summary.hasClose
     ? summary.asOfDate
@@ -156,8 +152,8 @@ export function PatrimonyPanel() {
 
   return (
     <div className={ui.stackPage}>
-      {alerts.length > 0 ? (
-        <FinanceAlerts alerts={alerts} className={ui.chartCard} />
+      {patrimonyAlerts.length > 0 ? (
+        <FinanceAlerts alerts={patrimonyAlerts} className={ui.chartCard} />
       ) : null}
 
       <div className={`${ui.chartCard} ${ui.stackSection}`}>
@@ -214,15 +210,32 @@ export function PatrimonyPanel() {
         </div>
       </div>
 
-      {hasAccounts ? (
-        <PatrimonyCurrentBalances
-          rows={currentBalanceRows}
-          asOfLabel={asOfLabel}
-          hasAnyBalance={hasAnyBalance}
-          onUpdate={() => openRecordBalances()}
-          onViewHistory={hasAnyBalance ? scrollToPatrimonyHistory : undefined}
-        />
-      ) : null}
+      <PatrimonyAssetsSection
+        settings={settings}
+        assets={assets}
+        snapshots={snapshots}
+        getBalance={getAssetBalance}
+        addAsset={addAsset}
+        updateAsset={updateAsset}
+        removeAsset={removeAsset}
+        saveToCloud={saveToCloud}
+        asOfLabel={asOfLabel}
+        hasAnyBalance={hasAnyBalance}
+        onViewHistory={hasAnyBalance ? scrollToPatrimonyHistory : undefined}
+      />
+
+      <PatrimonyLiabilitiesSection
+        settings={settings}
+        liabilities={liabilities}
+        snapshots={snapshots}
+        getBalance={getLiabilityBalance}
+        addLiability={addLiability}
+        updateLiability={updateLiability}
+        removeLiability={removeLiability}
+        saveToCloud={saveToCloud}
+        asOfLabel={asOfLabel}
+        hasAnyBalance={hasAnyBalance}
+      />
 
       <section
         id="patrimony-history"
@@ -241,30 +254,6 @@ export function PatrimonyPanel() {
 
       <PatrimonyEvolutionSection snapshots={snapshots} locale={locale} />
 
-      <PatrimonyAssetsSection
-        settings={settings}
-        assets={assets}
-        snapshots={snapshots}
-        getBalance={getAssetBalance}
-        addAsset={addAsset}
-        updateAsset={updateAsset}
-        setAssetActive={setAssetActive}
-        removeAsset={removeAsset}
-        saveToCloud={saveToCloud}
-      />
-
-      <PatrimonyLiabilitiesSection
-        settings={settings}
-        liabilities={liabilities}
-        snapshots={snapshots}
-        getBalance={getLiabilityBalance}
-        addLiability={addLiability}
-        updateLiability={updateLiability}
-        setLiabilityActive={setLiabilityActive}
-        removeLiability={removeLiability}
-        saveToCloud={saveToCloud}
-      />
-
       <MonthlyCloseModal
         open={balancesOpen}
         onClose={() => setBalancesOpen(false)}
@@ -278,7 +267,7 @@ export function PatrimonyPanel() {
           toast.success(t('toast.balancesSaved'));
           requestAnimationFrame(() => {
             document
-              .getElementById('patrimony-current-balances')
+              .getElementById('patrimony-assets')
               ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
           });
         }}
@@ -296,11 +285,15 @@ function RecordBalancesAction({
   onGoToCatalog,
 }) {
   const { t } = useTranslation();
-  const label = pendingMonths
-    ? t('balance.patrimony.recordBalancesFor', {
-        month: formatMonthKeyLong(suggestedMonthKey, locale),
-      })
-    : t('balance.patrimony.recordBalances');
+  const currentMonthKey = getCurrentMonthKey();
+  const label =
+    pendingMonths &&
+    suggestedMonthKey &&
+    suggestedMonthKey !== currentMonthKey
+      ? t('balance.patrimony.recordBalancesFor', {
+          month: formatMonthKeyLong(suggestedMonthKey, locale),
+        })
+      : t('balance.patrimony.recordBalances');
 
   return (
     <div className="flex w-full min-w-0 flex-col items-stretch gap-2 lg:w-auto lg:max-w-[18rem] lg:shrink-0 lg:items-end">
@@ -384,9 +377,11 @@ function PatrimonyAssetsSection({
   getBalance,
   addAsset,
   updateAsset,
-  setAssetActive,
   removeAsset,
   saveToCloud,
+  asOfLabel,
+  hasAnyBalance,
+  onViewHistory,
 }) {
   const { t } = useTranslation();
   const toast = useToast();
@@ -505,11 +500,6 @@ function PatrimonyAssetsSection({
     if (asset) requestDelete(asset);
   };
 
-  const handleToggleActive = async (id, isActive) => {
-    setAssetActive(id, isActive);
-    await saveToCloudQuiet({ toast, t, saveFn: saveToCloud });
-  };
-
   return (
     <section
       id="patrimony-assets"
@@ -518,6 +508,13 @@ function PatrimonyAssetsSection({
       <SectionHeader
         title={t('balance.patrimony.assetsTitle')}
         subtitle={t('balance.patrimony.assetsSubtitle')}
+        hint={
+          hasAnyBalance
+            ? t('balance.patrimony.balancesAsOf', { date: asOfLabel })
+            : catalogAssets.length > 0
+              ? t('balance.patrimony.balancesMissing')
+              : null
+        }
       />
 
       {catalogAssets.length > 0 ? (
@@ -529,11 +526,20 @@ function PatrimonyAssetsSection({
           getBalance={getBalance}
           onEdit={openEdit}
           onDelete={requestDelete}
-          onToggleActive={handleToggleActive}
         />
       ) : (
         <EmptyBlock message={t('balance.patrimony.assetsEmpty')} />
       )}
+
+      {hasAnyBalance && onViewHistory ? (
+        <button
+          type="button"
+          onClick={onViewHistory}
+          className="text-sm font-medium text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400"
+        >
+          {t('balance.patrimony.currentBalancesViewHistory')}
+        </button>
+      ) : null}
 
       <CatalogSectionToolbar
         addLabel={
@@ -575,9 +581,10 @@ function PatrimonyLiabilitiesSection({
   getBalance,
   addLiability,
   updateLiability,
-  setLiabilityActive,
   removeLiability,
   saveToCloud,
+  asOfLabel,
+  hasAnyBalance,
 }) {
   const { t } = useTranslation();
   const toast = useToast();
@@ -635,16 +642,16 @@ function PatrimonyLiabilitiesSection({
     if (liability) setDeleteTarget(liability);
   };
 
-  const handleToggleActive = async (id, isActive) => {
-    setLiabilityActive(id, isActive);
-    await saveToCloudQuiet({ toast, t, saveFn: saveToCloud });
-  };
-
   return (
     <section className={`${ui.chartCard} ${ui.stackSection}`}>
       <SectionHeader
         title={t('balance.patrimony.liabilitiesTitle')}
         subtitle={t('balance.patrimony.liabilitiesSubtitle')}
+        hint={
+          hasAnyBalance && catalogLiabilities.length > 0
+            ? t('balance.patrimony.balancesAsOf', { date: asOfLabel })
+            : null
+        }
       />
 
       {catalogLiabilities.length > 0 ? (
@@ -656,7 +663,6 @@ function PatrimonyLiabilitiesSection({
           getBalance={getBalance}
           onEdit={openEdit}
           onDelete={setDeleteTarget}
-          onToggleActive={handleToggleActive}
         />
       ) : (
         <EmptyBlock

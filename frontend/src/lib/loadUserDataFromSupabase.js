@@ -1,4 +1,5 @@
 import { mergeFinanceLists } from './mergeFinanceLists';
+import { dedupeSnapshots } from './snapshotPersist';
 import { filterDraftAssets, filterDraftLiabilities } from './patrimonyDrafts';
 import { mergePersistedState } from '../store/persistConfig';
 import { useAppStore } from '../store/appStore';
@@ -101,9 +102,11 @@ export async function loadUserDataFromSupabase(userId) {
           lists.liabilities ?? current.liabilities,
         ),
       ),
-      snapshots: mergeFinanceLists(
-        cloudSnapshots,
-        lists.snapshots ?? current.snapshots,
+      snapshots: dedupeSnapshots(
+        mergeFinanceLists(
+          cloudSnapshots,
+          lists.snapshots ?? current.snapshots,
+        ),
       ),
       profile,
       locale: lists.locale,

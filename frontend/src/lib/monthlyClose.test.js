@@ -4,6 +4,7 @@ import {
   getPendingCloseMonths,
   isMonthFullyClosed,
   isMonthKey,
+  pickSuggestedCloseMonthKey,
 } from './monthlyClose.js';
 import { createAsset, createLiability } from './patrimony.js';
 
@@ -48,8 +49,33 @@ const overdueWithHistory = getMonthlyCloseStatus(mayClose, [asset], [], {
   now: new Date(2026, 6, 5),
 });
 assert.ok(overdueWithHistory.pendingMonths.includes('2026-06'));
+assert.ok(overdueWithHistory.pendingMonths.includes('2026-07'));
+assert.equal(overdueWithHistory.suggestedMonthKey, '2026-07');
 assert.equal(overdueWithHistory.overdueMonths[0], '2026-06');
 assert.equal(overdueWithHistory.urgency, 'danger');
+
+assert.equal(
+  pickSuggestedCloseMonthKey(['2026-05', '2026-06'], '2026-06'),
+  '2026-06',
+);
+assert.equal(
+  pickSuggestedCloseMonthKey(['2026-05', '2026-06'], '2026-07'),
+  '2026-06',
+);
+
+const asset2 = createAsset({ id: 'a2', name: 'Fondo', category: 'investment' });
+const mayAndJunePartial = getMonthlyCloseStatus(
+  [
+    { id: 's1', assetId: 'a1', snapshotDate: '2026-05-31', value: 1000 },
+    { id: 's2', assetId: 'a1', snapshotDate: '2026-06-05', value: 2000 },
+  ],
+  [asset, asset2],
+  [],
+  { now: new Date(2026, 5, 15) },
+);
+assert.ok(mayAndJunePartial.pendingMonths.includes(may));
+assert.ok(mayAndJunePartial.pendingMonths.includes(june));
+assert.equal(mayAndJunePartial.suggestedMonthKey, june);
 
 const liability = createLiability({ id: 'l1', name: 'Hipoteca' });
 assert.equal(

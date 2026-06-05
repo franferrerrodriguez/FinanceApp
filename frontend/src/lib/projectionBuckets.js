@@ -1,10 +1,7 @@
 import { annualToMonthlyRate } from './calculations.js';
 import { getCurrentMonthKey } from './dashboardMetrics.js';
 import { sumEuros } from './money.js';
-import {
-  resolveContributionsForMonth,
-  resolveInvestmentContributionsForMonth,
-} from './contributionPlans.js';
+import { resolveContributionsForMonth } from './contributionPlans.js';
 import {
   getSnapshotAssetId,
   getSnapshotLiabilityId,
@@ -177,24 +174,14 @@ export function computeWeightedPortfolioReturn(buckets, bucketRates) {
 
 export function splitContributionsToBuckets(plans, monthIndex, netContribution) {
   const bucketContrib = createEmptyBuckets();
-  const additionalInvestments = resolveInvestmentContributionsForMonth(
-    plans,
-    monthIndex,
-  );
-  const freeSavings = round(netContribution - additionalInvestments);
+  const { total, breakdown } = resolveContributionsForMonth(plans, monthIndex);
+  const freeSavings = round(Math.max(0, netContribution - total));
   bucketContrib.liquid += freeSavings;
 
-  const { breakdown } = resolveContributionsForMonth(plans, monthIndex);
   for (const item of breakdown) {
     if (item.amount <= 0) continue;
     const bucket = planCategoryToBucket(item.category);
-    if (
-      item.category === 'investment' ||
-      item.category === 'etf' ||
-      item.category === 'pension'
-    ) {
-      bucketContrib[bucket] = round(bucketContrib[bucket] + item.amount);
-    }
+    bucketContrib[bucket] = round(bucketContrib[bucket] + item.amount);
   }
 
   return bucketContrib;

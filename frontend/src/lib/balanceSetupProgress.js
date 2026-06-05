@@ -4,10 +4,8 @@ import {
   calcTotalIncome,
   calcTotalVariableExpenses,
 } from './calculations.js';
-import {
-  hasActiveContributionAmounts,
-  hasInvestmentDestinationAssets,
-} from './contributionPlans.js';
+import { hasActiveContributionAmounts } from './contributionPlans.js';
+import { filterDraftAssets } from './patrimonyDrafts.js';
 import { getCurrentPatrimonySummary } from './patrimony.js';
 
 export const BALANCE_SETUP_STEP = {
@@ -30,9 +28,12 @@ export function hasMonthlySavingsConfigured(settings) {
  * Step 3 done when there is nothing to allocate (only bank/cash)
  * or the user set monthly amounts to funds/pension.
  */
+/** Optional step: done once you have accounts, or when a plan line has amounts. */
 export function isInvestStepComplete(assets, contributionPlans) {
-  if (!hasInvestmentDestinationAssets(assets)) return true;
-  return hasActiveContributionAmounts(contributionPlans);
+  const active = filterDraftAssets(assets).filter((a) => a.isActive !== false);
+  if (!active.length) return false;
+  if (hasActiveContributionAmounts(contributionPlans)) return true;
+  return active.length > 0;
 }
 
 export function getBalanceSetupProgress({

@@ -138,11 +138,31 @@ function getLatestSnapshotDateInMonth(snapshots, monthKey) {
   return latest || null;
 }
 
-export function buildCloseMonthSnapshots({ assetRows, liabilityRows, snapshotDate }) {
+function findExistingSnapshotForClose(existingSnapshots, { assetId, liabilityId, snapshotDate }) {
+  const monthKey = String(snapshotDate).slice(0, 7);
+  return (existingSnapshots ?? []).find((snap) => {
+    const snapMonth = String(snap.snapshotDate ?? '').slice(0, 7);
+    if (snapMonth !== monthKey) return false;
+    if (assetId) return getSnapshotAssetId(snap) === assetId;
+    if (liabilityId) return getSnapshotLiabilityId(snap) === liabilityId;
+    return false;
+  });
+}
+
+export function buildCloseMonthSnapshots({
+  assetRows,
+  liabilityRows,
+  snapshotDate,
+  existingSnapshots = [],
+}) {
   const snaps = [];
   for (const row of assetRows ?? []) {
+    const existing = findExistingSnapshotForClose(existingSnapshots, {
+      assetId: row.assetId,
+      snapshotDate,
+    });
     snaps.push({
-      id: createId(),
+      id: existing?.id ?? createId(),
       assetId: row.assetId,
       snapshotDate,
       value: Math.max(0, Number(row.value) || 0),
@@ -150,8 +170,12 @@ export function buildCloseMonthSnapshots({ assetRows, liabilityRows, snapshotDat
   }
   for (const row of liabilityRows ?? []) {
     const amount = Math.max(0, Number(row.value) || 0);
+    const existing = findExistingSnapshotForClose(existingSnapshots, {
+      liabilityId: row.liabilityId,
+      snapshotDate,
+    });
     snaps.push({
-      id: createId(),
+      id: existing?.id ?? createId(),
       liabilityId: row.liabilityId,
       snapshotDate,
       value: amount > 0 ? -amount : 0,

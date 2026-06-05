@@ -81,8 +81,7 @@ const fundAsset = createAsset({
 const eligible = getContributionEligibleAssets(
   [bankAsset, fundAsset, createAsset({ category: 'cash' })],
 );
-assert.equal(eligible.length, 1);
-assert.equal(eligible[0].id, 'a-fund');
+assert.equal(eligible.length, 2);
 
 const linked = syncPlanWithAsset(createContributionPlan(), fundAsset);
 assert.equal(linked.assetId, 'a-fund');

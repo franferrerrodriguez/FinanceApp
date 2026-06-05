@@ -8,8 +8,9 @@ import {
 
 export { getPlanAnnualReturn, getReturnForCategory } from './projectionReturns.js';
 
-/** Asset categories that can receive planned monthly contributions (not bank — salary stays in liquid). */
+/** Any active asset can have a planned monthly amount (projection habit). */
 export const CONTRIBUTION_ELIGIBLE_CATEGORIES = [
+  'bank',
   'investment',
   'etf',
   'pension',

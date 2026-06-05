@@ -22,8 +22,13 @@ assert.equal(
   true,
 );
 
-const fund = createAsset({ id: 'f1', category: 'investment', name: 'Indexa' });
-assert.equal(isInvestStepComplete([fund], []), false);
+const fund = createAsset({
+  id: 'f1',
+  category: 'investment',
+  name: 'Indexa',
+  provider: 'indexa',
+});
+assert.equal(isInvestStepComplete([fund], []), true);
 assert.equal(
   isInvestStepComplete(
     [fund],
@@ -31,7 +36,10 @@ assert.equal(
   ),
   true,
 );
-assert.equal(isInvestStepComplete([createAsset({ category: 'bank' })], []), true);
+assert.equal(
+  isInvestStepComplete([createAsset({ category: 'bank', provider: 'bankinter' })], []),
+  true,
+);
 
 const progress = getBalanceSetupProgress({
   settings,
@@ -39,7 +47,7 @@ const progress = getBalanceSetupProgress({
   snapshots: [],
   contributionPlans: [],
 });
-assert.equal(progress.completeCount, 1);
+assert.equal(progress.completeCount, 2);
 assert.equal(progress.nextStepId, 'accounts');
 assert.equal(progress.allComplete, false);
 

@@ -89,6 +89,7 @@ export function MonthlyCloseModal({
       assetRows,
       liabilityRows,
       snapshotDate: initial.snapshotDate,
+      existingSnapshots: snapshots,
     });
     onConfirm(resolvedMonthKey, snaps);
     onClose();
