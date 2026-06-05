@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {
   buildCloseMonthSnapshots,
+  buildCurrentBalanceRows,
   buildMonthlyCloseDrafts,
   buildPatrimonyHistoryTable,
   createAsset,
@@ -76,7 +77,45 @@ const table = buildPatrimonyHistoryTable({
 
 assert.ok(table.valueGrid.length === 2);
 const juneIdx = table.monthKeys.indexOf('2026-06');
-assert.ok(juneIdx >= 0);
+assert.ok(juneIdx >= 0, 'history table must include months with saved balances');
 assert.equal(table.monthTotals[juneIdx].netWorth, 12000 - 79000);
+
+const sparse = buildPatrimonyHistoryTable({
+  assets: [asset],
+  liabilities: [],
+  snapshots: [
+    {
+      id: 'only',
+      assetId: 'a1',
+      snapshotDate: '2026-06-05',
+      value: 6000,
+    },
+  ],
+  months: 12,
+});
+assert.ok(
+  sparse.monthKeys.includes('2026-06'),
+  'sparse snapshots must still appear in history columns',
+);
+assert.equal(sparse.valueGrid[0].values[sparse.monthKeys.indexOf('2026-06')], 6000);
+
+const current = buildCurrentBalanceRows(
+  [asset],
+  [liability],
+  [
+    {
+      id: 's3',
+      assetId: 'a1',
+      snapshotDate: '2026-06-05',
+      value: 6000,
+    },
+  ],
+  '2026-06',
+);
+
+assert.equal(current.rows.length, 2);
+assert.equal(current.hasAnyBalance, true);
+assert.equal(current.rows[0].balance, 6000);
+assert.equal(current.rows[1].hasBalance, false);
 
 console.log('patrimony.test.js OK');

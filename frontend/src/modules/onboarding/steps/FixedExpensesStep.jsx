@@ -3,11 +3,9 @@ import {
   getEffectiveGroceries,
   getEffectiveHouseholdExpenses,
   getEffectiveLeisureExpenses,
-  getEffectiveMortgageRent,
   getGroceriesTotal,
   getHouseholdTotal,
   getLeisureTotal,
-  getMortgageRentTotal,
 } from '../../../lib/calculations';
 import { patchExpenseViewMode } from '../../../lib/expenseViewMode';
 import { DetailedHouseholdBreakdown } from '../components/DetailedHouseholdBreakdown';
@@ -16,6 +14,7 @@ import { ui } from '../../../lib/uiClasses';
 import { useSettings } from '../../../store/hooks';
 import { ExpenseSubtotals } from '../components/ExpenseSubtotals';
 import { OnboardingActions } from '../components/OnboardingActions';
+import { HousingExpenseBlock } from '../../../components/HousingExpenseBlock';
 import { SharedExpenseBlock } from '../components/SharedExpenseBlock';
 
 export function FixedExpensesStep({ onBack, onNext }) {
@@ -36,21 +35,10 @@ export function FixedExpensesStep({ onBack, onNext }) {
       <p className={`mb-6 ${ui.text}`}>{t('onboarding.expenses.subtitle')}</p>
 
       <div className="space-y-4">
-        <SharedExpenseBlock
-          id="mortgage-rent"
-          label={t('onboarding.expenses.mortgageRentTotal')}
-          hint={t('onboarding.expenses.mortgageRentTotalHint')}
-          total={getMortgageRentTotal(settings)}
-          yourShare={getEffectiveMortgageRent(settings)}
-          shared={settings.mortgageRentShared ?? false}
-          percent={settings.mortgageRentYourSharePercent ?? 50}
-          onTotalChange={(v) =>
-            setSettings({ mortgageRentTotal: v, mortgageRent: v })
-          }
-          onSharedChange={(v) => setSettings({ mortgageRentShared: v })}
-          onPercentChange={(v) =>
-            setSettings({ mortgageRentYourSharePercent: v })
-          }
+        <HousingExpenseBlock
+          settings={settings}
+          setSettings={setSettings}
+          snapshots={[]}
         />
 
         {!detailed && (

@@ -1,5 +1,85 @@
 import { sumEuros } from './money.js';
 import { getProjectionAnnualRate } from './projectionRates.js';
+import {
+  getAssetAnnualReturn,
+  getPlanAnnualReturn,
+  getReturnForCategory,
+} from './projectionReturns.js';
+
+export { getPlanAnnualReturn, getReturnForCategory } from './projectionReturns.js';
+
+/** Asset categories that can receive planned monthly contributions (not bank — salary stays in liquid). */
+export const CONTRIBUTION_ELIGIBLE_CATEGORIES = [
+  'investment',
+  'etf',
+  'pension',
+];
+
+export function hasInvestmentDestinationAssets(assets = []) {
+  return (assets ?? []).some(
+    (asset) =>
+      asset.isActive !== false &&
+      PROJECTION_INVESTMENT_CATEGORIES.includes(asset.category),
+  );
+}
+
+export function isContributionEligibleAsset(asset) {
+  return (
+    asset?.isActive !== false &&
+    CONTRIBUTION_ELIGIBLE_CATEGORIES.includes(asset?.category)
+  );
+}
+
+export function resolveLinkedAsset(plan, assets = []) {
+  if (!plan?.assetId) return null;
+  return assets.find((a) => a.id === plan.assetId) ?? null;
+}
+
+export function syncPlanWithAsset(plan, asset) {
+  if (!asset) {
+    return { ...plan, assetId: null };
+  }
+  return {
+    ...plan,
+    assetId: asset.id,
+    providerId: asset.provider || plan.providerId || 'other',
+    category: asset.category,
+    label: asset.name ?? '',
+    customAnnualReturn: null,
+  };
+}
+
+export function getContributionEligibleAssets(assets = [], excludePlanId, plans = []) {
+  const usedIds = new Set(
+    (plans ?? [])
+      .filter((p) => p.id !== excludePlanId && p.assetId)
+      .map((p) => p.assetId),
+  );
+  return (assets ?? []).filter(
+    (asset) => isContributionEligibleAsset(asset) && !usedIds.has(asset.id),
+  );
+}
+
+export function migratePlansToAssets(plans = [], assets = []) {
+  const eligible = (assets ?? []).filter(isContributionEligibleAsset);
+  return (plans ?? []).map((plan) => {
+    if (plan.assetId && resolveLinkedAsset(plan, assets)) return plan;
+    const byProvider = eligible.filter(
+      (a) =>
+        plan.providerId &&
+        a.provider === plan.providerId &&
+        (!plan.category || a.category === plan.category),
+    );
+    if (byProvider.length === 1) return syncPlanWithAsset(plan, byProvider[0]);
+    const byLabel = eligible.filter(
+      (a) =>
+        plan.label?.trim() &&
+        a.name?.trim().toLowerCase() === plan.label.trim().toLowerCase(),
+    );
+    if (byLabel.length === 1) return syncPlanWithAsset(plan, byLabel[0]);
+    return plan;
+  });
+}
 
 /** Metadata per provider (contribution destination). */
 export const PROVIDER_META = {
@@ -44,6 +124,7 @@ export function createContributionPlan(partial = {}) {
 
   return {
     id: partial.id ?? crypto.randomUUID?.() ?? `cp-${Date.now()}`,
+    assetId: partial.assetId ?? null,
     providerId,
     category: partial.category ?? meta.category,
     label: partial.label ?? '',
@@ -57,32 +138,6 @@ export function createContributionPlan(partial = {}) {
         ? null
         : partial.customAnnualReturn,
   };
-}
-
-export function getReturnForCategory(settings, category, customAnnualReturn) {
-  if (customAnnualReturn != null && Number.isFinite(customAnnualReturn)) {
-    return customAnnualReturn;
-  }
-
-  switch (category) {
-    case 'pension':
-      return getProjectionAnnualRate(settings);
-    case 'bank':
-      return settings?.savingsAccountReturn ?? 0.025;
-    case 'investment':
-    case 'etf':
-    case 'other':
-    default:
-      return getProjectionAnnualRate(settings);
-  }
-}
-
-export function getPlanAnnualReturn(settings, plan) {
-  return getReturnForCategory(
-    settings,
-    plan.category,
-    plan.customAnnualReturn,
-  );
 }
 
 export function resolvePlanAmountForMonth(plan, monthIndex) {
@@ -151,7 +206,7 @@ export function hasActiveContributionAmounts(plans) {
   );
 }
 
-export function getWeightedAnnualReturn(settings, plans) {
+export function getWeightedAnnualReturn(settings, plans, assets = []) {
   const active = (plans ?? []).filter((p) => p.isActive);
   if (!active.length) return getProjectionAnnualRate(settings);
 
@@ -161,7 +216,7 @@ export function getWeightedAnnualReturn(settings, plans) {
   for (const plan of active) {
     const weight = plan.monthlyAmount ?? 0;
     if (weight <= 0) continue;
-    weightedSum += weight * getPlanAnnualReturn(settings, plan);
+    weightedSum += weight * getPlanAnnualReturn(settings, plan, assets);
     weightTotal += weight;
   }
 
@@ -170,11 +225,11 @@ export function getWeightedAnnualReturn(settings, plans) {
 }
 
 /** UI helper: distinguish real weighted average vs global projection default. */
-export function getWeightedReturnSummary(settings, plans) {
+export function getWeightedReturnSummary(settings, plans, assets = []) {
   const hasWeighted = hasActiveContributionAmounts(plans);
   return {
     rate: hasWeighted
-      ? getWeightedAnnualReturn(settings, plans)
+      ? getWeightedAnnualReturn(settings, plans, assets)
       : getProjectionAnnualRate(settings),
     isWeighted: hasWeighted,
   };

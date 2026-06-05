@@ -10,6 +10,14 @@ import {
 } from './cashflowHistory.js';
 import { getPunctualExpensesForDate } from './annualExpenses.js';
 import { normalizeProjectionYears } from './constants.js';
+import {
+  applyMonthToBucketState,
+  buildInitialBucketState,
+  computeBucketAnnualRates,
+  computeWeightedPortfolioReturn,
+  netWorthFromState,
+  splitContributionsToBuckets,
+} from './projectionBuckets.js';
 
 export const applyYourShare = applyShareEuros;
 
@@ -241,8 +249,11 @@ function getProjectionStartDate(fromDate = new Date()) {
  * @param {number} [params.initialPatrimony]
  * @param {Date} [params.startDate]
  * @param {number} [params.years]
- * @param {number} params.annualRate - Annual return configured in Projection
+ * @param {number} [params.annualRate] @deprecated use bucket rates
  * @param {(plans: object[], monthIndex: number) => number} [params.getInvestmentContributions]
+ * @param {object[]} [params.assets]
+ * @param {object[]} [params.liabilities]
+ * @param {object[]} [params.snapshots]
  * @param {Array<{ id: string, name: string, amount: number, month: number }>} [params.annualExpenses]
  * @param {Array<object>} [params.cashflowHistory]
  * @param {Array<object>} [params.salaryHistory] @deprecated use cashflowHistory
@@ -253,10 +264,13 @@ export function buildMonthlyProjectionRows({
   annualExpenses = [],
   cashflowHistory = [],
   salaryHistory = [],
+  assets = [],
+  liabilities = [],
+  snapshots = [],
   initialPatrimony = 0,
   startDate,
   years,
-  annualRate,
+  annualRate: _legacyAnnualRate,
   getInvestmentContributions,
 }) {
   const history =
@@ -268,14 +282,23 @@ export function buildMonthlyProjectionRows({
   const monthCount = horizonYears * 12;
   const start = startDate ?? getProjectionStartDate();
 
-  const monthlyRate = annualToMonthlyRate(annualRate);
   const expenseIncrease = settings?.projectionAnnualExpenseIncrease ?? 0;
 
   const resolveInvestments =
     getInvestmentContributions ??
     (() => 0);
 
-  let patrimonioInicio = initialPatrimony ?? settings?.initialPatrimony ?? 0;
+  const initialState = buildInitialBucketState({
+    settings,
+    assets,
+    liabilities,
+    snapshots,
+    initialPatrimony: initialPatrimony ?? settings?.initialPatrimony ?? 0,
+  });
+
+  let buckets = { ...initialState.buckets };
+  let debtBalance = initialState.debtBalance;
+  let bucketRates = { ...initialState.bucketRates };
   const rows = [];
 
   for (let monthIndex = 0; monthIndex < monthCount; monthIndex++) {
@@ -305,15 +328,41 @@ export function buildMonthlyProjectionRows({
       salary +
         otherIncome -
         fixedExpenses -
-        variableExpenses +
-        additionalInvestments -
+        variableExpenses -
         punctualExpenses,
     );
 
-    const monthlyReturn = roundMoney(patrimonioInicio * monthlyRate);
-    const patrimonioFin = roundMoney(
-      patrimonioInicio + netContribution + monthlyReturn,
+    const patrimonioInicio = roundMoney(netWorthFromState(buckets, debtBalance));
+    bucketRates = computeBucketAnnualRates({
+      settings,
+      assets,
+      snapshots,
+      buckets,
+    });
+    const appliedWeightedReturn = computeWeightedPortfolioReturn(
+      buckets,
+      bucketRates,
     );
+
+    const bucketContributions = splitContributionsToBuckets(
+      contributionPlans,
+      monthIndex,
+      netContribution,
+    );
+
+    const monthResult = applyMonthToBucketState({
+      buckets,
+      debtBalance,
+      bucketRates,
+      bucketContributions,
+      liabilities,
+      settings: monthSettings,
+    });
+
+    buckets = monthResult.buckets;
+    debtBalance = monthResult.debtBalance;
+    const monthlyReturn = roundMoney(monthResult.monthlyReturn);
+    const patrimonioFin = roundMoney(monthResult.netWorth);
 
     rows.push({
       monthIndex,
@@ -328,13 +377,14 @@ export function buildMonthlyProjectionRows({
       punctualExpenses,
       netContribution,
       monthlyReturn,
-      patrimonioInicio: roundMoney(patrimonioInicio),
+      patrimonioInicio,
       patrimonyEnd: patrimonioFin,
-      appliedAnnualRate: annualRate,
-      appliedMonthlyRate: monthlyRate,
+      appliedAnnualRate: appliedWeightedReturn,
+      appliedWeightedReturn,
+      appliedMonthlyRate: annualToMonthlyRate(appliedWeightedReturn),
+      bucketBalances: { ...buckets },
+      debtBalance: roundMoney(debtBalance),
     });
-
-    patrimonioInicio = patrimonioFin;
   }
 
   return rows;

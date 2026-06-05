@@ -1,55 +1,110 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useToast } from '../../../context/ToastContext';
+import { calcMonthlySavingsFromSettings } from '../../../lib/balanceSetupProgress';
 import {
-  CONTRIBUTION_CATEGORIES,
-  PROVIDER_META,
   createContributionPlan,
-  getPlanAnnualReturn,
+  getContributionEligibleAssets,
   getTotalMonthlyContributions,
   getWeightedReturnSummary,
   hasActiveContributionAmounts,
+  hasInvestmentDestinationAssets,
+  resolveInvestmentContributionsForMonth,
+  resolveLinkedAsset,
+  syncPlanWithAsset,
 } from '../../../lib/contributionPlans';
-import {
-  INVESTMENT_PROVIDER_IDS,
-  INVESTMENT_PROVIDER_LEGACY_LABELS,
-} from '../../../lib/investmentProviders';
-import { InstitutionSelect } from '../../../components/InstitutionSelect';
-import { SelectField } from '../../../components/SelectField';
-import { INSTITUTION_OTHER_ID } from '../../../lib/institutions';
 import { ui } from '../../../lib/uiClasses';
 import { useFinanceData } from '../../../store/hooks';
 import { formatMoney, formatPercent } from '../../../utils/formatters';
-
-function pctToDisplay(decimal) {
-  return Math.round((decimal ?? 0) * 1000) / 10;
-}
-
-function displayToPct(value) {
-  const n = parseFloat(value);
-  return Number.isFinite(n) ? n / 100 : null;
-}
+import { ContributionDeleteConfirmModal } from './ContributionDeleteConfirmModal';
+import { ContributionEditModal } from './ContributionEditModal';
+import { ContributionsTable } from './ContributionsTable';
 
 export function ContributionsPanel() {
   const { t } = useTranslation();
+  const toast = useToast();
   const {
     settings,
+    assets,
     contributionPlans,
     addContributionPlan,
     updateContributionPlan,
     removeContributionPlan,
   } = useFinanceData();
 
-  const total = getTotalMonthlyContributions(contributionPlans);
-  const returnSummary = getWeightedReturnSummary(settings, contributionPlans);
-  const hasAmounts = hasActiveContributionAmounts(contributionPlans);
+  const [modal, setModal] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const handleAdd = () => {
-    addContributionPlan(
-      createContributionPlan({
-        providerId: 'indexa',
-        monthlyAmount: 0,
-      }),
+  const total = getTotalMonthlyContributions(contributionPlans);
+  const returnSummary = getWeightedReturnSummary(
+    settings,
+    contributionPlans,
+    assets,
+  );
+  const hasAmounts = hasActiveContributionAmounts(contributionPlans);
+  const monthlySavings = calcMonthlySavingsFromSettings(settings);
+  const plannedInvest = resolveInvestmentContributionsForMonth(
+    contributionPlans,
+    0,
+  );
+  const staysInBank = Math.round((monthlySavings - plannedInvest) * 100) / 100;
+  const planExceedsSavings = plannedInvest > monthlySavings + 0.005;
+  const showAllocation =
+    hasInvestmentDestinationAssets(assets) || plannedInvest > 0;
+  const canAdd = getContributionEligibleAssets(assets, null, contributionPlans).length > 0;
+
+  const openCreate = () => {
+    const first = getContributionEligibleAssets(assets, null, contributionPlans)[0];
+    if (!first) return;
+    const draft = syncPlanWithAsset(
+      createContributionPlan({ monthlyAmount: 0 }),
+      first,
     );
+    setModal({ mode: 'create', draft });
   };
+
+  const openEdit = (plan) =>
+    setModal({ mode: 'edit', planId: plan.id, draft: { ...plan } });
+
+  const closeModal = () => setModal(null);
+
+  const handleModalSave = (draft) => {
+    if (modal?.mode === 'create') {
+      addContributionPlan(draft);
+      toast.success(t('toast.contributionAdded'));
+    } else {
+      updateContributionPlan(modal.planId, draft);
+      toast.success(t('toast.contributionUpdated'));
+    }
+    closeModal();
+  };
+
+  const requestDelete = (plan) => setDeleteTarget(plan);
+
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+    if (modal?.mode === 'edit' && modal.planId === deleteTarget.id) {
+      closeModal();
+    }
+    removeContributionPlan(deleteTarget.id);
+    setDeleteTarget(null);
+    toast.success(t('toast.contributionRemoved'));
+  };
+
+  const handleModalDelete = () => {
+    if (modal?.mode !== 'edit') return;
+    const plan = contributionPlans.find((p) => p.id === modal.planId);
+    if (plan) requestDelete(plan);
+  };
+
+  const handleToggleActive = (id, isActive) => {
+    updateContributionPlan(id, { isActive });
+  };
+
+  const deleteItemName =
+    deleteTarget &&
+    (resolveLinkedAsset(deleteTarget, assets)?.name ??
+      t('balance.contributions.unnamedAsset'));
 
   return (
     <div className={ui.stackPage}>
@@ -63,11 +118,39 @@ export function ContributionsPanel() {
           </p>
         </div>
 
-        <p
-          className={`rounded-xl border px-4 py-3 text-sm ${ui.cardMuted}`}
-        >
+        <p className={`rounded-xl border px-4 py-3 text-sm ${ui.cardMuted}`}>
           {t('balance.contributions.scopeNote')}
         </p>
+
+        {showAllocation ? (
+          <div
+            className={`rounded-xl border px-4 py-3 text-sm ${
+              planExceedsSavings
+                ? 'border-amber-300 bg-amber-50/90 text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/35 dark:text-amber-100'
+                : ui.cardMuted
+            }`}
+          >
+            <p className={ui.textLabel}>
+              {t('balance.contributions.allocationTitle')}
+            </p>
+            <p className={`mt-1.5 ${ui.text}`}>
+              {t('balance.contributions.allocationLine', {
+                savings: formatMoney(monthlySavings),
+                planned: formatMoney(plannedInvest),
+                bank: formatMoney(Math.max(0, staysInBank)),
+              })}
+            </p>
+            {planExceedsSavings ? (
+              <p className="mt-2 text-amber-800 dark:text-amber-200">
+                {t('balance.contributions.allocationOverBudget')}
+              </p>
+            ) : (
+              <p className={`mt-2 text-xs ${ui.textMuted}`}>
+                {t('balance.contributions.allocationHint')}
+              </p>
+            )}
+          </div>
+        ) : null}
 
         <div className="grid gap-3 sm:grid-cols-2">
           <Stat
@@ -99,246 +182,58 @@ export function ContributionsPanel() {
           </p>
         </div>
 
-        {contributionPlans.length === 0 ? (
+        {!canAdd && contributionPlans.length === 0 ? (
+          <div className={`px-6 py-8 text-center ${ui.cardDashed}`}>
+            <p className={ui.text}>{t('balance.contributions.noAssets')}</p>
+            <p className={`mt-2 text-sm ${ui.textMuted}`}>
+              {t('balance.contributions.noAssetsHint')}
+            </p>
+          </div>
+        ) : contributionPlans.length === 0 ? (
           <div className={`px-6 py-8 text-center ${ui.cardDashed}`}>
             <p className={ui.text}>{t('balance.contributions.empty')}</p>
-            <button
-              type="button"
-              className={`mt-4 ${ui.btnPrimary}`}
-              onClick={handleAdd}
-            >
-              {t('balance.contributions.addFirst')}
-            </button>
           </div>
         ) : (
-          <ul className={ui.stackBlocks}>
-            {contributionPlans.map((plan) => (
-              <ContributionPlanCard
-                key={plan.id}
-                plan={plan}
-                settings={settings}
-                onChange={(patch) => updateContributionPlan(plan.id, patch)}
-                onRemove={() => removeContributionPlan(plan.id)}
-              />
-            ))}
-          </ul>
+          <ContributionsTable
+            plans={contributionPlans}
+            assets={assets}
+            settings={settings}
+            onEdit={openEdit}
+            onDelete={requestDelete}
+            onToggleActive={handleToggleActive}
+          />
         )}
 
-        {contributionPlans.length > 0 ? (
-          <button type="button" className={ui.btnSecondary} onClick={handleAdd}>
-            {t('balance.contributions.addAnother')}
-          </button>
+        {canAdd ? (
+          <div className={`border-t pt-4 ${ui.divider}`}>
+            <button type="button" className={ui.btnPrimary} onClick={openCreate}>
+              {contributionPlans.length > 0
+                ? t('balance.contributions.addAnother')
+                : t('balance.contributions.addFirst')}
+            </button>
+          </div>
         ) : null}
       </section>
-    </div>
-  );
-}
 
-function ContributionPlanCard({ plan, settings, onChange, onRemove }) {
-  const { t } = useTranslation();
-  const planReturn = getPlanAnnualReturn(settings, plan);
-
-  return (
-    <li className={`${ui.block} ${ui.stackSection} p-4 sm:p-5`}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={plan.isActive}
-            onChange={(e) => onChange({ isActive: e.target.checked })}
-            className="h-4 w-4 rounded border-slate-400 text-emerald-500 focus:ring-emerald-500/40"
-          />
-          <span className={`text-sm font-medium ${ui.textLabel}`}>
-            {t('balance.contributions.active')}
-          </span>
-        </label>
-        <button
-          type="button"
-          onClick={onRemove}
-          className={`text-sm ${ui.textMuted} hover:text-red-500`}
-        >
-          {t('balance.contributions.remove')}
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Field label={t('balance.contributions.provider')}>
-          <InstitutionSelect
-            institutionIds={INVESTMENT_PROVIDER_IDS}
-            i18nKey="balance.providers"
-            legacyMap={INVESTMENT_PROVIDER_LEGACY_LABELS}
-            value={plan.providerId}
-            optional={false}
-            onChange={(providerId) => {
-              const meta = PROVIDER_META[providerId] ?? PROVIDER_META.other;
-              const patch = { providerId, category: meta.category };
-              if (
-                providerId === INSTITUTION_OTHER_ID &&
-                plan.providerId !== INSTITUTION_OTHER_ID
-              ) {
-                patch.label = '';
-              }
-              onChange(patch);
-            }}
-          />
-        </Field>
-
-        {plan.providerId === INSTITUTION_OTHER_ID ? (
-          <Field label={t('balance.contributions.providerCustom')}>
-            <input
-              type="text"
-              value={plan.label ?? ''}
-              placeholder={t('balance.contributions.providerCustomPlaceholder')}
-              onChange={(e) => onChange({ label: e.target.value })}
-              className={`${ui.input} w-full`}
-            />
-          </Field>
-        ) : null}
-
-        <Field label={t('balance.contributions.category')}>
-          <SelectField
-            variant="input"
-            className="py-2.5"
-            value={plan.category}
-            onChange={(e) => onChange({ category: e.target.value })}
-          >
-            {CONTRIBUTION_CATEGORIES.map((cat) => (
-              <option key={cat} value={cat}>
-                {t(`balance.contributionCategories.${cat}`)}
-              </option>
-            ))}
-          </SelectField>
-        </Field>
-
-        {plan.providerId !== INSTITUTION_OTHER_ID ? (
-          <Field label={t('balance.contributions.customLabel')}>
-            <input
-              type="text"
-              value={plan.label ?? ''}
-              placeholder={t(`balance.providers.${plan.providerId}`)}
-              onChange={(e) => onChange({ label: e.target.value })}
-              className={`${ui.input} ${ui.inputMedium}`}
-            />
-          </Field>
-        ) : null}
-
-        <Field label={t('balance.contributions.monthlyAmount')}>
-          <input
-            type="number"
-            min={0}
-            step="10"
-            value={plan.monthlyAmount ?? 0}
-            onChange={(e) =>
-              onChange({
-                monthlyAmount: Math.max(0, parseFloat(e.target.value) || 0),
-              })
-            }
-            className={`${ui.input} ${ui.inputAmount}`}
-          />
-        </Field>
-
-        <Field label={t('balance.contributions.growthMode')}>
-          <SelectField
-            variant="input"
-            className="py-2.5"
-            value={plan.growthMode ?? 'fixed'}
-            onChange={(e) => onChange({ growthMode: e.target.value })}
-          >
-            <option value="fixed">{t('balance.contributions.growthFixed')}</option>
-            <option value="ramp_monthly">
-              {t('balance.contributions.growthRamp')}
-            </option>
-            <option value="annual_increase">
-              {t('balance.contributions.growthAnnual')}
-            </option>
-          </SelectField>
-        </Field>
-
-        {plan.growthMode === 'ramp_monthly' ? (
-          <Field label={t('balance.contributions.rampPerMonth')}>
-            <input
-              type="number"
-              min={0}
-              step="10"
-              value={plan.rampPerMonth ?? 0}
-              onChange={(e) =>
-                onChange({
-                  rampPerMonth: Math.max(0, parseFloat(e.target.value) || 0),
-                })
-              }
-              className={`${ui.input} ${ui.inputAmount}`}
-            />
-          </Field>
-        ) : null}
-
-        {plan.growthMode === 'annual_increase' ? (
-          <Field label={t('balance.contributions.annualIncrease')}>
-            <PercentInput
-              value={plan.annualIncrease ?? 0}
-              onChange={(v) => onChange({ annualIncrease: v })}
-            />
-          </Field>
-        ) : null}
-
-        <Field
-          label={t('balance.contributions.customReturn')}
-          hint={t('balance.contributions.customReturnHint', {
-            default: formatPercent(planReturn),
-          })}
-        >
-          <PercentInput
-            value={plan.customAnnualReturn}
-            onChange={(v) => onChange({ customAnnualReturn: v })}
-            allowEmpty
-          />
-        </Field>
-      </div>
-    </li>
-  );
-}
-
-function Field({ label, hint, children }) {
-  return (
-    <label className="block">
-      <span className={`mb-1.5 block text-sm font-medium ${ui.textLabel}`}>
-        {label}
-      </span>
-      {hint ? (
-        <span className={`mb-2 block text-xs ${ui.textMuted}`}>{hint}</span>
-      ) : null}
-      {children}
-    </label>
-  );
-}
-
-function PercentInput({ value, onChange, allowEmpty = false }) {
-  const display =
-    value == null && allowEmpty ? '' : pctToDisplay(value ?? 0);
-
-  return (
-    <div className="relative inline-block shrink-0">
-      <input
-        type="number"
-        step="0.1"
-        min={0}
-        max={30}
-        value={display}
-        placeholder="—"
-        onChange={(e) => {
-          const raw = e.target.value;
-          if (allowEmpty && raw === '') {
-            onChange(null);
-            return;
-          }
-          onChange(displayToPct(raw) ?? 0);
-        }}
-        className={`${ui.inputPercent} pr-7`}
+      <ContributionDeleteConfirmModal
+        open={deleteTarget != null}
+        itemName={deleteItemName ?? ''}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
       />
-      <span
-        className={`pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs ${ui.textMuted}`}
-      >
-        %
-      </span>
+
+      <ContributionEditModal
+        open={modal != null}
+        mode={modal?.mode ?? 'create'}
+        planId={modal?.planId}
+        initialDraft={modal?.draft ?? createContributionPlan()}
+        assets={assets}
+        contributionPlans={contributionPlans}
+        settings={settings}
+        onClose={closeModal}
+        onSave={handleModalSave}
+        onDelete={handleModalDelete}
+      />
     </div>
   );
 }

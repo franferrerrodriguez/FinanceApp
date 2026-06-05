@@ -11,7 +11,11 @@ import {
 } from '../../../lib/projectionTable';
 import { normalizeProjectionYears } from '../../../lib/constants';
 import { hasProjectionInvestmentPlans } from '../../../lib/contributionPlans';
-import { getProjectionAnnualRate } from '../../../lib/projectionRates';
+import {
+  buildInitialBucketState,
+  computeWeightedPortfolioReturn,
+  getProjectionStartingPatrimony,
+} from '../../../lib/projectionBuckets';
 import { ui } from '../../../lib/uiClasses';
 import { useFinanceData } from '../../../store/hooks';
 import { formatProjectionDate } from '../../../utils/projectionDate';
@@ -49,8 +53,15 @@ function stickyDateShadow(scrolledX) {
 
 export function ProjectionDataTable() {
   const { t } = useTranslation();
-  const { settings, contributionPlans, annualExpenses, cashflowHistory } =
-    useFinanceData();
+  const {
+    settings,
+    contributionPlans,
+    annualExpenses,
+    cashflowHistory,
+    assets,
+    liabilities,
+    snapshots,
+  } = useFinanceData();
   const scrollRef = useRef(null);
   const [narrowViewport, setNarrowViewport] = useState(() =>
     typeof window !== 'undefined'
@@ -78,8 +89,38 @@ export function ProjectionDataTable() {
   }, []);
 
   const projectionYears = normalizeProjectionYears(settings.projectionYears);
-  const initialPatrimony = settings.initialPatrimony ?? 0;
-  const annualRate = getProjectionAnnualRate(settings);
+
+  const initialPatrimony = useMemo(
+    () =>
+      getProjectionStartingPatrimony({
+        settings,
+        assets,
+        liabilities,
+        snapshots,
+      }),
+    [settings, assets, liabilities, snapshots],
+  );
+
+  const bucketPreview = useMemo(
+    () =>
+      buildInitialBucketState({
+        settings,
+        assets,
+        liabilities,
+        snapshots,
+        initialPatrimony: settings.initialPatrimony ?? 0,
+      }),
+    [settings, assets, liabilities, snapshots],
+  );
+
+  const weightedPortfolioReturn = useMemo(
+    () =>
+      computeWeightedPortfolioReturn(
+        bucketPreview.buckets,
+        bucketPreview.bucketRates,
+      ),
+    [bucketPreview],
+  );
 
   const rows = useMemo(
     () =>
@@ -88,16 +129,20 @@ export function ProjectionDataTable() {
         contributionPlans,
         annualExpenses,
         cashflowHistory,
+        assets,
+        liabilities,
+        snapshots,
         years: projectionYears,
-        initialPatrimony,
       }),
     [
       settings,
       contributionPlans,
       annualExpenses,
       cashflowHistory,
+      assets,
+      liabilities,
+      snapshots,
       projectionYears,
-      initialPatrimony,
     ],
   );
 
@@ -142,7 +187,7 @@ export function ProjectionDataTable() {
               alignRight ? 'justify-end text-right' : 'justify-start text-left'
             } ${
               isDate
-                ? `sticky left-0 z-30 border-r ${ui.divider} ${headBg()} ${stickyDateShadow(scrolledX)}`
+                ? `sticky left-0 z-30 rounded-tl-2xl border-r ${ui.divider} ${headBg()} ${stickyDateShadow(scrolledX)}`
                 : ''
             }`}
           >
@@ -165,7 +210,9 @@ export function ProjectionDataTable() {
     <div className="space-y-4">
       <ProjectionSummary
         summary={summary}
-        configuredAnnualRate={annualRate}
+        weightedPortfolioReturn={weightedPortfolioReturn}
+        bucketRates={bucketPreview.bucketRates}
+        buckets={bucketPreview.buckets}
       />
 
       {!hasInvestmentPlans ? (
@@ -186,7 +233,7 @@ export function ProjectionDataTable() {
           </div>
         ) : null}
 
-        <div className="relative w-full min-w-0 overflow-hidden">
+        <div className="relative w-full min-w-0 overflow-hidden rounded-t-2xl">
           {canScrollRight && narrowViewport ? (
             <div
               className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-white via-white/95 to-transparent dark:from-slate-900 dark:via-slate-900/95"
@@ -214,6 +261,7 @@ export function ProjectionDataTable() {
                 narrowViewport={narrowViewport}
                 scrolledX={scrolledX}
                 isEven={index % 2 === 0}
+                isLastRow={index === rows.length - 1}
               />
             )}
           </VirtualList>
@@ -240,6 +288,7 @@ function ProjectionRow({
   narrowViewport,
   scrolledX,
   isEven,
+  isLastRow,
 }) {
   const bg = rowBg(isEven);
   const january = row.isJanuary
@@ -281,7 +330,7 @@ function ProjectionRow({
               alignRight ? 'justify-end text-right' : 'justify-start text-left'
             } ${
               isDate
-                ? `sticky left-0 z-10 border-r ${ui.divider} ${bg} ${january} ${ui.textLabel} ${stickyDateShadow(scrolledX)}`
+                ? `sticky left-0 z-10 border-r ${ui.divider} ${bg} ${january} ${ui.textLabel} ${stickyDateShadow(scrolledX)} ${isLastRow ? 'rounded-bl-2xl' : ''}`
                 : isPatrimony
                   ? 'font-semibold text-emerald-700 dark:text-emerald-400'
                   : ui.textLabel

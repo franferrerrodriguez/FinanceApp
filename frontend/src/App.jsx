@@ -5,7 +5,9 @@ import { RequireAuth } from './components/RequireAuth';
 import { RequireOnboarding } from './components/RequireOnboarding';
 import { AccountPage } from './modules/account/AccountPage';
 import { AuthModalProvider } from './context/AuthModalContext';
+import { ToastProvider } from './context/ToastContext';
 import { useAppPreferencesSync } from './hooks/useAppPreferencesSync';
+import { useIneInflationSync } from './hooks/useIneInflationSync';
 import { BalancePage } from './modules/balance/BalancePage';
 import { DashboardPage } from './modules/dashboard/DashboardPage';
 import { OnboardingGate } from './modules/onboarding/OnboardingGate';
@@ -21,6 +23,7 @@ function HomeRedirect() {
 
 function AppRoutes() {
   useAppPreferencesSync();
+  useIneInflationSync();
 
   return (
     <Routes>
@@ -69,10 +72,12 @@ function AppRoutes() {
 export default function App() {
   return (
     <BrowserRouter>
-      <AuthModalProvider>
-        <AppRoutes />
-        <AuthModal />
-      </AuthModalProvider>
+      <ToastProvider>
+        <AuthModalProvider>
+          <AppRoutes />
+          <AuthModal />
+        </AuthModalProvider>
+      </ToastProvider>
     </BrowserRouter>
   );
 }

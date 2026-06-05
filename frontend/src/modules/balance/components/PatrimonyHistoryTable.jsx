@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   HorizontalScrollRegion,
@@ -16,6 +16,20 @@ export function PatrimonyHistoryTable({ assets, liabilities, snapshots }) {
   const { locale } = usePreferences();
   const scrollRef = useRef(null);
   const table = buildPatrimonyHistoryTable({ assets, liabilities, snapshots });
+
+  const hasMonthData = table.monthTotals.some((month) => month.netWorth != null);
+
+  useEffect(() => {
+    if (!hasMonthData) return;
+    const el = scrollRef.current;
+    if (!el) return;
+    const scrollToEnd = () => {
+      el.scrollLeft = el.scrollWidth;
+    };
+    scrollToEnd();
+    const frame = requestAnimationFrame(scrollToEnd);
+    return () => cancelAnimationFrame(frame);
+  }, [hasMonthData, table.monthKeys.join('|')]);
 
   if (!table.valueGrid.length) {
     return (

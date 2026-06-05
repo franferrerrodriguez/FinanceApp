@@ -12,20 +12,17 @@ import {
 } from '../../lib/profileValidation';
 import { ui } from '../../lib/uiClasses';
 import { getDisplayName } from '../../lib/userDisplay';
-import { useProfile, useSessionMeta, useSettings } from '../../store/hooks';
-import { FinancialParamsSection } from './components/FinancialParamsSection';
-
+import { useProfile, useSessionMeta } from '../../store/hooks';
+import { useToast } from '../../context/ToastContext';
 export function AccountPage() {
   const { t } = useTranslation();
   const { profile, setProfile } = useProfile();
-  const { user, cloudSyncStatus } = useSessionMeta();
-  const { settings } = useSettings();
-
+  const { user } = useSessionMeta();
   const [name, setName] = useState(profile?.name ?? '');
   const [age, setAge] = useState(profile?.age?.toString() ?? '');
   const [showErrors, setShowErrors] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [saveMessage, setSaveMessage] = useState(null);
+  const toast = useToast();
 
   const cloudEnabled = isAuthAvailable() && !isSimpleAuthMode();
 
@@ -43,7 +40,6 @@ export function AccountPage() {
   const inputClass = (hasError) => (hasError ? ui.inputError : ui.input);
 
   const handleSave = async () => {
-    setSaveMessage(null);
     if (!validation.valid) {
       setShowErrors(true);
       return;
@@ -60,9 +56,9 @@ export function AccountPage() {
 
     setSaving(false);
     if (cloudEnabled && !cloudOk) {
-      setSaveMessage({ type: 'error', key: 'account.saveCloudError' });
+      toast.error(t('account.saveCloudError'));
     } else {
-      setSaveMessage({ type: 'success', key: 'account.saveSuccess' });
+      toast.success(t('toast.profileSaved'));
     }
   };
 
@@ -162,42 +158,6 @@ export function AccountPage() {
           </dl>
         </section>
 
-        <section className={ui.chartCard}>
-          <h2 className={`text-base font-semibold ${ui.heading}`}>
-            {t('account.cloud.title')}
-          </h2>
-          <CloudSyncBadge status={cloudSyncStatus} localOnly={!cloudEnabled} />
-          <p className={`mt-3 text-sm ${ui.textMuted}`}>
-            {cloudEnabled
-              ? t('account.cloud.hintCloud')
-              : t('account.cloud.hintLocal')}
-          </p>
-        </section>
-
-        <FinancialParamsSection />
-
-        {settings?.useRealReturn !== false && (
-          <p
-            className={`rounded-lg border px-3 py-2.5 text-sm ${ui.menuInnerBorder} text-amber-800 dark:text-amber-200/90`}
-            role="status"
-          >
-            {t('account.financial.realReturnBanner')}
-          </p>
-        )}
-
-        {saveMessage && (
-          <p
-            role="status"
-            className={`text-sm ${
-              saveMessage.type === 'success'
-                ? 'text-emerald-600 dark:text-emerald-400'
-                : 'text-red-600 dark:text-red-400'
-            }`}
-          >
-            {t(saveMessage.key)}
-          </p>
-        )}
-
         <div className="flex flex-wrap gap-3">
           <button
             type="button"
@@ -213,34 +173,5 @@ export function AccountPage() {
         </div>
       </div>
     </div>
-  );
-}
-
-function CloudSyncBadge({ status, localOnly }) {
-  const { t } = useTranslation();
-
-  if (localOnly) {
-    return (
-      <span className="mt-3 inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-        {t('account.cloud.localOnly')}
-      </span>
-    );
-  }
-
-  const styles = {
-    idle: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
-    syncing: 'bg-amber-100 text-amber-900 dark:bg-amber-950/50 dark:text-amber-200',
-    ready: 'bg-emerald-100 text-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200',
-    error: 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300',
-  };
-
-  const key = status in styles ? status : 'idle';
-
-  return (
-    <span
-      className={`mt-3 inline-flex rounded-full px-3 py-1 text-xs font-medium ${styles[key]}`}
-    >
-      {t(`account.cloud.status.${key}`)}
-    </span>
   );
 }

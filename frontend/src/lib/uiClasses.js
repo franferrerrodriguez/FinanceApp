@@ -61,10 +61,15 @@ export const ui = {
   inputError:
     'w-full min-h-[2.75rem] rounded-xl border border-red-400 bg-white px-4 py-3 text-base text-slate-900 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500/50 dark:border-red-500/70 dark:bg-slate-900 dark:text-white',
   btnSecondary:
-    'inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800',
+    'inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800',
   /** Text-only control (enlace de acción) */
   btnLink:
-    'inline-flex items-center text-sm font-medium underline-offset-2 transition hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 rounded-md px-1 -mx-1 text-emerald-700 dark:text-emerald-400',
+    'inline-flex cursor-pointer items-center text-sm font-medium underline-offset-2 transition hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 rounded-md px-1 -mx-1 text-emerald-700 dark:text-emerald-400',
+  /** Inline action (Editar, enlaces en tablas) */
+  actionLink:
+    'cursor-pointer text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400',
+  actionLinkDanger:
+    'cursor-pointer text-sm font-medium text-red-600 hover:underline dark:text-red-400',
   /** Cambiar vista simple / detallada de gastos */
   btnViewToggle:
     'inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 dark:border-slate-600 dark:bg-slate-800/80 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:bg-slate-800',
@@ -82,7 +87,7 @@ export const ui = {
     'mb-2 h-10 shrink-0 overflow-hidden text-xs leading-snug line-clamp-2',
   formFieldControl: 'min-h-[2.75rem] shrink-0',
   btnPrimary:
-    'inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 disabled:cursor-not-allowed disabled:opacity-40',
+    'inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 disabled:cursor-not-allowed disabled:opacity-40',
   navLink:
     'rounded-lg px-3 py-2 text-sm font-medium transition-colors text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200',
   navLinkActive:
@@ -98,7 +103,7 @@ export const ui = {
     'cursor-pointer appearance-none !pr-12',
   selectChevron: 'text-slate-400 dark:text-slate-500',
   iconBtn:
-    'rounded-lg border border-slate-300 p-2 text-slate-600 transition hover:bg-slate-100 dark:border-slate-600 dark:text-slate-400 dark:hover:bg-slate-800',
+    'cursor-pointer rounded-lg border border-slate-300 p-2 text-slate-600 transition hover:bg-slate-100 dark:border-slate-600 dark:text-slate-400 dark:hover:bg-slate-800',
   iconBtnActive:
     'rounded-lg border border-emerald-500/50 bg-emerald-500/10 p-2 text-emerald-700 dark:text-emerald-400',
   menuTrigger:

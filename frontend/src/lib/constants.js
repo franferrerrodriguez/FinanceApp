@@ -10,6 +10,8 @@ export const DEFAULT_SETTINGS = {
   mortgageRentShared: false,
   mortgageRentYourSharePercent: 50,
   mortgageRentIsEstimate: true,
+  housingType: 'rent',
+  linkedMortgageLiabilityId: null,
   householdFixedEstimate: 0,
   householdFixedIsEstimate: true,
   householdFixedShared: false,

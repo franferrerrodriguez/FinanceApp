@@ -127,3 +127,16 @@ input[type='number'] {
   -moz-appearance: textfield;
   appearance: textfield;
 }
+
+/* Pointer on interactive controls (buttons, links, tabs, selects) */
+button:not(:disabled),
+a[href],
+[role='tab']:not([aria-disabled='true']),
+select,
+.financia-bottom-nav__item {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}

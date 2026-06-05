@@ -1,10 +1,21 @@
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useToast } from '../context/ToastContext';
 import { createAnnualExpense } from '../lib/annualExpenses';
-import { SelectField } from './SelectField';
 import { ui } from '../lib/uiClasses';
 import { formatMoney } from '../utils/formatters';
+import { AnnualExpenseEditModal } from './AnnualExpenseEditModal';
+import { AnnualExpensesTable } from './AnnualExpensesTable';
 
-const MONTH_OPTIONS = Array.from({ length: 12 }, (_, i) => i + 1);
+function sortAnnualExpenses(items) {
+  return [...items].sort((a, b) => {
+    const monthDiff = (a.month ?? 1) - (b.month ?? 1);
+    if (monthDiff !== 0) return monthDiff;
+    return (a.name ?? '').localeCompare(b.name ?? '', undefined, {
+      sensitivity: 'base',
+    });
+  });
+}
 
 export function AnnualExpensesSection({
   items,
@@ -13,10 +24,39 @@ export function AnnualExpensesSection({
   onRemove,
 }) {
   const { t } = useTranslation();
+  const toast = useToast();
+  const [modal, setModal] = useState(null);
+
+  const sorted = useMemo(() => sortAnnualExpenses(items), [items]);
+
+  const openCreate = () =>
+    setModal({ mode: 'create', draft: createAnnualExpense() });
+
+  const openEdit = (item) =>
+    setModal({ mode: 'edit', id: item.id, draft: { ...item } });
+
+  const closeModal = () => setModal(null);
+
+  const handleSave = (entry) => {
+    if (modal?.mode === 'create') {
+      onAdd(entry);
+      toast.success(t('toast.annualExpenseAdded'));
+    } else if (modal?.mode === 'edit') {
+      onUpdate(modal.id, entry);
+      toast.success(t('toast.annualExpenseUpdated'));
+    }
+    closeModal();
+  };
+
+  const handleDelete = (item) => {
+    if (modal?.mode === 'edit' && modal.id === item.id) closeModal();
+    onRemove(item.id);
+    toast.success(t('toast.annualExpenseRemoved'));
+  };
 
   return (
     <section className={`${ui.chartCard} ${ui.stackSection}`}>
-      <div>
+      <div className={`border-b pb-3 ${ui.divider}`}>
         <h3 className={`text-base font-semibold ${ui.heading}`}>
           {t('balance.cashflow.annualExpensesTitle')}
         </h3>
@@ -25,90 +65,40 @@ export function AnnualExpensesSection({
         </p>
       </div>
 
-      {items.length === 0 ? (
-        <p className={`text-sm ${ui.textMuted}`}>
+      {sorted.length > 0 ? (
+        <AnnualExpensesTable
+          items={sorted}
+          onEdit={openEdit}
+          onDelete={handleDelete}
+        />
+      ) : (
+        <p
+          className={`rounded-xl border border-dashed px-4 py-8 text-center text-sm ${ui.cardDashed} ${ui.text}`}
+        >
           {t('balance.cashflow.annualExpensesEmpty')}
         </p>
-      ) : (
-        <ul className={ui.stackBlocks}>
-          {items.map((item) => (
-            <li
-              key={item.id}
-              className={`${ui.block} ${ui.stackSection} p-4`}
-            >
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <label className="block sm:col-span-2">
-                  <span className={`mb-1 block text-xs font-medium ${ui.textLabel}`}>
-                    {t('balance.cashflow.annualExpenseName')}
-                  </span>
-                  <input
-                    type="text"
-                    value={item.name}
-                    onChange={(e) =>
-                      onUpdate(item.id, { name: e.target.value })
-                    }
-                    placeholder={t('balance.cashflow.annualExpenseNamePlaceholder')}
-                    className={`${ui.input} ${ui.inputCompact} ${ui.inputMedium}`}
-                  />
-                </label>
-                <label className="block">
-                  <span className={`mb-1 block text-xs font-medium ${ui.textLabel}`}>
-                    {t('balance.cashflow.annualExpenseAmount')}
-                  </span>
-                  <input
-                    type="number"
-                    min={0}
-                    step="1"
-                    value={item.amount ?? 0}
-                    onChange={(e) =>
-                      onUpdate(item.id, {
-                        amount: Math.max(0, parseFloat(e.target.value) || 0),
-                      })
-                    }
-                    className={`${ui.input} ${ui.inputCompact} ${ui.inputAmount}`}
-                  />
-                </label>
-                <label className="block">
-                  <span className={`mb-1 block text-xs font-medium ${ui.textLabel}`}>
-                    {t('balance.cashflow.annualExpenseMonth')}
-                  </span>
-                  <SelectField
-                    variant="compact"
-                    className={ui.inputNarrow}
-                    value={item.month ?? 1}
-                    onChange={(e) =>
-                      onUpdate(item.id, {
-                        month: parseInt(e.target.value, 10),
-                      })
-                    }
-                  >
-                    {MONTH_OPTIONS.map((m) => (
-                      <option key={m} value={m}>
-                        {t(`common.months.${m}`)}
-                      </option>
-                    ))}
-                  </SelectField>
-                </label>
-              </div>
-              <button
-                type="button"
-                onClick={() => onRemove(item.id)}
-                className={`mt-2 text-sm font-medium text-red-600 hover:underline dark:text-red-400`}
-              >
-                {t('balance.cashflow.annualExpenseRemove')}
-              </button>
-            </li>
-          ))}
-        </ul>
       )}
 
       <button
         type="button"
-        onClick={() => onAdd(createAnnualExpense())}
+        onClick={openCreate}
         className={`${ui.btnSecondary} w-full sm:w-auto`}
       >
-        {t('balance.cashflow.annualExpenseAdd')}
+        {sorted.length > 0
+          ? t('balance.cashflow.annualExpenseAdd')
+          : t('balance.cashflow.annualExpenseAddFirst')}
       </button>
+
+      <AnnualExpenseEditModal
+        open={modal != null}
+        mode={modal?.mode ?? 'create'}
+        initialDraft={modal?.draft ?? createAnnualExpense()}
+        onClose={closeModal}
+        onSave={handleSave}
+        onDelete={() => {
+          if (modal?.mode === 'edit') handleDelete({ id: modal.id });
+        }}
+      />
     </section>
   );
 }

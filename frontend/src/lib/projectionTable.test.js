@@ -22,6 +22,7 @@ const baseSettings = {
   leisureShared: false,
   initialPatrimony: 0,
   indexFundRealReturn: 0.04,
+  savingsAccountReturn: 0.025,
   useRealReturn: true,
   annualSalaryIncrease: 0,
   projectionAnnualExpenseIncrease: 0,
@@ -41,9 +42,10 @@ assert.equal(rows[0].patrimonioInicio, 0);
 assert.equal(rows[0].monthlyReturn, 0);
 assert.equal(rows[0].patrimonyEnd, 2011.5);
 
+const liquidRate = annualToMonthlyRate(0.025);
 assert.equal(rows[1].patrimonioInicio, 2011.5);
 assert.equal(rows[1].netContribution, 2011.5);
-const expectedM2 = 2011.5 + 2011.5 + 2011.5 * rMes;
+const expectedM2 = 2011.5 + 2011.5 + 2011.5 * liquidRate;
 assert.ok(Math.abs(rows[1].patrimonyEnd - expectedM2) < 0.02);
 
 const summary = summarizeMonthlyProjection(rows, 0);
@@ -74,7 +76,8 @@ const withInvest = buildMonthlyProjectionTable({
   years: 1,
 });
 assert.equal(withInvest[0].additionalInvestments, 500);
-assert.equal(withInvest[0].netContribution, 2011.5 + 500);
+assert.equal(withInvest[0].netContribution, 2011.5);
+assert.equal(withInvest[0].patrimonyEnd, 2011.5);
 
 const fourteenPays = buildMonthlyProjectionTable({
   settings: {

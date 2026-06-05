@@ -1,16 +1,13 @@
 /** Detects placeholder rows that were saved without real user input. */
 
-const DRAFT_ASSET_NAMES = new Set(['nuevo activo', 'new asset']);
 const DRAFT_LIABILITY_NAMES = new Set(['nuevo pasivo', 'new liability']);
 
+/** @deprecated Use isSavableAssetCatalog from patrimonyNames.js in UI */
 export function isDraftAsset(asset) {
   if (!asset) return true;
-  const name = (asset.name ?? '').trim().toLowerCase();
-  if (!name) return true;
   const provider = (asset.provider ?? '').trim();
-  const notes = (asset.notes ?? '').trim();
-  if (DRAFT_ASSET_NAMES.has(name) && !provider && !notes) return true;
-  return false;
+  if (provider) return false;
+  return !['cash', 'real_estate'].includes(asset?.category);
 }
 
 export function isDraftLiability(liability) {
@@ -36,6 +33,8 @@ export function filterDraftLiabilities(liabilities = []) {
 export function isSavableAsset(asset) {
   return !isDraftAsset(asset);
 }
+
+export { isSavableAssetCatalog } from './patrimonyNames.js';
 
 export function isSavableLiability(liability) {
   return !isDraftLiability(liability);

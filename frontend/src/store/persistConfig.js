@@ -1,5 +1,8 @@
 import { DEFAULT_LOCALE } from '../i18n/config';
-import { seedPlansFromLegacyInvestment } from '../lib/contributionPlans';
+import {
+  migratePlansToAssets,
+  seedPlansFromLegacyInvestment,
+} from '../lib/contributionPlans';
 import {
   DEFAULT_SETTINGS,
   PROJECTION_YEARS_DEFAULT,
@@ -20,10 +23,11 @@ import {
   filterDraftAssets,
   filterDraftLiabilities,
 } from '../lib/patrimonyDrafts';
+import { getDefaultReturnForAssetCategory } from '../lib/projectionReturns';
 import { ONBOARDING_STEP_IDS } from '../modules/onboarding/constants';
 
 export const PERSIST_STORAGE_KEY = 'financia_app_data';
-export const PERSIST_VERSION = 12;
+export const PERSIST_VERSION = 15;
 
 const MAX_ONBOARDING_STEP = ONBOARDING_STEP_IDS.length - 1;
 
@@ -222,6 +226,49 @@ export function migratePersistedState(persisted, version) {
     next.cashflowHistory = cashflowHistory;
     next.settings = settings;
     delete next.salaryHistory;
+  }
+
+  if (version < 13) {
+    const settings = { ...DEFAULT_SETTINGS, ...next.settings };
+    const mortgage = (next.liabilities ?? []).find(
+      (l) => l.category === 'mortgage' && l.isActive !== false,
+    );
+    if (mortgage && !settings.linkedMortgageLiabilityId) {
+      next.settings = {
+        ...settings,
+        housingType: 'mortgage',
+        linkedMortgageLiabilityId: mortgage.id,
+      };
+    } else {
+      next.settings = {
+        ...settings,
+        housingType:
+          settings.housingType ??
+          (settings.linkedMortgageLiabilityId ? 'mortgage' : 'rent'),
+        linkedMortgageLiabilityId: settings.linkedMortgageLiabilityId ?? null,
+      };
+    }
+  }
+
+  if (version < 14) {
+    const settings = { ...DEFAULT_SETTINGS, ...next.settings };
+    next.assets = (next.assets ?? []).map((asset) => {
+      if (asset.customAnnualReturn != null) return asset;
+      return {
+        ...asset,
+        customAnnualReturn: getDefaultReturnForAssetCategory(
+          asset.category,
+          settings,
+        ),
+      };
+    });
+  }
+
+  if (version < 15) {
+    next.contributionPlans = migratePlansToAssets(
+      next.contributionPlans ?? [],
+      next.assets ?? [],
+    );
   }
 
   return next;

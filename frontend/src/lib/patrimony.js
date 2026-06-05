@@ -26,6 +26,10 @@ export function createAsset(partial = {}) {
     category: partial.category ?? 'bank',
     provider: partial.provider?.trim() ?? '',
     notes: partial.notes?.trim() ?? '',
+    customAnnualReturn:
+      partial.customAnnualReturn === undefined
+        ? null
+        : partial.customAnnualReturn,
     isActive: partial.isActive !== false,
   };
 }
@@ -156,6 +160,52 @@ export function buildCloseMonthSnapshots({ assetRows, liabilityRows, snapshotDat
   return snaps;
 }
 
+export function buildCurrentBalanceRows(
+  assets,
+  liabilities,
+  snapshots,
+  monthKey = getCurrentMonthKey(),
+) {
+  const rows = [
+    ...getActiveAssets(assets).map((asset) => {
+      const raw = getSnapshotValueForItem(snapshots, monthKey, {
+        type: SNAPSHOT_ITEM_TYPE.ASSET,
+        id: asset.id,
+      });
+      return {
+        id: asset.id,
+        kind: SNAPSHOT_ITEM_TYPE.ASSET,
+        name: asset.name,
+        category: asset.category,
+        provider: asset.provider,
+        balance: raw,
+        hasBalance: raw != null && Number.isFinite(raw),
+      };
+    }),
+    ...getActiveLiabilities(liabilities).map((liability) => {
+      const raw = getSnapshotValueForItem(snapshots, monthKey, {
+        type: SNAPSHOT_ITEM_TYPE.LIABILITY,
+        id: liability.id,
+      });
+      const balance = raw == null ? null : Math.abs(Number(raw) || 0);
+      return {
+        id: liability.id,
+        kind: SNAPSHOT_ITEM_TYPE.LIABILITY,
+        name: liability.name,
+        category: liability.category,
+        provider: null,
+        balance,
+        hasBalance: raw != null && Number.isFinite(raw),
+      };
+    }),
+  ];
+
+  return {
+    rows,
+    hasAnyBalance: rows.some((row) => row.hasBalance),
+  };
+}
+
 export function getCurrentPatrimonySummary(snapshots, monthKey = getCurrentMonthKey()) {
   const grouped = groupSnapshotsByMonth(snapshots);
   const monthSnaps = grouped[monthKey] ?? [];
@@ -176,13 +226,27 @@ export function getCurrentPatrimonySummary(snapshots, monthKey = getCurrentMonth
   };
 }
 
+/** Rolling window plus any month that already has saved balances. */
+export function resolvePatrimonyHistoryMonthKeys(snapshots, months = 12) {
+  const rolling = getLastNMonthKeys(months);
+  const dataMonths = Object.keys(groupSnapshotsByMonth(snapshots)).filter((key) =>
+    /^\d{4}-\d{2}$/.test(key),
+  );
+  const currentKey = getCurrentMonthKey();
+  const merged = [...new Set([...rolling, ...dataMonths, currentKey])].sort();
+
+  const maxColumns = Math.max(months, dataMonths.length + 1, 12);
+  if (merged.length <= maxColumns) return merged;
+  return merged.slice(-maxColumns);
+}
+
 export function buildPatrimonyHistoryTable({
   assets,
   liabilities,
   snapshots,
   months = 12,
 }) {
-  const monthKeys = getLastNMonthKeys(months);
+  const monthKeys = resolvePatrimonyHistoryMonthKeys(snapshots, months);
   const activeAssets = getActiveAssets(assets);
   const activeLiabilities = getActiveLiabilities(liabilities);
 

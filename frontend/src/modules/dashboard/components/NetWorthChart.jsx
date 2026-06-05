@@ -26,8 +26,15 @@ const chartTheme = {
   tooltipBorder: '#334155',
 };
 
-export function NetWorthChart({ history }) {
+export function NetWorthChart({
+  history,
+  title,
+  emptyMessage,
+  embedded = false,
+}) {
   const { t } = useTranslation();
+  const chartTitle = title ?? t('dashboard.charts.netWorth.title');
+  const chartEmpty = emptyMessage ?? t('dashboard.charts.netWorth.empty');
 
   const data = history.map((row) => ({
     month: formatMonthKey(row.monthKey),
@@ -60,19 +67,10 @@ export function NetWorthChart({ history }) {
     </ul>
   );
 
-  if (!hasSeries) {
-    return (
-      <ChartCard title={t('dashboard.charts.netWorth.title')}>
-        <p className={`py-16 text-center text-sm ${ui.textMuted}`}>
-          {t('dashboard.charts.netWorth.empty')}
-        </p>
-      </ChartCard>
-    );
-  }
-
-  return (
-    <ChartCard title={t('dashboard.charts.netWorth.title')} legend={legend}>
-      <ResponsiveContainer width="100%" height={300}>
+  const chartBody = !hasSeries ? (
+    <p className={`py-16 text-center text-sm ${ui.textMuted}`}>{chartEmpty}</p>
+  ) : (
+    <ResponsiveContainer width="100%" height={300}>
         <LineChart data={data} margin={{ top: 8, right: 12, left: 4, bottom: 4 }}>
           <CartesianGrid
             stroke={chartTheme.grid}
@@ -125,6 +123,27 @@ export function NetWorthChart({ history }) {
           />
         </LineChart>
       </ResponsiveContainer>
+  );
+
+  if (embedded) {
+    return (
+      <div className="space-y-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <h4 className={`text-sm font-semibold ${ui.heading}`}>{chartTitle}</h4>
+          {hasSeries ? <div className="shrink-0">{legend}</div> : null}
+        </div>
+        {chartBody}
+      </div>
+    );
+  }
+
+  if (!hasSeries) {
+    return <ChartCard title={chartTitle}>{chartBody}</ChartCard>;
+  }
+
+  return (
+    <ChartCard title={chartTitle} legend={legend}>
+      {chartBody}
     </ChartCard>
   );
 }

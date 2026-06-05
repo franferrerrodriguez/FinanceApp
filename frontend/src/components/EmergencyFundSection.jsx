@@ -1,14 +1,22 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { EmergencyFundStatus } from './EmergencyFundStatus';
 import {
   buildEmergencyFundMonthOptions,
   calcMonthlyExpenseBaseline,
+  computeEmergencyFundMetrics,
   EMERGENCY_FUND_RECOMMENDED_MONTHS,
 } from '../lib/emergencyFund';
 import { ui } from '../lib/uiClasses';
 import { formatMoney } from '../utils/formatters';
 
-export function EmergencyFundSection({ settings, setSettings, annualExpenses }) {
+export function EmergencyFundSection({
+  settings,
+  setSettings,
+  annualExpenses,
+  snapshots = [],
+  assets = [],
+}) {
   const { t } = useTranslation();
   const months = settings.emergencyFundMonths ?? EMERGENCY_FUND_RECOMMENDED_MONTHS;
 
@@ -20,6 +28,17 @@ export function EmergencyFundSection({ settings, setSettings, annualExpenses }) 
   const monthlyExpenses = useMemo(
     () => calcMonthlyExpenseBaseline(settings, annualExpenses),
     [settings, annualExpenses],
+  );
+
+  const metrics = useMemo(
+    () =>
+      computeEmergencyFundMetrics({
+        settings,
+        snapshots,
+        assets,
+        annualExpenses,
+      }),
+    [settings, snapshots, assets, annualExpenses],
   );
 
   const target = monthlyExpenses * months;
@@ -99,6 +118,8 @@ export function EmergencyFundSection({ settings, setSettings, annualExpenses }) 
           })}
         </p>
       </div>
+
+      <EmergencyFundStatus metrics={metrics} variant="inline" />
     </section>
   );
 }

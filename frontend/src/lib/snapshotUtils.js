@@ -21,6 +21,24 @@ export function isLiabilitySnapshot(snap) {
   return Boolean(getSnapshotLiabilityId(snap));
 }
 
+export function countSnapshotMonthsForAsset(snapshots, assetId) {
+  const months = new Set();
+  for (const snap of snapshots ?? []) {
+    if (getSnapshotAssetId(snap) === assetId) months.add(getSnapshotMonthKey(snap));
+  }
+  return months.size;
+}
+
+export function countSnapshotMonthsForLiability(snapshots, liabilityId) {
+  const months = new Set();
+  for (const snap of snapshots ?? []) {
+    if (getSnapshotLiabilityId(snap) === liabilityId) {
+      months.add(getSnapshotMonthKey(snap));
+    }
+  }
+  return months.size;
+}
+
 export function groupSnapshotsByMonth(snapshots) {
   return (snapshots ?? []).reduce((acc, snap) => {
     const key = getSnapshotMonthKey(snap);

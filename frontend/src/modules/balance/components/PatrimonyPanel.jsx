@@ -1,31 +1,42 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePrunePatrimonyDrafts } from '../../../hooks/usePrunePatrimonyDrafts';
 import { usePatrimonySave } from '../../../hooks/usePatrimonySave';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import { FormFieldFrame } from '../../../components/FormFieldFrame';
-import { InstitutionSelect } from '../../../components/InstitutionSelect';
-import { SelectField } from '../../../components/SelectField';
 import {
-  SPANISH_BANK_IDS,
-  SPANISH_BANK_LEGACY_LABELS,
-} from '../../../lib/spanishBanks';
+  notifyAfterSave,
+  saveToCloudQuiet,
+  useToast,
+} from '../../../context/ToastContext';
 import { FinanceAlerts } from '../../../components/FinanceAlerts';
 import { useFinanceAlerts } from '../../../hooks/useFinanceAlerts';
 import { getAssetCategories, getLiabilityCategories } from '../../../lib/categoryLabels';
 import { getCurrentMonthKey } from '../../../lib/dashboardMetrics';
 import { isMonthKey } from '../../../lib/monthlyClose';
 import {
+  countSnapshotMonthsForAsset,
+  countSnapshotMonthsForLiability,
+} from '../../../lib/snapshotUtils';
+import { formatInstitutionLabel } from '../../../lib/institutions';
+import {
+  buildCurrentBalanceRows,
   createAsset,
   createLiability,
   getActiveAssets,
   getActiveLiabilities,
   getCurrentPatrimonySummary,
+  getSnapshotValueForItem,
 } from '../../../lib/patrimony';
+import { SNAPSHOT_ITEM_TYPE } from '../../../lib/snapshotItemTypes';
+import { isDraftAsset } from '../../../lib/patrimonyDrafts';
 import {
-  isSavableAsset,
-  isSavableLiability,
-} from '../../../lib/patrimonyDrafts';
+  applyAutoAssetNames,
+  getAssetBaseLabel,
+} from '../../../lib/patrimonyNames';
+import {
+  SPANISH_BANK_IDS,
+  SPANISH_BANK_LEGACY_LABELS,
+} from '../../../lib/spanishBanks';
 import { ui } from '../../../lib/uiClasses';
 import { useFinanceData, usePreferences } from '../../../store/hooks';
 import {
@@ -34,8 +45,13 @@ import {
   formatSnapshotDateLabel,
 } from '../../../utils/monthLabel';
 import { formatMoney } from '../../../utils/formatters';
+import { AssetEditModal } from './AssetEditModal';
+import { LiabilityEditModal } from './LiabilityEditModal';
+import { PatrimonyDeleteConfirmModal } from './PatrimonyDeleteConfirmModal';
 import { MonthlyCloseModal } from './MonthlyCloseModal';
-import { MonthlyClosePrompt } from './MonthlyClosePrompt';
+import { PatrimonyCatalogTable } from './PatrimonyCatalogTable';
+import { PatrimonyCurrentBalances } from './PatrimonyCurrentBalances';
+import { PatrimonyEvolutionSection } from './PatrimonyEvolutionSection';
 import { PatrimonyHistoryTable } from './PatrimonyHistoryTable';
 
 export function PatrimonyPanel() {
@@ -44,6 +60,7 @@ export function PatrimonyPanel() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { alerts, monthlyClose } = useFinanceAlerts();
   const {
+    settings,
     assets,
     liabilities,
     snapshots,
@@ -58,12 +75,11 @@ export function PatrimonyPanel() {
     closeMonthSnapshots,
   } = useFinanceData();
 
-  usePrunePatrimonyDrafts();
-  const { saveToCloud, status: saveStatus, canCloudSave } = usePatrimonySave();
+  usePrunePatrimonyDrafts(assets, liabilities);
+  const toast = useToast();
+  const { saveToCloud } = usePatrimonySave();
 
   const currentMonthKey = getCurrentMonthKey();
-  const [pendingAsset, setPendingAsset] = useState(null);
-  const [pendingLiability, setPendingLiability] = useState(null);
   const [balancesOpen, setBalancesOpen] = useState(false);
   const [balancesMonthKey, setBalancesMonthKey] = useState(
     monthlyClose?.suggestedMonthKey ?? currentMonthKey,
@@ -91,6 +107,46 @@ export function PatrimonyPanel() {
   const hasAccounts =
     getActiveAssets(assets).length > 0 || getActiveLiabilities(liabilities).length > 0;
 
+  const { rows: currentBalanceRows, hasAnyBalance } = useMemo(
+    () => buildCurrentBalanceRows(assets, liabilities, snapshots, currentMonthKey),
+    [assets, liabilities, snapshots, currentMonthKey],
+  );
+
+  const asOfLabel = summary.hasClose
+    ? summary.asOfDate
+      ? formatSnapshotDateLabel(summary.asOfDate, locale)
+      : monthLabel
+    : monthLabel;
+
+  const getAssetBalance = useCallback(
+    (asset) => {
+      const raw = getSnapshotValueForItem(snapshots, currentMonthKey, {
+        type: SNAPSHOT_ITEM_TYPE.ASSET,
+        id: asset.id,
+      });
+      return raw != null && Number.isFinite(raw) ? raw : null;
+    },
+    [snapshots, currentMonthKey],
+  );
+
+  const getLiabilityBalance = useCallback(
+    (liability) => {
+      const raw = getSnapshotValueForItem(snapshots, currentMonthKey, {
+        type: SNAPSHOT_ITEM_TYPE.LIABILITY,
+        id: liability.id,
+      });
+      return raw != null && Number.isFinite(raw) ? Math.abs(Number(raw) || 0) : null;
+    },
+    [snapshots, currentMonthKey],
+  );
+
+  const scrollToPatrimonyHistory = useCallback(() => {
+    document.getElementById('patrimony-history')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  }, []);
+
   const scrollToPatrimonyCatalog = useCallback(() => {
     document.getElementById('patrimony-assets')?.scrollIntoView({
       behavior: 'smooth',
@@ -102,10 +158,6 @@ export function PatrimonyPanel() {
     <div className={ui.stackPage}>
       {alerts.length > 0 ? (
         <FinanceAlerts alerts={alerts} className={ui.chartCard} />
-      ) : null}
-
-      {hasAccounts && monthlyClose?.pendingMonths?.length ? (
-        <MonthlyClosePrompt status={monthlyClose} onCloseMonth={openRecordBalances} />
       ) : null}
 
       <div className={`${ui.chartCard} ${ui.stackSection}`}>
@@ -162,33 +214,20 @@ export function PatrimonyPanel() {
         </div>
       </div>
 
-      <PatrimonyAssetsSection
-        assets={assets}
-        pendingAsset={pendingAsset}
-        setPendingAsset={setPendingAsset}
-        addAsset={addAsset}
-        updateAsset={updateAsset}
-        setAssetActive={setAssetActive}
-        removeAsset={removeAsset}
-        saveToCloud={saveToCloud}
-        saveStatus={saveStatus}
-        canCloudSave={canCloudSave}
-      />
+      {hasAccounts ? (
+        <PatrimonyCurrentBalances
+          rows={currentBalanceRows}
+          asOfLabel={asOfLabel}
+          hasAnyBalance={hasAnyBalance}
+          onUpdate={() => openRecordBalances()}
+          onViewHistory={hasAnyBalance ? scrollToPatrimonyHistory : undefined}
+        />
+      ) : null}
 
-      <PatrimonyLiabilitiesSection
-        liabilities={liabilities}
-        pendingLiability={pendingLiability}
-        setPendingLiability={setPendingLiability}
-        addLiability={addLiability}
-        updateLiability={updateLiability}
-        setLiabilityActive={setLiabilityActive}
-        removeLiability={removeLiability}
-        saveToCloud={saveToCloud}
-        saveStatus={saveStatus}
-        canCloudSave={canCloudSave}
-      />
-
-      <section className={`${ui.chartCard} ${ui.stackSection}`}>
+      <section
+        id="patrimony-history"
+        className={`${ui.chartCard} ${ui.stackSection} scroll-mt-24`}
+      >
         <SectionHeader
           title={t('balance.patrimony.historyTitle')}
           subtitle={t('balance.patrimony.historySubtitle')}
@@ -200,6 +239,32 @@ export function PatrimonyPanel() {
         />
       </section>
 
+      <PatrimonyEvolutionSection snapshots={snapshots} locale={locale} />
+
+      <PatrimonyAssetsSection
+        settings={settings}
+        assets={assets}
+        snapshots={snapshots}
+        getBalance={getAssetBalance}
+        addAsset={addAsset}
+        updateAsset={updateAsset}
+        setAssetActive={setAssetActive}
+        removeAsset={removeAsset}
+        saveToCloud={saveToCloud}
+      />
+
+      <PatrimonyLiabilitiesSection
+        settings={settings}
+        liabilities={liabilities}
+        snapshots={snapshots}
+        getBalance={getLiabilityBalance}
+        addLiability={addLiability}
+        updateLiability={updateLiability}
+        setLiabilityActive={setLiabilityActive}
+        removeLiability={removeLiability}
+        saveToCloud={saveToCloud}
+      />
+
       <MonthlyCloseModal
         open={balancesOpen}
         onClose={() => setBalancesOpen(false)}
@@ -208,7 +273,15 @@ export function PatrimonyPanel() {
         snapshots={snapshots}
         monthKey={balancesMonthKey}
         onMonthKeyChange={setBalancesMonthKey}
-        onConfirm={closeMonthSnapshots}
+        onConfirm={(monthKey, snaps) => {
+          closeMonthSnapshots(monthKey, snaps);
+          toast.success(t('toast.balancesSaved'));
+          requestAnimationFrame(() => {
+            document
+              .getElementById('patrimony-current-balances')
+              ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+        }}
       />
     </div>
   );
@@ -305,29 +378,137 @@ function EmptyBlock({ message }) {
 }
 
 function PatrimonyAssetsSection({
+  settings,
   assets,
-  pendingAsset,
-  setPendingAsset,
+  snapshots,
+  getBalance,
   addAsset,
   updateAsset,
   setAssetActive,
   removeAsset,
   saveToCloud,
-  saveStatus,
-  canCloudSave,
 }) {
   const { t } = useTranslation();
+  const toast = useToast();
+  const categories = getAssetCategories(t);
+  const categoryLabel = (cat) =>
+    categories.find((c) => c.value === cat)?.label ?? cat;
+  const [modal, setModal] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const handleSave = async () => {
-    if (pendingAsset && isSavableAsset(pendingAsset)) {
-      addAsset(createAsset(pendingAsset));
-      setPendingAsset(null);
+  const assetBaseLabel = (asset) =>
+    getAssetBaseLabel(
+      asset,
+      (provider) =>
+        formatInstitutionLabel(
+          provider,
+          SPANISH_BANK_IDS,
+          t,
+          'balance.banks',
+          SPANISH_BANK_LEGACY_LABELS,
+        ),
+      categoryLabel,
+    );
+
+  const syncAutoNames = (list) => applyAutoAssetNames(list, assetBaseLabel);
+
+  const savableAssets = useMemo(
+    () => assets.filter((a) => !isDraftAsset(a)),
+    [assets],
+  );
+  const catalogAssets = useMemo(
+    () => syncAutoNames(savableAssets),
+    [savableAssets, t],
+  );
+
+  useEffect(() => {
+    for (const asset of catalogAssets) {
+      const prev = savableAssets.find((a) => a.id === asset.id);
+      if (prev && prev.name !== asset.name) {
+        updateAsset(asset.id, { name: asset.name });
+      }
     }
-    await saveToCloud();
+  }, [catalogAssets, savableAssets, updateAsset]);
+
+  const applyAssetList = (next) => {
+    for (const asset of next) {
+      const prev = assets.find((a) => a.id === asset.id);
+      if (!prev) {
+        addAsset(createAsset(asset));
+        continue;
+      }
+      const patch = {};
+      for (const key of [
+        'name',
+        'category',
+        'provider',
+        'notes',
+        'customAnnualReturn',
+        'isActive',
+      ]) {
+        if (prev[key] !== asset[key]) patch[key] = asset[key];
+      }
+      if (Object.keys(patch).length) updateAsset(asset.id, patch);
+    }
   };
 
-  const showList = assets.length > 0;
-  const showEmpty = !pendingAsset && assets.length === 0;
+  const openCreate = () =>
+    setModal({ mode: 'create', draft: createAsset({ name: '' }) });
+  const openEdit = (asset) =>
+    setModal({ mode: 'edit', id: asset.id, draft: { ...asset } });
+  const closeModal = () => setModal(null);
+
+  const handleModalSave = async (draft) => {
+    const merged =
+      modal?.mode === 'create'
+        ? [...assets, createAsset({ ...draft, name: '' })]
+        : assets.map((a) =>
+            a.id === modal.id ? { ...a, ...draft, name: a.name } : a,
+          );
+    applyAssetList(syncAutoNames(merged));
+    closeModal();
+    await notifyAfterSave({
+      toast,
+      t,
+      actionKey:
+        modal?.mode === 'create' ? 'toast.assetCreated' : 'toast.assetUpdated',
+      saveFn: saveToCloud,
+    });
+  };
+
+  const requestDelete = (asset) => setDeleteTarget(asset);
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const id = deleteTarget.id;
+    if (modal?.mode === 'edit' && modal.id === id) closeModal();
+    removeAsset(id);
+    const remaining = syncAutoNames(assets.filter((a) => a.id !== id));
+    for (const asset of remaining) {
+      const prev = assets.find((a) => a.id === asset.id);
+      if (prev && prev.name !== asset.name) {
+        updateAsset(asset.id, { name: asset.name });
+      }
+    }
+    setDeleteTarget(null);
+    await notifyAfterSave({
+      toast,
+      t,
+      actionKey: 'toast.assetDeleted',
+      saveFn: saveToCloud,
+    });
+  };
+
+  const handleModalDelete = () => {
+    if (modal?.mode !== 'edit') return;
+    const asset = assets.find((a) => a.id === modal.id);
+    if (asset) requestDelete(asset);
+  };
+
+  const handleToggleActive = async (id, isActive) => {
+    setAssetActive(id, isActive);
+    await saveToCloudQuiet({ toast, t, saveFn: saveToCloud });
+  };
 
   return (
     <section
@@ -337,250 +518,197 @@ function PatrimonyAssetsSection({
       <SectionHeader
         title={t('balance.patrimony.assetsTitle')}
         subtitle={t('balance.patrimony.assetsSubtitle')}
-        hint={t('balance.patrimony.saveHint')}
       />
 
-      {pendingAsset ? (
-        <ul className={ui.stackBlocks}>
-          <AssetCard
-            asset={pendingAsset}
-            onChange={(patch) =>
-              setPendingAsset((prev) => ({ ...prev, ...patch }))
-            }
-            onToggleActive={(isActive) =>
-              setPendingAsset((prev) => ({ ...prev, isActive }))
-            }
-          />
-        </ul>
-      ) : null}
-
-      {showList ? (
-        <ul className={ui.stackBlocks}>
-          {assets.map((asset) => (
-            <AssetCard
-              key={asset.id}
-              asset={asset}
-              onChange={(patch) => updateAsset(asset.id, patch)}
-              onToggleActive={(isActive) => setAssetActive(asset.id, isActive)}
-              onRemove={() => removeAsset(asset.id)}
-            />
-          ))}
-        </ul>
-      ) : null}
-
-      {showEmpty ? (
+      {catalogAssets.length > 0 ? (
+        <PatrimonyCatalogTable
+          kind="asset"
+          items={catalogAssets}
+          categoryLabel={categoryLabel}
+          settings={settings}
+          getBalance={getBalance}
+          onEdit={openEdit}
+          onDelete={requestDelete}
+          onToggleActive={handleToggleActive}
+        />
+      ) : (
         <EmptyBlock message={t('balance.patrimony.assetsEmpty')} />
-      ) : null}
+      )}
 
-      <PatrimonySectionActions
-        pending={Boolean(pendingAsset)}
-        saveDisabled={pendingAsset ? !isSavableAsset(pendingAsset) : false}
-        saveLabel={
-          pendingAsset
-            ? t('balance.patrimony.saveAsset')
-            : t('balance.patrimony.saveChanges')
+      <CatalogSectionToolbar
+        addLabel={
+          catalogAssets.length > 0
+            ? t('balance.patrimony.addAnotherAsset')
+            : t('balance.patrimony.addFirstAsset')
         }
-        onSave={handleSave}
-        onCancel={() => setPendingAsset(null)}
-        onStartAdd={() =>
-          setPendingAsset(
-            createAsset({ name: t('balance.patrimony.newAsset') }),
-          )
+        onAdd={openCreate}
+      />
+
+      <PatrimonyDeleteConfirmModal
+        open={deleteTarget != null}
+        itemName={deleteTarget?.name ?? ''}
+        snapshotMonths={
+          deleteTarget
+            ? countSnapshotMonthsForAsset(snapshots, deleteTarget.id)
+            : 0
         }
-        addFirstLabel={t('balance.patrimony.addFirstAsset')}
-        addAnotherLabel={t('balance.patrimony.addAnotherAsset')}
-        showAddAnother={!pendingAsset && assets.length > 0}
-        showAddFirst={!pendingAsset && assets.length === 0}
-        showSave={pendingAsset || assets.length > 0}
-        saveStatus={saveStatus}
-        canCloudSave={canCloudSave}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
+
+      <AssetEditModal
+        open={modal != null}
+        mode={modal?.mode ?? 'create'}
+        initialDraft={modal?.draft ?? createAsset({ name: '' })}
+        onClose={closeModal}
+        onSave={handleModalSave}
+        onDelete={handleModalDelete}
       />
     </section>
   );
 }
 
 function PatrimonyLiabilitiesSection({
+  settings,
   liabilities,
-  pendingLiability,
-  setPendingLiability,
+  snapshots,
+  getBalance,
   addLiability,
   updateLiability,
   setLiabilityActive,
   removeLiability,
   saveToCloud,
-  saveStatus,
-  canCloudSave,
 }) {
   const { t } = useTranslation();
+  const toast = useToast();
+  const categories = getLiabilityCategories(t);
+  const categoryLabel = (cat) =>
+    categories.find((c) => c.value === cat)?.label ?? cat;
+  const catalogLiabilities = useMemo(
+    () =>
+      liabilities.filter((l) => l.id !== settings?.linkedMortgageLiabilityId),
+    [liabilities, settings?.linkedMortgageLiabilityId],
+  );
+  const [modal, setModal] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const handleSave = async () => {
-    if (pendingLiability && isSavableLiability(pendingLiability)) {
-      addLiability(createLiability(pendingLiability));
-      setPendingLiability(null);
+  const openCreate = () =>
+    setModal({ mode: 'create', draft: createLiability({ name: '' }) });
+  const openEdit = (liability) =>
+    setModal({ mode: 'edit', id: liability.id, draft: { ...liability } });
+  const closeModal = () => setModal(null);
+
+  const handleModalSave = async (draft) => {
+    if (modal?.mode === 'create') {
+      addLiability(createLiability(draft));
+    } else if (modal?.mode === 'edit') {
+      updateLiability(modal.id, draft);
     }
-    await saveToCloud();
+    closeModal();
+    await notifyAfterSave({
+      toast,
+      t,
+      actionKey:
+        modal?.mode === 'create'
+          ? 'toast.liabilityCreated'
+          : 'toast.liabilityUpdated',
+      saveFn: saveToCloud,
+    });
   };
 
-  const showList = liabilities.length > 0;
-  const showEmpty = !pendingLiability && liabilities.length === 0;
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    if (modal?.mode === 'edit' && modal.id === deleteTarget.id) closeModal();
+    removeLiability(deleteTarget.id);
+    setDeleteTarget(null);
+    await notifyAfterSave({
+      toast,
+      t,
+      actionKey: 'toast.liabilityDeleted',
+      saveFn: saveToCloud,
+    });
+  };
+
+  const handleModalDelete = () => {
+    if (modal?.mode !== 'edit') return;
+    const liability = liabilities.find((l) => l.id === modal.id);
+    if (liability) setDeleteTarget(liability);
+  };
+
+  const handleToggleActive = async (id, isActive) => {
+    setLiabilityActive(id, isActive);
+    await saveToCloudQuiet({ toast, t, saveFn: saveToCloud });
+  };
 
   return (
     <section className={`${ui.chartCard} ${ui.stackSection}`}>
       <SectionHeader
         title={t('balance.patrimony.liabilitiesTitle')}
         subtitle={t('balance.patrimony.liabilitiesSubtitle')}
-        hint={t('balance.patrimony.saveHint')}
       />
 
-      {pendingLiability ? (
-        <ul className={ui.stackBlocks}>
-          <LiabilityCard
-            liability={pendingLiability}
-            onChange={(patch) =>
-              setPendingLiability((prev) => ({ ...prev, ...patch }))
-            }
-            onToggleActive={(isActive) =>
-              setPendingLiability((prev) => ({ ...prev, isActive }))
-            }
-          />
-        </ul>
-      ) : null}
+      {catalogLiabilities.length > 0 ? (
+        <PatrimonyCatalogTable
+          kind="liability"
+          items={catalogLiabilities}
+          categoryLabel={categoryLabel}
+          providerLabel={(item) => formatMoney(item.monthlyPayment ?? 0)}
+          getBalance={getBalance}
+          onEdit={openEdit}
+          onDelete={setDeleteTarget}
+          onToggleActive={handleToggleActive}
+        />
+      ) : (
+        <EmptyBlock
+          message={
+            settings?.linkedMortgageLiabilityId
+              ? t('balance.patrimony.liabilitiesHousingOnly')
+              : t('balance.patrimony.liabilitiesEmpty')
+          }
+        />
+      )}
 
-      {showList ? (
-        <ul className={ui.stackBlocks}>
-          {liabilities.map((liability) => (
-            <LiabilityCard
-              key={liability.id}
-              liability={liability}
-              onChange={(patch) => updateLiability(liability.id, patch)}
-              onToggleActive={(isActive) =>
-                setLiabilityActive(liability.id, isActive)
-              }
-              onRemove={() => removeLiability(liability.id)}
-            />
-          ))}
-        </ul>
-      ) : null}
+      <CatalogSectionToolbar
+        addLabel={
+          catalogLiabilities.length > 0
+            ? t('balance.patrimony.addAnotherLiability')
+            : t('balance.patrimony.addFirstLiability')
+        }
+        onAdd={openCreate}
+      />
 
-      {showEmpty ? (
-        <EmptyBlock message={t('balance.patrimony.liabilitiesEmpty')} />
-      ) : null}
+      <PatrimonyDeleteConfirmModal
+        open={deleteTarget != null}
+        itemName={deleteTarget?.name ?? ''}
+        snapshotMonths={
+          deleteTarget
+            ? countSnapshotMonthsForLiability(snapshots, deleteTarget.id)
+            : 0
+        }
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
 
-      <PatrimonySectionActions
-        pending={Boolean(pendingLiability)}
-        saveDisabled={
-          pendingLiability ? !isSavableLiability(pendingLiability) : false
-        }
-        saveLabel={
-          pendingLiability
-            ? t('balance.patrimony.saveLiability')
-            : t('balance.patrimony.saveChanges')
-        }
-        onSave={handleSave}
-        onCancel={() => setPendingLiability(null)}
-        onStartAdd={() =>
-          setPendingLiability(
-            createLiability({ name: t('balance.patrimony.newLiability') }),
-          )
-        }
-        addFirstLabel={t('balance.patrimony.addFirstLiability')}
-        addAnotherLabel={t('balance.patrimony.addAnotherLiability')}
-        showAddAnother={!pendingLiability && liabilities.length > 0}
-        showAddFirst={!pendingLiability && liabilities.length === 0}
-        showSave={pendingLiability || liabilities.length > 0}
-        saveStatus={saveStatus}
-        canCloudSave={canCloudSave}
+      <LiabilityEditModal
+        open={modal != null}
+        mode={modal?.mode ?? 'create'}
+        initialDraft={modal?.draft ?? createLiability({ name: '' })}
+        onClose={closeModal}
+        onSave={handleModalSave}
+        onDelete={handleModalDelete}
       />
     </section>
   );
 }
 
-function PatrimonySectionActions({
-  pending,
-  saveDisabled,
-  saveLabel,
-  onSave,
-  onCancel,
-  onStartAdd,
-  addFirstLabel,
-  addAnotherLabel,
-  showAddFirst,
-  showAddAnother,
-  showSave,
-  saveStatus,
-  canCloudSave,
-}) {
-  const { t } = useTranslation();
-
+function CatalogSectionToolbar({ addLabel, onAdd }) {
   return (
-    <div className={`space-y-3 border-t pt-4 ${ui.divider}`}>
-      <div className="flex flex-wrap items-center gap-3">
-        {pending ? (
-          <>
-            <button
-              type="button"
-              className={ui.btnPrimary}
-              disabled={saveDisabled || saveStatus === 'saving'}
-              onClick={onSave}
-            >
-              {saveStatus === 'saving' ? t('balance.patrimony.saving') : saveLabel}
-            </button>
-            <button type="button" className={ui.btnSecondary} onClick={onCancel}>
-              {t('common.cancel')}
-            </button>
-          </>
-        ) : (
-          <>
-            {showAddFirst ? (
-              <button type="button" className={ui.btnSecondary} onClick={onStartAdd}>
-                {addFirstLabel}
-              </button>
-            ) : null}
-            {showAddAnother ? (
-              <button type="button" className={ui.btnSecondary} onClick={onStartAdd}>
-                {addAnotherLabel}
-              </button>
-            ) : null}
-            {showSave ? (
-              <button
-                type="button"
-                className={ui.btnPrimary}
-                disabled={saveStatus === 'saving'}
-                onClick={onSave}
-              >
-                {saveStatus === 'saving'
-                  ? t('balance.patrimony.saving')
-                  : saveLabel}
-              </button>
-            ) : null}
-          </>
-        )}
-      </div>
-      <SaveStatusLine status={saveStatus} canCloudSave={canCloudSave} />
+    <div className={`border-t pt-4 ${ui.divider}`}>
+      <button type="button" className={ui.btnPrimary} onClick={onAdd}>
+        {addLabel}
+      </button>
     </div>
   );
-}
-
-function SaveStatusLine({ status, canCloudSave }) {
-  const { t } = useTranslation();
-  if (status === 'saving') return null;
-  if (status === 'saved') {
-    return (
-      <p className={`text-sm ${ui.accentSoft}`}>
-        {canCloudSave
-          ? t('balance.patrimony.savedCloud')
-          : t('balance.patrimony.savedLocal')}
-      </p>
-    );
-  }
-  if (status === 'error') {
-    return (
-      <p className="text-sm text-red-600 dark:text-red-400">
-        {t('balance.patrimony.saveError')}
-      </p>
-    );
-  }
-  return null;
 }
 
 function Kpi({ label, value, hint, liability }) {
@@ -601,216 +729,3 @@ function Kpi({ label, value, hint, liability }) {
   );
 }
 
-function AssetCard({ asset, onChange, onToggleActive, onRemove }) {
-  const { t } = useTranslation();
-  const categories = getAssetCategories(t);
-  const inactive = asset.isActive === false;
-
-  return (
-    <li
-      className={`${ui.block} ${ui.stackSection} p-4 sm:p-5 ${inactive ? 'opacity-60' : ''}`}
-    >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={asset.isActive !== false}
-            onChange={(e) => onToggleActive(e.target.checked)}
-            className="h-4 w-4 rounded border-slate-400 text-emerald-500 focus:ring-emerald-500/40"
-          />
-          <span className={`text-sm font-medium ${ui.textLabel}`}>
-            {t('balance.patrimony.activeInClose')}
-          </span>
-        </label>
-        {onRemove ? (
-          <button
-            type="button"
-            onClick={onRemove}
-            className={`text-sm font-medium text-red-600 hover:underline dark:text-red-400`}
-          >
-            {t('balance.patrimony.removeAsset')}
-          </button>
-        ) : null}
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <FormFieldFrame
-          label={t('balance.patrimony.name')}
-          required
-          reserveHintSpace={false}
-          className="md:col-span-2"
-        >
-          <input
-            type="text"
-            value={asset.name}
-            onChange={(e) => onChange({ name: e.target.value })}
-            className={`${ui.input} w-full`}
-          />
-        </FormFieldFrame>
-
-        <FormFieldFrame label={t('balance.patrimony.category')} reserveHintSpace={false}>
-          <SelectField
-            variant="input"
-            className="w-full py-2.5"
-            value={asset.category}
-            onChange={(e) => onChange({ category: e.target.value })}
-          >
-            {categories.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
-            ))}
-          </SelectField>
-        </FormFieldFrame>
-
-        <div className="flex min-w-0 flex-col gap-1.5 md:col-span-2">
-          <FormFieldFrame
-            label={t('balance.patrimony.provider')}
-            reserveHintSpace={false}
-          >
-            <InstitutionSelect
-              institutionIds={SPANISH_BANK_IDS}
-              i18nKey="balance.banks"
-              legacyMap={SPANISH_BANK_LEGACY_LABELS}
-              value={asset.provider ?? ''}
-              onChange={(provider) => onChange({ provider })}
-            />
-          </FormFieldFrame>
-          <p className={`text-xs leading-snug ${ui.textMuted}`}>
-            {t('balance.patrimony.providerHint')}
-          </p>
-        </div>
-
-        <FormFieldFrame
-          label={t('balance.patrimony.notes')}
-          reserveHintSpace={false}
-          className="md:col-span-2"
-        >
-          <input
-            type="text"
-            value={asset.notes ?? ''}
-            placeholder={t('common.optional')}
-            onChange={(e) => onChange({ notes: e.target.value })}
-            className={`${ui.input} w-full`}
-          />
-        </FormFieldFrame>
-      </div>
-    </li>
-  );
-}
-
-function LiabilityCard({ liability, onChange, onToggleActive, onRemove }) {
-  const { t } = useTranslation();
-  const categories = getLiabilityCategories(t);
-  const inactive = liability.isActive === false;
-
-  return (
-    <li
-      className={`${ui.block} ${ui.stackSection} p-4 sm:p-5 ${inactive ? 'opacity-60' : ''}`}
-    >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={liability.isActive !== false}
-            onChange={(e) => onToggleActive(e.target.checked)}
-            className="h-4 w-4 rounded border-slate-400 text-emerald-500 focus:ring-emerald-500/40"
-          />
-          <span className={`text-sm font-medium ${ui.textLabel}`}>
-            {t('balance.patrimony.activeInClose')}
-          </span>
-        </label>
-        {onRemove ? (
-          <button
-            type="button"
-            onClick={onRemove}
-            className={`text-sm font-medium text-red-600 hover:underline dark:text-red-400`}
-          >
-            {t('balance.patrimony.removeLiability')}
-          </button>
-        ) : null}
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <FormFieldFrame
-          label={t('balance.patrimony.name')}
-          required
-          reserveHintSpace={false}
-          className="md:col-span-2"
-        >
-          <input
-            type="text"
-            value={liability.name}
-            onChange={(e) => onChange({ name: e.target.value })}
-            className={`${ui.input} w-full`}
-          />
-        </FormFieldFrame>
-
-        <FormFieldFrame label={t('balance.patrimony.category')} reserveHintSpace={false}>
-          <SelectField
-            variant="input"
-            className="w-full py-2.5"
-            value={liability.category}
-            onChange={(e) => onChange({ category: e.target.value })}
-          >
-            {categories.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
-            ))}
-          </SelectField>
-        </FormFieldFrame>
-
-        <div className="flex min-w-0 flex-col gap-1.5">
-          <FormFieldFrame
-            label={t('balance.patrimony.monthlyPayment')}
-            reserveHintSpace={false}
-          >
-            <input
-              type="number"
-              min={0}
-              step="10"
-              value={liability.monthlyPayment ?? 0}
-              onChange={(e) =>
-                onChange({
-                  monthlyPayment: Math.max(0, parseFloat(e.target.value) || 0),
-                })
-              }
-              className={`${ui.input} ${ui.inputAmount}`}
-            />
-          </FormFieldFrame>
-          <p className={`text-xs leading-snug ${ui.textMuted}`}>
-            {t('balance.patrimony.monthlyPaymentHint')}
-          </p>
-        </div>
-
-        <div className="flex min-w-0 flex-col gap-1.5 md:col-span-2">
-          <FormFieldFrame
-            label={t('balance.patrimony.interestRate')}
-            reserveHintSpace={false}
-          >
-            <input
-              type="number"
-              min={0}
-              max={100}
-              step="0.1"
-              value={liability.interestRate ?? ''}
-              placeholder="—"
-              onChange={(e) => {
-                const raw = e.target.value;
-                onChange({
-                  interestRate:
-                    raw === '' ? undefined : Math.max(0, parseFloat(raw) || 0),
-                });
-              }}
-              className={`${ui.input} ${ui.inputAmount}`}
-            />
-          </FormFieldFrame>
-          <p className={`text-xs leading-snug ${ui.textMuted}`}>
-            {t('balance.patrimony.interestRateHint')}
-          </p>
-        </div>
-      </div>
-    </li>
-  );
-}

@@ -12,19 +12,19 @@ import { useFinanceData } from '../../../store/hooks';
 import { formatMoney, formatPercent } from '../../../utils/formatters';
 import { AnnualExpensesSection } from '../../../components/AnnualExpensesSection';
 import { EmergencyFundSection } from '../../../components/EmergencyFundSection';
+import { getSavingsTone, KpiCard } from '../../../components/KpiCard';
 import { FinanceAlerts } from '../../../components/FinanceAlerts';
 import { useFinanceAlerts } from '../../../hooks/useFinanceAlerts';
 import { ExpenseSubtotals } from '../../onboarding/components/ExpenseSubtotals';
+import { HousingExpenseBlock } from '../../../components/HousingExpenseBlock';
 import { SharedExpenseBlock } from '../../onboarding/components/SharedExpenseBlock';
 import {
   getEffectiveGroceries,
   getEffectiveHouseholdExpenses,
   getEffectiveLeisureExpenses,
-  getEffectiveMortgageRent,
   getGroceriesTotal,
   getHouseholdTotal,
   getLeisureTotal,
-  getMortgageRentTotal,
 } from '../../../lib/calculations';
 import {
   isLikelyAutoAllocatedBreakdown,
@@ -39,6 +39,9 @@ export function CashflowPanel() {
     settings,
     setSettings,
     annualExpenses,
+    snapshots,
+    assets,
+    liabilities,
     cashflowHistory,
     addAnnualExpense,
     updateAnnualExpense,
@@ -82,14 +85,35 @@ export function CashflowPanel() {
 
       <div className={`${ui.chartCard} ${ui.stackSection}`}>
         <p className={`text-sm ${ui.textMuted}`}>{t('balance.cashflow.summaryHint')}</p>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Stat label={t('balance.cashflow.income')} value={formatMoney(totals.income)} />
-          <Stat label={t('balance.cashflow.fixed')} value={formatMoney(totals.fixed)} />
-          <Stat label={t('balance.cashflow.leisure')} value={formatMoney(totals.leisure)} />
-          <Stat
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <KpiCard
+            label={t('balance.cashflow.income')}
+            value={formatMoney(totals.income)}
+            valueTone="income"
+            accent
+            hideFooter
+          />
+          <KpiCard
+            label={t('balance.cashflow.fixed')}
+            value={formatMoney(totals.fixed)}
+            valueTone="expense"
+            accent
+            hideFooter
+          />
+          <KpiCard
+            label={t('balance.cashflow.leisure')}
+            value={formatMoney(totals.leisure)}
+            valueTone="leisure"
+            accent
+            hideFooter
+          />
+          <KpiCard
             label={t('balance.cashflow.savings')}
             value={formatMoney(totals.savings)}
-            sub={formatPercent(totals.savingsRate)}
+            valueTone={getSavingsTone(totals.savingsRate)}
+            subValue={formatPercent(totals.savingsRate)}
+            subTone={getSavingsTone(totals.savingsRate)}
+            accent
           />
         </div>
       </div>
@@ -105,21 +129,10 @@ export function CashflowPanel() {
         </div>
 
         <div className={ui.stackBlocks}>
-        <SharedExpenseBlock
-          id="balance-mortgage"
-          label={t('onboarding.expenses.mortgageRentTotal')}
-          hint={t('onboarding.expenses.mortgageRentTotalHint')}
-          total={getMortgageRentTotal(settings)}
-          yourShare={getEffectiveMortgageRent(settings)}
-          shared={settings.mortgageRentShared ?? false}
-          percent={settings.mortgageRentYourSharePercent ?? 50}
-          onTotalChange={(v) =>
-            setSettings({ mortgageRentTotal: v, mortgageRent: v })
-          }
-          onSharedChange={(v) => setSettings({ mortgageRentShared: v })}
-          onPercentChange={(v) =>
-            setSettings({ mortgageRentYourSharePercent: v })
-          }
+        <HousingExpenseBlock
+          settings={settings}
+          setSettings={setSettings}
+          snapshots={snapshots}
         />
 
         {!detailed && (
@@ -212,19 +225,10 @@ export function CashflowPanel() {
         settings={settings}
         setSettings={setSettings}
         annualExpenses={annualExpenses}
+        snapshots={snapshots}
+        assets={assets}
       />
     </div>
   );
 }
 
-function Stat({ label, value, sub }) {
-  return (
-    <div className={`${ui.block} px-3 py-2.5`}>
-      <p className={`text-xs ${ui.textMuted}`}>{label}</p>
-      <p className={`mt-0.5 text-lg font-bold tabular-nums ${ui.heading}`}>
-        {value}
-      </p>
-      {sub ? <p className={`text-xs ${ui.textMuted}`}>{sub}</p> : null}
-    </div>
-  );
-}

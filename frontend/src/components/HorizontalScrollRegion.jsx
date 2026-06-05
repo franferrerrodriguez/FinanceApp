@@ -89,7 +89,7 @@ export const HorizontalScrollRegion = forwardRef(function HorizontalScrollRegion
 
   return (
     <div className={className}>
-      <div className="relative">
+      <div className="relative overflow-hidden rounded-[inherit]">
         {right ? (
           <div
             className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-white via-white/90 to-transparent dark:from-slate-900 dark:via-slate-900/90 md:hidden"
@@ -100,7 +100,7 @@ export const HorizontalScrollRegion = forwardRef(function HorizontalScrollRegion
         <div
           ref={setScrollRef}
           onScroll={updateEdges}
-          className="overflow-x-auto overscroll-x-contain scroll-smooth [-webkit-overflow-scrolling:touch]"
+          className="overflow-x-auto overflow-y-clip overscroll-x-contain scroll-smooth rounded-[inherit] [-webkit-overflow-scrolling:touch]"
           tabIndex={0}
         >
           {children}

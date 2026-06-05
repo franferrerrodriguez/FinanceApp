@@ -6,7 +6,9 @@ import {
   DEFAULT_BALANCE_TAB,
   resolveBalanceTab,
 } from '../../lib/balanceTabs';
+import { UnderlineTabNav } from '../../components/UnderlineTabNav';
 import { ui } from '../../lib/uiClasses';
+import { BalanceSetupChecklist } from './components/BalanceSetupChecklist';
 import { CashflowPanel } from './components/CashflowPanel';
 import { ContributionsPanel } from './components/ContributionsPanel';
 import { PatrimonyPanel } from './components/PatrimonyPanel';
@@ -27,6 +29,16 @@ export function BalancePage() {
     setSearchParams({ tab: id }, { replace: true });
   };
 
+  const balanceTabs = BALANCE_TABS.map((id) => {
+    const shortKey = `balance.tabs.${id}Short`;
+    const short = t(shortKey);
+    return {
+      id,
+      label: t(`balance.tabs.${id}`),
+      labelShort: short !== shortKey ? short : undefined,
+    };
+  });
+
   return (
     <div className={ui.stackPage}>
       <div>
@@ -38,23 +50,22 @@ export function BalancePage() {
         </p>
       </div>
 
-      <nav
-        className={`flex flex-wrap gap-2 border-b pb-3 ${ui.divider}`}
-        aria-label={t('balance.tabsLabel')}
-      >
-        {BALANCE_TABS.map((id) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setTab(id)}
-            className={tab === id ? ui.navTabActive : ui.navTab}
-          >
-            {t(`balance.tabs.${id}`)}
-          </button>
-        ))}
-      </nav>
+      <BalanceSetupChecklist />
 
-      <ActivePanel />
+      <UnderlineTabNav
+        tabs={balanceTabs}
+        activeId={tab}
+        onChange={setTab}
+        ariaLabel={t('balance.tabsLabel')}
+      />
+
+      <div
+        role="tabpanel"
+        id={`tabpanel-${tab}`}
+        aria-labelledby={`tab-${tab}`}
+      >
+        <ActivePanel />
+      </div>
     </div>
   );
 }

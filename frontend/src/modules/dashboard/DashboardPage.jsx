@@ -10,6 +10,7 @@ import { DashboardAlerts } from './components/DashboardAlerts';
 import { AnnualExpensesSummaryLine } from '../../components/AnnualExpensesSection';
 import { EmergencyFundCard } from './components/EmergencyFundCard';
 import { KpiGrid } from './components/KpiGrid';
+import { IneInflationCard } from './components/IneInflationCard';
 import { NetWorthChart } from './components/NetWorthChart';
 import { TopHoldingsTable } from './components/TopHoldingsTable';
 
@@ -39,6 +40,8 @@ export function DashboardPage() {
       />
 
       <EmergencyFundCard emergencyFund={data.emergencyFund} />
+
+      <IneInflationCard />
 
       <NetWorthChart history={data.history} />
 
