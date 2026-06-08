@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { getSavingsTone, KpiCard } from '../../../components/KpiCard';
+import { getNetWorthTone, getSavingsTone, KpiCard } from '../../../components/KpiCard';
 import { formatMoney, formatPercent } from '../../../utils/formatters';
 
 export function KpiGrid({ kpis }) {
@@ -11,19 +11,23 @@ export function KpiGrid({ kpis }) {
     {
       label: t('dashboard.kpi.netWorth'),
       value: formatMoney(latest.netWorth),
-      valueTone: latest.netWorth >= 0 ? 'default' : 'danger',
+      valueTone: getNetWorthTone(latest.netWorth),
       trend: formatDeltaTrend(monthDeltas.netWorth, 'up', t),
+      accent: true,
     },
     {
       label: t('dashboard.kpi.totalAssets'),
       value: formatMoney(latest.totalAssets),
+      valueTone: 'assets',
       trend: formatDeltaTrend(monthDeltas.totalAssets, 'up', t),
+      accent: true,
     },
     {
       label: t('dashboard.kpi.totalLiabilities'),
-      value: formatMoney(-Math.abs(latest.totalLiabilities)),
+      value: formatMoney(Math.abs(latest.totalLiabilities ?? 0)),
       valueTone: 'liability',
       trend: formatLiabilityTrend(monthDeltas.totalLiabilities, t),
+      accent: true,
     },
     {
       label: t('dashboard.kpi.savingsRate'),
@@ -35,6 +39,9 @@ export function KpiGrid({ kpis }) {
               amount: formatMoney(monthlySavingsAmount),
             })
           : null,
+      subTone: getSavingsTone(savingsRate),
+      accent: true,
+      hideFooter: income <= 0,
     },
   ];
 

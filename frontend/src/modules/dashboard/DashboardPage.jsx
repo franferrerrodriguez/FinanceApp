@@ -3,6 +3,7 @@ import { SaveProgressBanner } from '../../components/SaveProgressBanner';
 import { hasEstimatedFixedExpenses } from '../../lib/expenseEstimates';
 import { ui } from '../../lib/uiClasses';
 import { useDashboardData } from '../../hooks/useDashboardData';
+import { useFinanceAlerts } from '../../hooks/useFinanceAlerts';
 import { useSettings } from '../../store/hooks';
 import { AssetDonutChart } from './components/AssetDonutChart';
 import { CashflowChart } from './components/CashflowChart';
@@ -18,13 +19,15 @@ export function DashboardPage() {
   const { t } = useTranslation();
   const { settings } = useSettings();
   const data = useDashboardData();
+  const { pendingSteps, alerts, hasPendingTasks } = useFinanceAlerts();
   const usesEstimates = hasEstimatedFixedExpenses(settings);
+  const showAlerts = hasPendingTasks || alerts.length > 0;
 
   return (
     <div className={ui.stackPage}>
       <SaveProgressBanner />
 
-      {data.alerts.length > 0 ? <DashboardAlerts alerts={data.alerts} /> : null}
+      {showAlerts ? <DashboardAlerts /> : null}
 
       {usesEstimates ? (
         <p className={`text-sm ${ui.textMuted}`}>

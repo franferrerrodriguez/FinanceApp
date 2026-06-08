@@ -50,6 +50,7 @@ export const DEFAULT_SETTINGS = {
   projectionInvestmentPercentOfSavings: 0.5,
   projectionInvestmentAnnualIncrease: 0,
   projectionAnnualExpenseIncrease: 0,
+  projectionContributionAssumption: 'average_3_months',
 
   SAVINGS_RATE_GREEN: 0.2,
   SAVINGS_RATE_YELLOW: 0.1,

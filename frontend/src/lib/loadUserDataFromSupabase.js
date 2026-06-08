@@ -93,6 +93,7 @@ export async function loadUserDataFromSupabase(userId) {
       annualExpenses: lists.annualExpenses,
       cashflowHistory: lists.cashflowHistory,
       contributionPlans: lists.contributionPlans,
+      contributionEntries: lists.contributionEntries,
       assets: filterDraftAssets(
         mergeFinanceLists(cloudAssets, lists.assets ?? current.assets),
       ),

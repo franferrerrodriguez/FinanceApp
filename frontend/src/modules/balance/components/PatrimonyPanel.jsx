@@ -8,6 +8,7 @@ import {
   useToast,
 } from '../../../context/ToastContext';
 import { FinanceAlerts } from '../../../components/FinanceAlerts';
+import { getNetWorthTone, KpiCard } from '../../../components/KpiCard';
 import { useFinanceAlerts } from '../../../hooks/useFinanceAlerts';
 import { getAssetCategories, getLiabilityCategories } from '../../../lib/categoryLabels';
 import { getCurrentMonthKey } from '../../../lib/dashboardMetrics';
@@ -47,6 +48,8 @@ import { AssetEditModal } from './AssetEditModal';
 import { LiabilityEditModal } from './LiabilityEditModal';
 import { PatrimonyDeleteConfirmModal } from './PatrimonyDeleteConfirmModal';
 import { MonthlyCloseModal } from './MonthlyCloseModal';
+import { BalanceSetupStepBanner } from './BalanceSetupStepBanner';
+import { BALANCE_SETUP_STEP } from '../../../lib/balanceSetupProgress';
 import { PatrimonyCatalogTable } from './PatrimonyCatalogTable';
 import { PatrimonyEvolutionSection } from './PatrimonyEvolutionSection';
 import { PatrimonyHistoryTable } from './PatrimonyHistoryTable';
@@ -156,6 +159,17 @@ export function PatrimonyPanel() {
         <FinanceAlerts alerts={patrimonyAlerts} className={ui.chartCard} />
       ) : null}
 
+      <BalanceSetupStepBanner
+        stepId={BALANCE_SETUP_STEP.ACCOUNTS}
+        onAction={
+          hasAccounts ? () => openRecordBalances() : scrollToPatrimonyCatalog
+        }
+      />
+      <BalanceSetupStepBanner
+        stepId={BALANCE_SETUP_STEP.LIQUID}
+        onAction={scrollToPatrimonyCatalog}
+      />
+
       <div className={`${ui.chartCard} ${ui.stackSection}`}>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
           <div className="min-w-0 flex-1 lg:max-w-xl">
@@ -176,12 +190,15 @@ export function PatrimonyPanel() {
           />
         </div>
 
-        {hasAccounts && !summary.hasClose ? <PatrimonyStepsHint /> : null}
-
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
-          <Kpi
+          <KpiCard
+            compact
+            accent
             label={t('balance.patrimony.netWorth')}
             value={summary.hasClose ? formatMoney(summary.netWorth) : '—'}
+            valueTone={
+              summary.hasClose ? getNetWorthTone(summary.netWorth) : 'default'
+            }
             hint={
               summary.hasClose
                 ? summary.asOfDate
@@ -193,19 +210,27 @@ export function PatrimonyPanel() {
                   ? t('balance.patrimony.noCloseYet', { month: monthLabel })
                   : t('balance.patrimony.noAccountsYet')
             }
+            hideFooter
           />
-          <Kpi
+          <KpiCard
+            compact
+            accent
             label={t('balance.patrimony.totalAssets')}
             value={summary.hasClose ? formatMoney(summary.totalAssets) : '—'}
+            valueTone={summary.hasClose ? 'assets' : 'default'}
+            hideFooter
           />
-          <Kpi
+          <KpiCard
+            compact
+            accent
             label={t('balance.patrimony.totalLiabilities')}
             value={
               summary.hasClose
                 ? formatMoney(Math.abs(summary.totalLiabilities ?? 0))
                 : '—'
             }
-            liability
+            valueTone={summary.hasClose ? 'liability' : 'default'}
+            hideFooter
           />
         </div>
       </div>
@@ -260,6 +285,7 @@ export function PatrimonyPanel() {
         assets={assets}
         liabilities={liabilities}
         snapshots={snapshots}
+        settings={settings}
         monthKey={balancesMonthKey}
         onMonthKeyChange={setBalancesMonthKey}
         onConfirm={(monthKey, snaps) => {
@@ -334,19 +360,6 @@ function RecordBalancesAction({
         </div>
       )}
     </div>
-  );
-}
-
-function PatrimonyStepsHint() {
-  const { t } = useTranslation();
-
-  return (
-    <p
-      className={`rounded-xl border px-4 py-3 text-sm ${ui.cardMuted} ${ui.text}`}
-      role="status"
-    >
-      {t('balance.patrimony.stepsNeedBalances')}
-    </p>
   );
 }
 
@@ -713,24 +726,6 @@ function CatalogSectionToolbar({ addLabel, onAdd }) {
       <button type="button" className={ui.btnPrimary} onClick={onAdd}>
         {addLabel}
       </button>
-    </div>
-  );
-}
-
-function Kpi({ label, value, hint, liability }) {
-  return (
-    <div className={`${ui.block} px-3 py-2.5`}>
-      <p className={`text-xs font-medium ${ui.textMuted}`}>{label}</p>
-      <p
-        className={`mt-1 text-lg font-semibold tabular-nums ${
-          liability ? 'text-red-600 dark:text-red-400' : ui.heading
-        }`}
-      >
-        {value}
-      </p>
-      {hint ? (
-        <p className={`mt-1 text-xs leading-snug ${ui.textMuted}`}>{hint}</p>
-      ) : null}
     </div>
   );
 }

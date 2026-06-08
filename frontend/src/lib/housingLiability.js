@@ -9,12 +9,20 @@ export const HOUSING_TYPE = {
 };
 
 export function inferHousingType(settings, liabilities = []) {
+  const linked = getLinkedMortgageLiability(liabilities, settings);
+  if (linked) return HOUSING_TYPE.MORTGAGE;
   if (settings?.housingType === HOUSING_TYPE.MORTGAGE) return HOUSING_TYPE.MORTGAGE;
-  if (settings?.housingType === HOUSING_TYPE.RENT) return HOUSING_TYPE.RENT;
-  if (settings?.linkedMortgageLiabilityId) return HOUSING_TYPE.MORTGAGE;
-  const hasMortgageLiability = liabilities.some((l) => l.category === 'mortgage');
-  if (hasMortgageLiability) return HOUSING_TYPE.MORTGAGE;
   return HOUSING_TYPE.RENT;
+}
+
+/** Keeps housingType and linkedMortgageLiabilityId aligned with liabilities after merge/rehydrate. */
+export function syncHousingSettings(settings, liabilities = []) {
+  const linked = getLinkedMortgageLiability(liabilities, settings);
+  return {
+    ...settings,
+    housingType: inferHousingType(settings, liabilities),
+    linkedMortgageLiabilityId: linked?.id ?? null,
+  };
 }
 
 export function getLinkedMortgageLiability(liabilities = [], settings = {}) {
@@ -28,6 +36,12 @@ export function getLinkedMortgageLiability(liabilities = [], settings = {}) {
       (l) => l.category === 'mortgage' && l.isActive !== false,
     ) ?? null
   );
+}
+
+export function isLinkedHousingMortgage(liability, settings = {}, liabilities = []) {
+  if (!liability) return false;
+  const linked = getLinkedMortgageLiability(liabilities, settings);
+  return linked?.id === liability.id;
 }
 
 export function getMortgageOutstandingBalance(

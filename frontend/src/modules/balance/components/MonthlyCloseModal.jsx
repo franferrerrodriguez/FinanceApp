@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { EffectiveMonthSelect } from '../../../components/EffectiveMonthSelect';
+import { getEffectiveMortgageRent } from '../../../lib/calculations';
 import { getCurrentMonthKey } from '../../../lib/dashboardMetrics';
+import { isLinkedHousingMortgage } from '../../../lib/housingLiability';
 import { getMonthlyCloseMonthOptions } from '../../../lib/monthlyClose';
 import {
   buildCloseMonthSnapshots,
@@ -18,6 +20,7 @@ import {
   SPANISH_BANK_LEGACY_LABELS,
 } from '../../../lib/spanishBanks';
 import { ui } from '../../../lib/uiClasses';
+import { formatMoney } from '../../../utils/formatters';
 
 export function MonthlyCloseModal({
   open,
@@ -25,6 +28,7 @@ export function MonthlyCloseModal({
   assets,
   liabilities,
   snapshots,
+  settings,
   onConfirm,
   monthKey,
   onMonthKeyChange,
@@ -83,6 +87,70 @@ export function MonthlyCloseModal({
   const canSubmit = activeAssets.length > 0 || activeLiabilities.length > 0;
   const isUpdate = selectedOption?.hasClose;
   const snapshotDateLabel = formatSnapshotDateLabel(initial.snapshotDate, locale);
+  const housingMortgage = activeLiabilities.find((l) =>
+    isLinkedHousingMortgage(l, settings, liabilities),
+  );
+  const otherLiabilities = activeLiabilities.filter(
+    (l) => !isLinkedHousingMortgage(l, settings, liabilities),
+  );
+  const monthlyMortgagePayment = getEffectiveMortgageRent(settings ?? {});
+
+  const renderLiabilityRow = (liability, { housing = false } = {}) => {
+    const row = liabilityRows.find((r) => r.liabilityId === liability.id);
+
+    return (
+      <li
+        key={liability.id}
+        className={`p-3 ${ui.cardInset}${
+          housing ? ' border-l-4 border-amber-500/50' : ''
+        }`}
+      >
+        <p className={`text-sm font-medium ${ui.textLabel}`}>
+          {housing
+            ? t('balance.patrimony.closeHousingMortgageTitle')
+            : liability.name}
+        </p>
+        {housing ? (
+          <>
+            <p className={`mt-1 text-xs leading-relaxed ${ui.textMuted}`}>
+              {monthlyMortgagePayment > 0
+                ? t('balance.patrimony.closeHousingMortgageQuota', {
+                    payment: formatMoney(monthlyMortgagePayment),
+                  })
+                : t('balance.patrimony.closeHousingMortgageQuotaMissing')}
+            </p>
+            <p className={`mt-1 text-xs leading-relaxed ${ui.textMuted}`}>
+              {t('balance.patrimony.closeHousingMortgageHint')}
+            </p>
+          </>
+        ) : (
+          <p className={`text-xs ${ui.textMuted}`}>
+            {t(`categories.liability.${liability.category}`)}
+          </p>
+        )}
+        <label className="mt-2 block">
+          <span className={`mb-1 block text-xs font-medium ${ui.textLabel}`}>
+            {t('balance.patrimony.debtValue')}
+          </span>
+          <input
+            type="number"
+            min={0}
+            step="1"
+            value={row?.value ?? 0}
+            onChange={(e) => {
+              const value = Math.max(0, parseFloat(e.target.value) || 0);
+              setLiabilityRows((prev) =>
+                prev.map((r) =>
+                  r.liabilityId === liability.id ? { ...r, value } : r,
+                ),
+              );
+            }}
+            className={`${ui.input} ${ui.inputAmount} w-full max-w-none`}
+          />
+        </label>
+      </li>
+    );
+  };
 
   const handleSubmit = () => {
     const snaps = buildCloseMonthSnapshots({
@@ -214,48 +282,18 @@ export function MonthlyCloseModal({
                   <h3 className={`mb-2 text-sm font-semibold ${ui.heading}`}>
                     {t('balance.patrimony.closeLiabilities')}
                   </h3>
-                  <p className={`mb-2 text-xs ${ui.textMuted}`}>
-                    {t('balance.patrimony.closeLiabilitiesHint')}
-                  </p>
+                  {housingMortgage ? null : (
+                    <p className={`mb-2 text-xs ${ui.textMuted}`}>
+                      {t('balance.patrimony.closeLiabilitiesHint')}
+                    </p>
+                  )}
                   <ul className="space-y-2">
-                    {activeLiabilities.map((liability) => {
-                      const row = liabilityRows.find(
-                        (r) => r.liabilityId === liability.id,
-                      );
-                      return (
-                        <li key={liability.id} className={`p-3 ${ui.cardInset}`}>
-                          <p className={`text-sm font-medium ${ui.textLabel}`}>
-                            {liability.name}
-                          </p>
-                          <p className={`text-xs ${ui.textMuted}`}>
-                            {t(`categories.liability.${liability.category}`)}
-                          </p>
-                          <label className="mt-2 block">
-                            <span className="sr-only">{t('balance.patrimony.debtValue')}</span>
-                            <input
-                              type="number"
-                              min={0}
-                              step="1"
-                              value={row?.value ?? 0}
-                              onChange={(e) => {
-                                const value = Math.max(
-                                  0,
-                                  parseFloat(e.target.value) || 0,
-                                );
-                                setLiabilityRows((prev) =>
-                                  prev.map((r) =>
-                                    r.liabilityId === liability.id
-                                      ? { ...r, value }
-                                      : r,
-                                  ),
-                                );
-                              }}
-                              className={`${ui.input} ${ui.inputAmount} mt-1 w-full max-w-none`}
-                            />
-                          </label>
-                        </li>
-                      );
-                    })}
+                    {housingMortgage
+                      ? renderLiabilityRow(housingMortgage, { housing: true })
+                      : null}
+                    {otherLiabilities.map((liability) =>
+                      renderLiabilityRow(liability),
+                    )}
                   </ul>
                 </section>
               ) : null}

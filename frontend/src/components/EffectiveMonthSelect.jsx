@@ -11,6 +11,7 @@ export function EffectiveMonthSelect({
   id,
   ariaLabel,
   className = '',
+  wrapperClassName = '',
 }) {
   const options = useMemo(
     () => buildEffectiveMonthOptions(extraMonthKeys, lookbackMonths),
@@ -22,6 +23,7 @@ export function EffectiveMonthSelect({
       id={id}
       variant="input"
       className={className}
+      wrapperClassName={wrapperClassName}
       value={value}
       aria-label={ariaLabel}
       onChange={(e) => onChange(e.target.value)}

@@ -10,7 +10,7 @@ import {
   summarizeMonthlyProjection,
 } from '../../../lib/projectionTable';
 import { normalizeProjectionYears } from '../../../lib/constants';
-import { hasProjectionInvestmentPlans } from '../../../lib/contributionPlans';
+import { hasProjectionContributionData } from '../../../lib/contributionProjection';
 import {
   buildInitialBucketState,
   computeWeightedPortfolioReturn,
@@ -56,6 +56,7 @@ export function ProjectionDataTable() {
   const {
     settings,
     contributionPlans,
+    contributionEntries,
     annualExpenses,
     cashflowHistory,
     assets,
@@ -127,6 +128,7 @@ export function ProjectionDataTable() {
       buildMonthlyProjectionTable({
         settings,
         contributionPlans,
+        contributionEntries,
         annualExpenses,
         cashflowHistory,
         assets,
@@ -137,6 +139,7 @@ export function ProjectionDataTable() {
     [
       settings,
       contributionPlans,
+      contributionEntries,
       annualExpenses,
       cashflowHistory,
       assets,
@@ -151,7 +154,10 @@ export function ProjectionDataTable() {
     [rows, initialPatrimony],
   );
 
-  const hasInvestmentPlans = hasProjectionInvestmentPlans(contributionPlans);
+  const hasInvestmentData = hasProjectionContributionData({
+    entries: contributionEntries,
+    contributionPlans,
+  });
 
   const { overflow: canScrollX, right: canScrollRight, updateEdges } =
     useHorizontalScrollEdges(scrollRef, [
@@ -215,7 +221,7 @@ export function ProjectionDataTable() {
         buckets={bucketPreview.buckets}
       />
 
-      {!hasInvestmentPlans ? (
+      {!hasInvestmentData ? (
         <p
           className={`rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-950 dark:text-amber-100`}
         >

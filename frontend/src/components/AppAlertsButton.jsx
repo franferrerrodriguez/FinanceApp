@@ -3,17 +3,16 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useFinanceAlerts } from '../hooks/useFinanceAlerts';
 import { ui } from '../lib/uiClasses';
-import { FinanceAlerts } from './FinanceAlerts';
+import { FinanceNotificationsList } from './FinanceNotificationsList';
 
 export function AppAlertsButton({ className = '' }) {
   const { t } = useTranslation();
-  const { alerts } = useFinanceAlerts();
+  const { bellItems, badgeCount, hasDanger } = useFinanceAlerts();
   const [open, setOpen] = useState(false);
   const panelId = useId();
   const panelRef = useRef(null);
 
-  const count = alerts.length;
-  const hasDanger = alerts.some((a) => a.severity === 'danger');
+  const count = badgeCount;
 
   useEffect(() => {
     if (!open) return undefined;
@@ -104,8 +103,8 @@ export function AppAlertsButton({ className = '' }) {
               </div>
 
               <div className="overflow-y-auto px-4 py-3">
-                {count > 0 ? (
-                  <FinanceAlerts alerts={alerts} onAction={close} />
+                {bellItems.length > 0 ? (
+                  <FinanceNotificationsList items={bellItems} onAction={close} />
                 ) : (
                   <p
                     className={`rounded-xl border px-4 py-6 text-center text-sm ${ui.cardMuted} ${ui.text}`}

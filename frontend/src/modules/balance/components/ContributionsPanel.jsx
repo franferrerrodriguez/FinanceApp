@@ -1,23 +1,31 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useToast } from '../../../context/ToastContext';
+import { EffectiveMonthSelect } from '../../../components/EffectiveMonthSelect';
 import { BALANCE_TAB, balancePath } from '../../../lib/balanceTabs';
-import { calcMonthlySavingsFromSettings } from '../../../lib/balanceSetupProgress';
+import {
+  BALANCE_SETUP_STEP,
+  calcMonthlySavingsFromSettings,
+} from '../../../lib/balanceSetupProgress';
+import { getCurrentMonthKey } from '../../../lib/cashflowHistory';
+import { FinanceAlerts } from '../../../components/FinanceAlerts';
+import { useFinanceAlerts } from '../../../hooks/useFinanceAlerts';
 import { filterDraftAssets } from '../../../lib/patrimonyDrafts';
 import {
-  createContributionPlan,
-  getContributionEligibleAssets,
-  getTotalMonthlyContributions,
-  getWeightedReturnSummary,
-  hasActiveContributionAmounts,
-  resolveInvestmentContributionsForMonth,
-  resolveLinkedAsset,
-  syncPlanWithAsset,
-} from '../../../lib/contributionPlans';
+  createContributionEntry,
+  getContributionEntryAssets,
+  getEntriesForMonth,
+  getMonthKeysFromEntries,
+  getWeightedReturnFromBreakdown,
+  resolveEntriesForMonth,
+  resolveInvestmentFromBreakdown,
+} from '../../../lib/contributionEntries';
 import { ui } from '../../../lib/uiClasses';
-import { useFinanceData } from '../../../store/hooks';
+import { useFinanceData, usePreferences } from '../../../store/hooks';
 import { formatMoney, formatPercent } from '../../../utils/formatters';
+import { formatMonthKeyLong } from '../../../utils/monthLabel';
+import { BalanceSetupStepBanner } from './BalanceSetupStepBanner';
 import { ContributionDeleteConfirmModal } from './ContributionDeleteConfirmModal';
 import { ContributionEditModal } from './ContributionEditModal';
 import { ContributionsTable } from './ContributionsTable';
@@ -25,100 +33,120 @@ import { ContributionsTable } from './ContributionsTable';
 export function ContributionsPanel() {
   const { t } = useTranslation();
   const toast = useToast();
+  const { locale } = usePreferences();
   const {
     settings,
     assets,
-    contributionPlans,
-    addContributionPlan,
-    updateContributionPlan,
-    removeContributionPlan,
+    contributionEntries,
+    addContributionEntry,
+    updateContributionEntry,
+    removeContributionEntry,
   } = useFinanceData();
+
+  const { alerts } = useFinanceAlerts();
 
   const [modal, setModal] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const total = getTotalMonthlyContributions(contributionPlans);
-  const returnSummary = getWeightedReturnSummary(
+  const currentMonthKey = getCurrentMonthKey();
+  const monthKeysFromData = useMemo(
+    () => getMonthKeysFromEntries(contributionEntries),
+    [contributionEntries],
+  );
+  const [monthKey, setMonthKey] = useState(currentMonthKey);
+
+  const resolvedMonthKey = monthKey || currentMonthKey;
+  const monthEntries = useMemo(
+    () => getEntriesForMonth(contributionEntries, resolvedMonthKey),
+    [contributionEntries, resolvedMonthKey],
+  );
+  const monthBreakdown = useMemo(
+    () => resolveEntriesForMonth(contributionEntries, resolvedMonthKey, assets),
+    [contributionEntries, resolvedMonthKey, assets],
+  );
+  const monthTotal = monthBreakdown.total;
+  const monthInvest = resolveInvestmentFromBreakdown(monthBreakdown.breakdown);
+  const returnSummary = getWeightedReturnFromBreakdown(
     settings,
-    contributionPlans,
+    monthBreakdown.breakdown,
     assets,
   );
-  const hasAmounts = hasActiveContributionAmounts(contributionPlans);
   const monthlySavings = calcMonthlySavingsFromSettings(settings);
-  const plannedInvest = resolveInvestmentContributionsForMonth(
-    contributionPlans,
-    0,
-  );
-  const staysInBank = Math.round((monthlySavings - plannedInvest) * 100) / 100;
-  const planExceedsSavings = plannedInvest > monthlySavings + 0.005;
-  const showAllocation = activeAccounts.length > 0 || plannedInvest > 0;
+  const staysInBank = Math.round((monthlySavings - monthInvest) * 100) / 100;
+  const exceedsSavings = monthInvest > monthlySavings + 0.005;
   const activeAccounts = filterDraftAssets(assets).filter(
     (a) => a.isActive !== false,
   );
-  const eligibleForNew = getContributionEligibleAssets(
-    assets,
-    null,
-    contributionPlans,
+  const canAdd = getContributionEntryAssets(assets).length > 0;
+  const extraMonthKeys = useMemo(
+    () => [...new Set([resolvedMonthKey, currentMonthKey, ...monthKeysFromData])],
+    [resolvedMonthKey, currentMonthKey, monthKeysFromData],
   );
-  const canAdd = eligibleForNew.length > 0;
-  const allDestinationsUsed =
-    activeAccounts.length > 0 && !canAdd && contributionPlans.length > 0;
 
   const openCreate = () => {
-    const first = getContributionEligibleAssets(assets, null, contributionPlans)[0];
+    const first = getContributionEntryAssets(assets)[0];
     if (!first) return;
-    const draft = syncPlanWithAsset(
-      createContributionPlan({ monthlyAmount: 0 }),
-      first,
-    );
-    setModal({ mode: 'create', draft });
+    const defaultDate =
+      resolvedMonthKey === currentMonthKey
+        ? new Date().toISOString().slice(0, 10)
+        : `${resolvedMonthKey}-01`;
+    setModal({
+      mode: 'create',
+      draft: createContributionEntry({ assetId: first.id, date: defaultDate }),
+      defaultDate,
+    });
   };
 
-  const openEdit = (plan) =>
-    setModal({ mode: 'edit', planId: plan.id, draft: { ...plan } });
+  const openEdit = (entry) =>
+    setModal({ mode: 'edit', entryId: entry.id, draft: { ...entry } });
 
   const closeModal = () => setModal(null);
 
   const handleModalSave = (draft) => {
     if (modal?.mode === 'create') {
-      addContributionPlan(draft);
+      addContributionEntry(draft);
       toast.success(t('toast.contributionAdded'));
     } else {
-      updateContributionPlan(modal.planId, draft);
+      updateContributionEntry(modal.entryId, draft);
       toast.success(t('toast.contributionUpdated'));
     }
     closeModal();
   };
 
-  const requestDelete = (plan) => setDeleteTarget(plan);
+  const requestDelete = (entry) => setDeleteTarget(entry);
 
   const confirmDelete = () => {
     if (!deleteTarget) return;
-    if (modal?.mode === 'edit' && modal.planId === deleteTarget.id) {
+    if (modal?.mode === 'edit' && modal.entryId === deleteTarget.id) {
       closeModal();
     }
-    removeContributionPlan(deleteTarget.id);
+    removeContributionEntry(deleteTarget.id);
     setDeleteTarget(null);
     toast.success(t('toast.contributionRemoved'));
   };
 
   const handleModalDelete = () => {
     if (modal?.mode !== 'edit') return;
-    const plan = contributionPlans.find((p) => p.id === modal.planId);
-    if (plan) requestDelete(plan);
-  };
-
-  const handleToggleActive = (id, isActive) => {
-    updateContributionPlan(id, { isActive });
+    const entry = contributionEntries.find((e) => e.id === modal.entryId);
+    if (entry) requestDelete(entry);
   };
 
   const deleteItemName =
     deleteTarget &&
-    (resolveLinkedAsset(deleteTarget, assets)?.name ??
+    (assets.find((a) => a.id === deleteTarget.assetId)?.name ??
       t('balance.contributions.unnamedAsset'));
 
   return (
     <div className={ui.stackPage}>
+      {alerts.length > 0 ? (
+        <FinanceAlerts alerts={alerts} className={ui.chartCard} />
+      ) : null}
+
+      <BalanceSetupStepBanner
+        stepId={BALANCE_SETUP_STEP.INVEST}
+        onAction={canAdd ? openCreate : undefined}
+      />
+
       <div className={`${ui.chartCard} ${ui.stackSection}`}>
         <div>
           <h3 className={`text-base font-semibold ${ui.heading}`}>
@@ -129,35 +157,46 @@ export function ContributionsPanel() {
           </p>
         </div>
 
-        <p className={`rounded-xl border px-4 py-3 text-sm ${ui.cardMuted}`}>
-          {t('balance.contributions.scopeNote')}
-        </p>
+        <FormFieldFrame label={t('balance.contributions.monthFilter')}>
+          <EffectiveMonthSelect
+            id="contributions-month-filter"
+            wrapperClassName="w-full max-w-[12rem]"
+            className="w-full py-2.5"
+            value={resolvedMonthKey}
+            extraMonthKeys={extraMonthKeys}
+            lookbackMonths={48}
+            onChange={setMonthKey}
+            ariaLabel={t('balance.contributions.monthFilter')}
+          />
+          <p className={`mt-1.5 text-xs leading-relaxed ${ui.textMuted}`}>
+            {formatMonthKeyLong(resolvedMonthKey, locale)}
+          </p>
+        </FormFieldFrame>
 
-        {showAllocation ? (
+        {activeAccounts.length > 0 ? (
           <div
             className={`rounded-xl border px-4 py-3 text-sm ${
-              planExceedsSavings
+              exceedsSavings
                 ? 'border-amber-300 bg-amber-50/90 text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/35 dark:text-amber-100'
                 : ui.cardMuted
             }`}
           >
-            <p className={ui.textLabel}>
-              {t('balance.contributions.allocationTitle')}
-            </p>
+            <p className={ui.textLabel}>{t('balance.contributions.monthSummaryTitle')}</p>
             <p className={`mt-1.5 ${ui.text}`}>
-              {t('balance.contributions.allocationLine', {
+              {t('balance.contributions.monthSummaryLine', {
+                total: formatMoney(monthTotal),
+                invest: formatMoney(monthInvest),
                 savings: formatMoney(monthlySavings),
-                planned: formatMoney(plannedInvest),
                 bank: formatMoney(Math.max(0, staysInBank)),
               })}
             </p>
-            {planExceedsSavings ? (
+            {exceedsSavings ? (
               <p className="mt-2 text-amber-800 dark:text-amber-200">
                 {t('balance.contributions.allocationOverBudget')}
               </p>
             ) : (
               <p className={`mt-2 text-xs ${ui.textMuted}`}>
-                {t('balance.contributions.allocationHint')}
+                {t('balance.contributions.monthSummaryHint')}
               </p>
             )}
           </div>
@@ -165,15 +204,15 @@ export function ContributionsPanel() {
 
         <div className="grid gap-3 sm:grid-cols-2">
           <Stat
-            label={t('balance.contributions.totalMonthly')}
-            value={formatMoney(total)}
+            label={t('balance.contributions.monthTotal')}
+            value={formatMoney(monthTotal)}
             hint={
-              hasAmounts
-                ? t('balance.contributions.totalMonthlyHint')
-                : t('balance.contributions.totalMonthlyEmpty')
+              monthTotal > 0
+                ? t('balance.contributions.monthTotalHint')
+                : t('balance.contributions.monthTotalEmpty')
             }
           />
-          {hasAmounts ? (
+          {monthTotal > 0 ? (
             <Stat
               label={t('balance.contributions.weightedReturn')}
               value={formatPercent(returnSummary.rate)}
@@ -186,14 +225,14 @@ export function ContributionsPanel() {
       <section className={`${ui.chartCard} ${ui.stackSection}`}>
         <div className={`border-b pb-3 ${ui.divider}`}>
           <h3 className={`text-base font-semibold ${ui.heading}`}>
-            {t('balance.contributions.plansTitle')}
+            {t('balance.contributions.entriesTitle')}
           </h3>
           <p className={`mt-1 text-sm ${ui.textMuted}`}>
-            {t('balance.contributions.plansSubtitle')}
+            {t('balance.contributions.entriesSubtitle')}
           </p>
         </div>
 
-        {activeAccounts.length === 0 && contributionPlans.length === 0 ? (
+        {activeAccounts.length === 0 ? (
           <div className={`px-6 py-8 text-center ${ui.cardDashed}`}>
             <p className={ui.text}>{t('balance.contributions.noAccounts')}</p>
             <p className={`mt-2 text-sm ${ui.textMuted}`}>
@@ -206,9 +245,9 @@ export function ContributionsPanel() {
               {t('balance.contributions.goAddAccount')}
             </Link>
           </div>
-        ) : contributionPlans.length === 0 ? (
+        ) : monthEntries.length === 0 ? (
           <div className={`px-6 py-8 text-center ${ui.cardDashed}`}>
-            <p className={ui.text}>{t('balance.contributions.empty')}</p>
+            <p className={ui.text}>{t('balance.contributions.emptyMonth')}</p>
             <button
               type="button"
               className={`mt-4 ${ui.btnPrimary}`}
@@ -219,30 +258,15 @@ export function ContributionsPanel() {
           </div>
         ) : (
           <ContributionsTable
-            plans={contributionPlans}
+            entries={monthEntries}
             assets={assets}
-            settings={settings}
+            locale={locale}
             onEdit={openEdit}
             onDelete={requestDelete}
-            onToggleActive={handleToggleActive}
           />
         )}
 
-        {allDestinationsUsed ? (
-          <div className="space-y-3">
-            <p className={`text-sm ${ui.textMuted}`}>
-              {t('balance.contributions.allDestinationsUsed')}
-            </p>
-            <Link
-              to={balancePath(BALANCE_TAB.PATRIMONY)}
-              className={`inline-flex ${ui.btnSecondary}`}
-            >
-              {t('balance.contributions.goAddFund')}
-            </Link>
-          </div>
-        ) : null}
-
-        {canAdd && contributionPlans.length > 0 ? (
+        {canAdd && monthEntries.length > 0 ? (
           <div className={`border-t pt-4 ${ui.divider}`}>
             <button type="button" className={ui.btnPrimary} onClick={openCreate}>
               {t('balance.contributions.addAnother')}
@@ -261,15 +285,26 @@ export function ContributionsPanel() {
       <ContributionEditModal
         open={modal != null}
         mode={modal?.mode ?? 'create'}
-        planId={modal?.planId}
-        initialDraft={modal?.draft ?? createContributionPlan()}
+        entryId={modal?.entryId}
+        initialDraft={modal?.draft ?? createContributionEntry()}
         assets={assets}
-        contributionPlans={contributionPlans}
         settings={settings}
+        defaultDate={modal?.defaultDate}
         onClose={closeModal}
         onSave={handleModalSave}
         onDelete={handleModalDelete}
       />
+    </div>
+  );
+}
+
+function FormFieldFrame({ label, children }) {
+  return (
+    <div>
+      <label className={`mb-1.5 block text-sm font-medium ${ui.textLabel}`}>
+        {label}
+      </label>
+      {children}
     </div>
   );
 }

@@ -20,6 +20,7 @@ export function MoneyField({
   id,
   className = '',
   compact = false,
+  fullWidth = false,
 }) {
   const fieldId =
     id ??
@@ -51,7 +52,7 @@ export function MoneyField({
   );
 
   const inputBlock = (
-    <div className="relative max-w-[12rem]">
+    <div className={`relative ${fullWidth ? 'w-full' : 'max-w-[12rem]'}`}>
       <span
         className={`pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm ${ui.textMuted}`}
       >
@@ -90,11 +91,14 @@ export function MoneyField({
       <div className={className}>
         <label
           htmlFor={fieldId}
-          className={`mb-1.5 block text-sm font-medium ${ui.textLabel}`}
+          className={`mb-1 block text-sm font-medium leading-snug ${ui.textLabel}`}
         >
           {label}
           {required ? <span className="text-emerald-500"> *</span> : null}
         </label>
+        {hint ? (
+          <p className={`mb-1.5 text-xs leading-relaxed ${ui.textMuted}`}>{hint}</p>
+        ) : null}
         {inputBlock}
       </div>
     );
@@ -107,6 +111,7 @@ export function MoneyField({
       required={required}
       className={className}
       controlClassName={ui.formFieldControl}
+      reserveHintSpace={Boolean(hint)}
     >
       {inputBlock}
     </FormFieldFrame>

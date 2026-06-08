@@ -36,6 +36,7 @@ export function buildAppDataPayload(state) {
     annualExpenses: state.annualExpenses ?? [],
     cashflowHistory: state.cashflowHistory ?? [],
     contributionPlans: state.contributionPlans ?? [],
+    contributionEntries: state.contributionEntries ?? [],
     assets: state.assets ?? [],
     liabilities: state.liabilities ?? [],
     snapshots: state.snapshots ?? [],
@@ -100,6 +101,9 @@ export function mapAppDataLists(appData) {
         : [],
     contributionPlans: Array.isArray(app.contributionPlans)
       ? app.contributionPlans
+      : [],
+    contributionEntries: Array.isArray(app.contributionEntries)
+      ? app.contributionEntries
       : [],
     assets: Array.isArray(app.assets) ? app.assets : [],
     liabilities: Array.isArray(app.liabilities) ? app.liabilities : [],

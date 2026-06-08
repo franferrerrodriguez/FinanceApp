@@ -2,7 +2,6 @@ import {
   buildMonthlyProjectionRows,
   summarizeProjectionRows,
 } from './calculations.js';
-import { resolveInvestmentContributionsForMonth } from './contributionPlans.js';
 import { getProjectionStartingPatrimony } from './projectionBuckets.js';
 import { getProjectionAnnualRate } from './projectionRates.js';
 
@@ -20,6 +19,7 @@ export { getProjectionStartingPatrimony } from './projectionBuckets.js';
 export function buildMonthlyProjectionTable({
   settings,
   contributionPlans = [],
+  contributionEntries = [],
   annualExpenses = [],
   cashflowHistory = [],
   salaryHistory = [],
@@ -42,6 +42,7 @@ export function buildMonthlyProjectionTable({
   return buildMonthlyProjectionRows({
     settings,
     contributionPlans,
+    contributionEntries,
     annualExpenses,
     cashflowHistory,
     salaryHistory,
@@ -51,7 +52,6 @@ export function buildMonthlyProjectionTable({
     initialPatrimony: resolvedInitial,
     startDate,
     years,
-    getInvestmentContributions: resolveInvestmentContributionsForMonth,
   });
 }
 

@@ -8,6 +8,7 @@ import { buildPatrimonyHistoryTable } from '../../../lib/patrimony';
 import { usePreferences } from '../../../store/hooks';
 import { formatMonthKey } from '../../../utils/monthLabel';
 import { SNAPSHOT_ITEM_TYPE } from '../../../lib/snapshotItemTypes';
+import { getKpiValueClass, getNetWorthTone } from '../../../components/KpiCard';
 import { ui } from '../../../lib/uiClasses';
 import { formatMoney, formatPercent } from '../../../utils/formatters';
 
@@ -106,8 +107,8 @@ export function PatrimonyHistoryTable({ assets, liabilities, snapshots }) {
                     key={table.monthKeys[i]}
                     className={`px-2 py-2 text-right tabular-nums ${
                       item.type === SNAPSHOT_ITEM_TYPE.LIABILITY
-                        ? 'text-red-600 dark:text-red-400'
-                        : ui.heading
+                        ? getKpiValueClass('liability')
+                        : getKpiValueClass('assets')
                     }`}
                   >
                     {v != null ? formatMoney(v) : '—'}
@@ -169,9 +170,16 @@ function SummaryRow({
           deltas && delta != null && prev !== 0
             ? delta / Math.abs(prev)
             : null;
-        let className = bold ? ui.heading : ui.text;
-        if (liability && v != null) className = 'text-red-600 dark:text-red-400';
-        if (positive && v != null) className = ui.heading;
+        let className = ui.text;
+        if (liability && v != null) {
+          className = getKpiValueClass('liability');
+        } else if (positive && v != null) {
+          className = getKpiValueClass('assets');
+        } else if (bold && v != null) {
+          className = getKpiValueClass(getNetWorthTone(v));
+        } else if (bold) {
+          className = ui.heading;
+        }
 
         return (
           <td key={monthKeys[i]} className={`px-2 py-2 text-right text-sm tabular-nums ${className}`}>

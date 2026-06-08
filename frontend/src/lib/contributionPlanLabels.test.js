@@ -7,6 +7,7 @@ import { createAsset } from './patrimony.js';
 
 const t = (key, vars) => {
   if (key === 'balance.contributions.growthFixed') return 'Fijo';
+  if (key === 'balance.contributions.tableGrowthFixed') return 'Igual cada mes';
   if (key === 'balance.contributions.tableGrowthRamp') return `+${vars.amount}/mes`;
   if (key === 'balance.contributions.tableGrowthAnnual') return `+${vars.rate}/año`;
   return key;
@@ -17,13 +18,17 @@ const formatPercent = (n) => `${Math.round(n * 100)}%`;
 
 assert.equal(
   formatContributionGrowthLabel({ growthMode: 'fixed' }, t, formatMoney, formatPercent),
-  'Fijo',
+  'Igual cada mes',
 );
 
 const fund = createAsset({ id: 'f1', category: 'investment', name: 'Indexa' });
 assert.equal(
-  isSavableContributionPlan({ assetId: 'f1' }, [fund]),
+  isSavableContributionPlan({ assetId: 'f1', monthlyAmount: 100 }, [fund]),
   true,
+);
+assert.equal(
+  isSavableContributionPlan({ assetId: 'f1', monthlyAmount: 0 }, [fund]),
+  false,
 );
 assert.equal(isSavableContributionPlan({ assetId: null }, [fund]), false);
 

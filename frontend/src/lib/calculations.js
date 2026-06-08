@@ -16,8 +16,10 @@ import {
   computeBucketAnnualRates,
   computeWeightedPortfolioReturn,
   netWorthFromState,
-  splitContributionsToBuckets,
+  splitContributionBreakdownToBuckets,
 } from './projectionBuckets.js';
+import { resolveInvestmentFromBreakdown } from './contributionEntries.js';
+import { resolveContributionsForProjectionMonth } from './contributionProjection.js';
 
 export const applyYourShare = applyShareEuros;
 
@@ -241,11 +243,18 @@ function getProjectionStartDate(fromDate = new Date()) {
   return new Date(fromDate.getFullYear(), fromDate.getMonth() + 1, 1);
 }
 
+function monthKeyFromDate(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  return `${y}-${m}`;
+}
+
 /**
  * Monthly projection table (pure calculation).
  * @param {object} params
  * @param {object} params.settings
  * @param {object[]} [params.contributionPlans]
+ * @param {object[]} [params.contributionEntries]
  * @param {number} [params.initialPatrimony]
  * @param {Date} [params.startDate]
  * @param {number} [params.years]
@@ -261,6 +270,7 @@ function getProjectionStartDate(fromDate = new Date()) {
 export function buildMonthlyProjectionRows({
   settings,
   contributionPlans = [],
+  contributionEntries = [],
   annualExpenses = [],
   cashflowHistory = [],
   salaryHistory = [],
@@ -283,10 +293,6 @@ export function buildMonthlyProjectionRows({
   const start = startDate ?? getProjectionStartDate();
 
   const expenseIncrease = settings?.projectionAnnualExpenseIncrease ?? 0;
-
-  const resolveInvestments =
-    getInvestmentContributions ??
-    (() => 0);
 
   const initialState = buildInitialBucketState({
     settings,
@@ -317,8 +323,19 @@ export function buildMonthlyProjectionRows({
     const variableExpenses = roundMoney(
       scaleByAnnualSteps(baseVariable, monthIndex, expenseIncrease),
     );
+    const monthKey = monthKeyFromDate(date);
+    const contributionResult = resolveContributionsForProjectionMonth({
+      entries: contributionEntries,
+      contributionPlans,
+      assets,
+      settings: monthSettings,
+      monthKey,
+      monthIndex,
+    });
     const additionalInvestments = roundMoney(
-      resolveInvestments(contributionPlans, monthIndex),
+      getInvestmentContributions
+        ? getInvestmentContributions(contributionPlans, monthIndex, monthKey)
+        : resolveInvestmentFromBreakdown(contributionResult.breakdown),
     );
     const punctualExpenses = roundMoney(
       getPunctualExpensesForDate(annualExpenses, date),
@@ -344,9 +361,8 @@ export function buildMonthlyProjectionRows({
       bucketRates,
     );
 
-    const bucketContributions = splitContributionsToBuckets(
-      contributionPlans,
-      monthIndex,
+    const bucketContributions = splitContributionBreakdownToBuckets(
+      contributionResult.breakdown,
       netContribution,
     );
 

@@ -6,6 +6,7 @@ import {
   getWeightedAnnualReturn,
   getWeightedReturnSummary,
   hasActiveContributionAmounts,
+  isPlanEffectiveInMonth,
   migratePlansToAssets,
   resolveContributionsForMonth,
   resolveInvestmentContributionsForMonth,
@@ -43,6 +44,20 @@ const rampPlan = createContributionPlan({
   rampPerMonth: 100,
 });
 assert.equal(resolveContributionsForMonth([rampPlan], 2).total, 700);
+
+const futurePlan = createContributionPlan({
+  monthlyAmount: 400,
+  effectiveFrom: '2026-12',
+});
+assert.equal(isPlanEffectiveInMonth(futurePlan, '2026-06'), false);
+assert.equal(
+  resolveContributionsForMonth([futurePlan], 0, '2026-06').total,
+  0,
+);
+assert.equal(
+  resolveContributionsForMonth([futurePlan], 0, '2026-12').total,
+  400,
+);
 
 const weighted = getWeightedAnnualReturn(settings, plans);
 assert.ok(Math.abs(weighted - (500 * 0.04 + 300 * 0.035) / 800) < 0.0001);

@@ -172,19 +172,33 @@ export function computeWeightedPortfolioReturn(buckets, bucketRates) {
   return weightedSum / total;
 }
 
-export function splitContributionsToBuckets(plans, monthIndex, netContribution) {
+export function splitContributionBreakdownToBuckets(breakdown = [], netContribution = 0) {
   const bucketContrib = createEmptyBuckets();
-  const { total, breakdown } = resolveContributionsForMonth(plans, monthIndex);
+  const total = sumEuros(...breakdown.map((item) => item.amount ?? 0));
   const freeSavings = round(Math.max(0, netContribution - total));
   bucketContrib.liquid += freeSavings;
 
   for (const item of breakdown) {
-    if (item.amount <= 0) continue;
+    if ((item.amount ?? 0) <= 0) continue;
     const bucket = planCategoryToBucket(item.category);
     bucketContrib[bucket] = round(bucketContrib[bucket] + item.amount);
   }
 
   return bucketContrib;
+}
+
+export function splitContributionsToBuckets(
+  plans,
+  monthIndex,
+  netContribution,
+  monthKey,
+) {
+  const { breakdown } = resolveContributionsForMonth(
+    plans,
+    monthIndex,
+    monthKey,
+  );
+  return splitContributionBreakdownToBuckets(breakdown, netContribution);
 }
 
 function liabilityPayment(settings, liability) {

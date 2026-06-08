@@ -37,6 +37,7 @@ export const useAppStore = create(
           theme: 'system',
           settings: { ...DEFAULT_SETTINGS },
           contributionPlans: [],
+      contributionEntries: [],
           annualExpenses: [],
           cashflowHistory: [],
           assets: [],

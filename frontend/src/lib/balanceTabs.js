@@ -1,11 +1,15 @@
 /** Balance page sections (query param `tab`). */
 export const BALANCE_TAB = {
   CASHFLOW: 'cashflow',
-  CONTRIBUTIONS: 'contributions',
   PATRIMONY: 'patrimony',
+  CONTRIBUTIONS: 'contributions',
 };
 
-export const BALANCE_TABS = Object.values(BALANCE_TAB);
+export const BALANCE_TABS = [
+  BALANCE_TAB.CASHFLOW,
+  BALANCE_TAB.PATRIMONY,
+  BALANCE_TAB.CONTRIBUTIONS,
+];
 
 export const DEFAULT_BALANCE_TAB = BALANCE_TAB.CASHFLOW;
 

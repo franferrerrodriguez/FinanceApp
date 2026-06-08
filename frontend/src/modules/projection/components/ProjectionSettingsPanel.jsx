@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { SelectField } from '../../../components/SelectField';
 import { BALANCE_TAB, balancePath } from '../../../lib/balanceTabs';
+import { PROJECTION_CONTRIBUTION_ASSUMPTION } from '../../../lib/contributionProjection';
 import { normalizeProjectionYears } from '../../../lib/constants';
 import { getCurrentMonthKey } from '../../../lib/dashboardMetrics';
 import { getCurrentPatrimonySummary } from '../../../lib/patrimony';
@@ -99,6 +100,38 @@ export function ProjectionSettingsPanel() {
           )}
         </div>
       )}
+
+      <label className="mt-5 block max-w-md">
+        <span className={`mb-1.5 block text-sm font-medium ${ui.textLabel}`}>
+          {t('projection.settings.contributionAssumption')}
+        </span>
+        <span className={`mb-2 block text-xs leading-snug ${ui.textMuted}`}>
+          {t('projection.settings.contributionAssumptionHint')}
+        </span>
+        <SelectField
+          value={
+            settings.projectionContributionAssumption ??
+            PROJECTION_CONTRIBUTION_ASSUMPTION.AVERAGE_3
+          }
+          onChange={(e) =>
+            setSettings({ projectionContributionAssumption: e.target.value })
+          }
+          aria-label={t('projection.settings.contributionAssumption')}
+        >
+          <option value={PROJECTION_CONTRIBUTION_ASSUMPTION.AVERAGE_3}>
+            {t('projection.settings.contributionAssumptionAverage')}
+          </option>
+          <option value={PROJECTION_CONTRIBUTION_ASSUMPTION.LAST_MONTH}>
+            {t('projection.settings.contributionAssumptionLastMonth')}
+          </option>
+        </SelectField>
+        <Link
+          to={balancePath(BALANCE_TAB.CONTRIBUTIONS)}
+          className="mt-2 inline-block text-xs font-medium text-emerald-600 hover:underline dark:text-emerald-400"
+        >
+          {t('projection.settings.goContributions')}
+        </Link>
+      </label>
 
       <label className="block max-w-xs">
         <span className={`mb-1.5 block text-sm font-medium ${ui.textLabel}`}>

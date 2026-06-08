@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  createLinkedMortgageLiability,
   getLinkedMortgageLiability,
   HOUSING_TYPE,
 } from '../lib/housingLiability';
@@ -9,57 +8,25 @@ import { useFinanceData } from '../store/hooks';
 
 export function useHousingLiability() {
   const { t } = useTranslation();
-  const {
-    settings,
-    setSettings,
-    liabilities,
-    addLiability,
-    removeLiability,
-  } = useFinanceData();
+  const { settings, liabilities, applyHousingType } = useFinanceData();
 
   const linkedLiability = getLinkedMortgageLiability(liabilities, settings);
-  const housingType =
-    settings.housingType ??
-    (linkedLiability ? HOUSING_TYPE.MORTGAGE : HOUSING_TYPE.RENT);
+  const tracksMortgageCapital = Boolean(linkedLiability);
 
-  const setHousingType = useCallback(
-    (nextType) => {
-      if (nextType === HOUSING_TYPE.RENT) {
-        const linked = getLinkedMortgageLiability(liabilities, settings);
-        if (linked?.id === settings.linkedMortgageLiabilityId) {
-          removeLiability(linked.id);
-        }
-        setSettings({
-          housingType: HOUSING_TYPE.RENT,
-          linkedMortgageLiabilityId: null,
-        });
-        return;
-      }
+  const enableMortgageTracking = useCallback(() => {
+    applyHousingType(HOUSING_TYPE.MORTGAGE, {
+      mortgageName: t('balance.cashflow.housingMortgageName'),
+    });
+  }, [applyHousingType, t]);
 
-      let linked = getLinkedMortgageLiability(liabilities, settings);
-      if (!linked) {
-        const created = createLinkedMortgageLiability(
-          t('balance.cashflow.housingMortgageName'),
-        );
-        addLiability(created);
-        setSettings({
-          housingType: HOUSING_TYPE.MORTGAGE,
-          linkedMortgageLiabilityId: created.id,
-        });
-        return;
-      }
-
-      setSettings({
-        housingType: HOUSING_TYPE.MORTGAGE,
-        linkedMortgageLiabilityId: linked.id,
-      });
-    },
-    [addLiability, liabilities, removeLiability, setSettings, settings, t],
-  );
+  const disableMortgageTracking = useCallback(() => {
+    applyHousingType(HOUSING_TYPE.RENT);
+  }, [applyHousingType]);
 
   return {
-    housingType,
     linkedLiability,
-    setHousingType,
+    tracksMortgageCapital,
+    enableMortgageTracking,
+    disableMortgageTracking,
   };
 }

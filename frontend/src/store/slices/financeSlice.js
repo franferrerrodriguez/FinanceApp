@@ -9,14 +9,21 @@ import {
 } from '../../lib/cashflowHistory';
 import {
   createContributionPlan,
-  getTotalMonthlyContributions,
 } from '../../lib/contributionPlans';
+import { createContributionEntry } from '../../lib/contributionEntries';
+import { getEffectiveMonthlyInvestmentAmount } from '../../lib/contributionProjection';
+import { getCurrentMonthKey } from '../../lib/cashflowHistory';
 import { dedupeFinanceList } from '../../lib/mergeFinanceLists';
 import { dedupeSnapshots } from '../../lib/snapshotPersist.js';
 import {
   deleteAssetFromCloud,
   deleteLiabilityFromCloud,
 } from '../../lib/patrimonyCloud';
+import {
+  createLinkedMortgageLiability,
+  getLinkedMortgageLiability,
+  HOUSING_TYPE,
+} from '../../lib/housingLiability';
 import { enrichSettingsWithSalary } from '../../lib/salary';
 import {
   getSnapshotAssetId,
@@ -36,8 +43,15 @@ const CASHFLOW_TOUCH_KEYS = new Set([
   ...CASHFLOW_EXPENSE_SNAPSHOT_KEYS,
 ]);
 
-function syncInvestmentFromPlans(plans) {
-  return { monthlyInvestmentAmount: getTotalMonthlyContributions(plans) };
+function syncInvestmentAmount(state) {
+  return {
+    monthlyInvestmentAmount: getEffectiveMonthlyInvestmentAmount({
+      entries: state.contributionEntries,
+      contributionPlans: state.contributionPlans,
+      assets: state.assets,
+      monthKey: getCurrentMonthKey(),
+    }),
+  };
 }
 
 /** Settings, assets, liabilities, contributions, and snapshots. */
@@ -46,9 +60,64 @@ export const createFinanceSlice = (set, get) => ({
   annualExpenses: [],
   cashflowHistory: [],
   contributionPlans: [],
+  contributionEntries: [],
   assets: [],
   liabilities: [],
   snapshots: [],
+
+  applyHousingType: (nextType, { mortgageName = 'Hipoteca' } = {}) =>
+    set((state) => {
+      if (nextType === HOUSING_TYPE.RENT) {
+        const linked = getLinkedMortgageLiability(
+          state.liabilities,
+          state.settings,
+        );
+        const removeId =
+          linked?.id === state.settings.linkedMortgageLiabilityId
+            ? linked.id
+            : null;
+        const userId = get().user?.id;
+        if (removeId && userId) void deleteLiabilityFromCloud(userId, removeId);
+
+        return {
+          liabilities: removeId
+            ? state.liabilities.filter((l) => l.id !== removeId)
+            : state.liabilities,
+          settings: {
+            ...state.settings,
+            housingType: HOUSING_TYPE.RENT,
+            linkedMortgageLiabilityId: null,
+          },
+        };
+      }
+
+      const linked = getLinkedMortgageLiability(
+        state.liabilities,
+        state.settings,
+      );
+      if (!linked) {
+        const created = createLinkedMortgageLiability(mortgageName);
+        return {
+          liabilities: dedupeFinanceList([
+            ...state.liabilities,
+            { ...created, isActive: true },
+          ]),
+          settings: {
+            ...state.settings,
+            housingType: HOUSING_TYPE.MORTGAGE,
+            linkedMortgageLiabilityId: created.id,
+          },
+        };
+      }
+
+      return {
+        settings: {
+          ...state.settings,
+          housingType: HOUSING_TYPE.MORTGAGE,
+          linkedMortgageLiabilityId: linked.id,
+        },
+      };
+    }),
 
   setSettings: (patch) =>
     set((state) => {
@@ -132,49 +201,66 @@ export const createFinanceSlice = (set, get) => ({
     }),
 
   setContributionPlans: (plans) =>
-    set({
+    set((state) => ({
       contributionPlans: plans,
-      settings: {
-        ...get().settings,
-        ...syncInvestmentFromPlans(plans),
-      },
-    }),
+      settings: { ...state.settings, ...syncInvestmentAmount({ ...state, contributionPlans: plans }) },
+    })),
 
   addContributionPlan: (plan) => {
-    const next = [
-      ...get().contributionPlans,
-      createContributionPlan(plan),
-    ];
+    const state = get();
+    const next = [...state.contributionPlans, createContributionPlan(plan)];
     set({
       contributionPlans: next,
-      settings: {
-        ...get().settings,
-        ...syncInvestmentFromPlans(next),
-      },
+      settings: { ...state.settings, ...syncInvestmentAmount({ ...state, contributionPlans: next }) },
     });
   },
 
   updateContributionPlan: (id, patch) => {
-    const next = get().contributionPlans.map((p) =>
+    const state = get();
+    const next = state.contributionPlans.map((p) =>
       p.id === id ? { ...p, ...patch } : p,
     );
     set({
       contributionPlans: next,
-      settings: {
-        ...get().settings,
-        ...syncInvestmentFromPlans(next),
-      },
+      settings: { ...state.settings, ...syncInvestmentAmount({ ...state, contributionPlans: next }) },
     });
   },
 
   removeContributionPlan: (id) => {
-    const next = get().contributionPlans.filter((p) => p.id !== id);
+    const state = get();
+    const next = state.contributionPlans.filter((p) => p.id !== id);
     set({
       contributionPlans: next,
-      settings: {
-        ...get().settings,
-        ...syncInvestmentFromPlans(next),
-      },
+      settings: { ...state.settings, ...syncInvestmentAmount({ ...state, contributionPlans: next }) },
+    });
+  },
+
+  addContributionEntry: (entry) => {
+    const state = get();
+    const next = [...state.contributionEntries, createContributionEntry(entry)];
+    set({
+      contributionEntries: next,
+      settings: { ...state.settings, ...syncInvestmentAmount({ ...state, contributionEntries: next }) },
+    });
+  },
+
+  updateContributionEntry: (id, patch) => {
+    const state = get();
+    const next = state.contributionEntries.map((e) =>
+      e.id === id ? { ...e, ...patch } : e,
+    );
+    set({
+      contributionEntries: next,
+      settings: { ...state.settings, ...syncInvestmentAmount({ ...state, contributionEntries: next }) },
+    });
+  },
+
+  removeContributionEntry: (id) => {
+    const state = get();
+    const next = state.contributionEntries.filter((e) => e.id !== id);
+    set({
+      contributionEntries: next,
+      settings: { ...state.settings, ...syncInvestmentAmount({ ...state, contributionEntries: next }) },
     });
   },
 
@@ -235,10 +321,31 @@ export const createFinanceSlice = (set, get) => ({
 
   removeAsset: (id) => {
     const userId = get().user?.id;
-    set((state) => ({
-      assets: state.assets.filter((a) => a.id !== id),
-      snapshots: state.snapshots.filter((s) => getSnapshotAssetId(s) !== id),
-    }));
+    set((state) => {
+      const contributionEntries = state.contributionEntries.filter(
+        (e) => e.assetId !== id,
+      );
+      const contributionPlans = state.contributionPlans.filter(
+        (p) => p.assetId !== id,
+      );
+      const nextState = {
+        ...state,
+        assets: state.assets.filter((a) => a.id !== id),
+        snapshots: state.snapshots.filter((s) => getSnapshotAssetId(s) !== id),
+        contributionEntries,
+        contributionPlans,
+      };
+      return {
+        assets: nextState.assets,
+        snapshots: nextState.snapshots,
+        contributionEntries,
+        contributionPlans,
+        settings: {
+          ...state.settings,
+          ...syncInvestmentAmount(nextState),
+        },
+      };
+    });
     if (userId) void deleteAssetFromCloud(userId, id);
   },
 

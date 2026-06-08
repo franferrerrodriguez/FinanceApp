@@ -4,10 +4,13 @@ import { IneInflationBlock } from './IneInflationBlock';
 import { Link } from 'react-router-dom';
 import { BALANCE_TAB, balancePath } from '../../../lib/balanceTabs';
 import { getCashflowTotalsForDate } from '../../../lib/cashflowHistory';
+import { getCurrentMonthKey } from '../../../lib/cashflowHistory';
 import {
-  hasProjectionInvestmentPlans,
-  resolveInvestmentContributionsForMonth,
-} from '../../../lib/contributionPlans';
+  getAverageContributionsByAsset,
+  resolveEntriesForMonth,
+  resolveInvestmentFromBreakdown,
+} from '../../../lib/contributionEntries';
+import { hasProjectionContributionData } from '../../../lib/contributionProjection';
 import {
   GROWTH_BUCKETS,
   buildInitialBucketState,
@@ -22,6 +25,7 @@ export function ProjectionDataSources() {
   const {
     settings,
     contributionPlans,
+    contributionEntries,
     cashflowHistory,
     assets,
     liabilities,
@@ -32,11 +36,23 @@ export function ProjectionDataSources() {
     () => getCashflowTotalsForDate(settings, cashflowHistory, new Date()),
     [settings, cashflowHistory],
   );
-  const investments = resolveInvestmentContributionsForMonth(
-    contributionPlans,
-    0,
+
+  const monthKey = getCurrentMonthKey();
+  const actualMonth = resolveEntriesForMonth(contributionEntries, monthKey, assets);
+  const projectedFromHistory = getAverageContributionsByAsset(
+    contributionEntries,
+    assets,
+    { lookbackMonths: 3 },
   );
-  const hasInvestments = hasProjectionInvestmentPlans(contributionPlans);
+  const investments =
+    actualMonth.total > 0
+      ? resolveInvestmentFromBreakdown(actualMonth.breakdown)
+      : resolveInvestmentFromBreakdown(projectedFromHistory.breakdown);
+
+  const hasInvestments = hasProjectionContributionData({
+    entries: contributionEntries,
+    contributionPlans,
+  });
 
   const initialState = useMemo(
     () =>
@@ -108,7 +124,11 @@ export function ProjectionDataSources() {
           <SourceItem
             label={t('projection.sources.investments')}
             value={formatMoney(investments)}
-            hint={t('projection.sources.investmentsHint')}
+            hint={
+              actualMonth.total > 0
+                ? t('projection.sources.investmentsFromActual')
+                : t('projection.sources.investmentsFromHistory')
+            }
             editLabel={t('projection.sources.editInContributions')}
             editTo={balancePath(BALANCE_TAB.CONTRIBUTIONS)}
           />

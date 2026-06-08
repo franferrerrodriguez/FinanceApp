@@ -4,6 +4,7 @@ import {
   HorizontalScrollRegion,
   ScrollHintBanner,
 } from '../../../components/HorizontalScrollRegion';
+import { getKpiValueClass } from '../../../components/KpiCard';
 import { getAssetAnnualReturn } from '../../../lib/projectionReturns';
 import { ui } from '../../../lib/uiClasses';
 import { formatMoney, formatPercent } from '../../../utils/formatters';
@@ -113,8 +114,8 @@ export function PatrimonyCatalogTable({
                     <td
                       className={`whitespace-nowrap px-3 py-2.5 text-right tabular-nums ${
                         kind === 'liability'
-                          ? 'text-red-600 dark:text-red-400'
-                          : ui.textLabel
+                          ? getKpiValueClass('liability')
+                          : getKpiValueClass('assets')
                       }`}
                     >
                       {(() => {

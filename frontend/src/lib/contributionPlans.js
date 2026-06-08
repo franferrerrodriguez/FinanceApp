@@ -8,6 +8,17 @@ import {
 
 export { getPlanAnnualReturn, getReturnForCategory } from './projectionReturns.js';
 
+function getCurrentMonthKey(date = new Date()) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  return `${y}-${m}`;
+}
+
+export function isPlanEffectiveInMonth(plan, monthKey) {
+  if (!plan?.effectiveFrom || !monthKey) return true;
+  return String(plan.effectiveFrom) <= String(monthKey);
+}
+
 /** Any active asset can have a planned monthly amount (projection habit). */
 export const CONTRIBUTION_ELIGIBLE_CATEGORIES = [
   'bank',
@@ -130,6 +141,7 @@ export function createContributionPlan(partial = {}) {
     category: partial.category ?? meta.category,
     label: partial.label ?? '',
     monthlyAmount: partial.monthlyAmount ?? 0,
+    effectiveFrom: partial.effectiveFrom ?? getCurrentMonthKey(),
     isActive: partial.isActive !== false,
     growthMode: partial.growthMode ?? 'fixed',
     rampPerMonth: partial.rampPerMonth ?? 0,
@@ -141,8 +153,9 @@ export function createContributionPlan(partial = {}) {
   };
 }
 
-export function resolvePlanAmountForMonth(plan, monthIndex) {
+export function resolvePlanAmountForMonth(plan, monthIndex, monthKey) {
   if (!plan.isActive) return 0;
+  if (!isPlanEffectiveInMonth(plan, monthKey)) return 0;
 
   let amount = plan.monthlyAmount ?? 0;
 
@@ -162,14 +175,14 @@ export function resolvePlanAmountForMonth(plan, monthIndex) {
   return Math.max(0, amount);
 }
 
-export function resolveInvestmentContributionsForMonth(plans, monthIndex) {
+export function resolveInvestmentContributionsForMonth(plans, monthIndex, monthKey) {
   const active = (plans ?? []).filter(
     (p) =>
       p.isActive &&
       PROJECTION_INVESTMENT_CATEGORIES.includes(p.category),
   );
   return sumEuros(
-    ...active.map((plan) => resolvePlanAmountForMonth(plan, monthIndex)),
+    ...active.map((plan) => resolvePlanAmountForMonth(plan, monthIndex, monthKey)),
   );
 }
 
@@ -182,14 +195,14 @@ export function hasProjectionInvestmentPlans(plans) {
   );
 }
 
-export function resolveContributionsForMonth(plans, monthIndex) {
+export function resolveContributionsForMonth(plans, monthIndex, monthKey) {
   const active = (plans ?? []).filter((p) => p.isActive);
   const breakdown = active.map((plan) => ({
     planId: plan.id,
     providerId: plan.providerId,
     category: plan.category,
     label: plan.label,
-    amount: resolvePlanAmountForMonth(plan, monthIndex),
+    amount: resolvePlanAmountForMonth(plan, monthIndex, monthKey),
   }));
 
   const total = sumEuros(...breakdown.map((b) => b.amount));
@@ -197,8 +210,8 @@ export function resolveContributionsForMonth(plans, monthIndex) {
   return { total, breakdown };
 }
 
-export function getTotalMonthlyContributions(plans) {
-  return resolveContributionsForMonth(plans, 0).total;
+export function getTotalMonthlyContributions(plans, monthKey = getCurrentMonthKey()) {
+  return resolveContributionsForMonth(plans, 0, monthKey).total;
 }
 
 export function hasActiveContributionAmounts(plans) {

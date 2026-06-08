@@ -8,7 +8,6 @@ import {
 } from '../../lib/balanceTabs';
 import { UnderlineTabNav } from '../../components/UnderlineTabNav';
 import { ui } from '../../lib/uiClasses';
-import { BalanceSetupChecklist } from './components/BalanceSetupChecklist';
 import { CashflowPanel } from './components/CashflowPanel';
 import { ContributionsPanel } from './components/ContributionsPanel';
 import { PatrimonyPanel } from './components/PatrimonyPanel';
@@ -49,8 +48,6 @@ export function BalancePage() {
           {t('balance.description')}
         </p>
       </div>
-
-      <BalanceSetupChecklist />
 
       <UnderlineTabNav
         tabs={balanceTabs}

@@ -10,11 +10,12 @@ export function formatContributionGrowthLabel(plan, t, formatMoney, formatPercen
       rate: formatPercent(plan.annualIncrease ?? 0),
     });
   }
-  return t('balance.contributions.growthFixed');
+  return t('balance.contributions.tableGrowthFixed');
 }
 
 export function isSavableContributionPlan(plan, assets = []) {
   if (!plan?.assetId) return false;
+  if ((plan.monthlyAmount ?? 0) <= 0) return false;
   const asset = assets.find((a) => a.id === plan.assetId);
   return Boolean(asset && asset.isActive !== false);
 }

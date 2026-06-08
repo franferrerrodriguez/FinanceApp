@@ -82,18 +82,6 @@ export function AssetEditModal({
       }
     >
       <div className="space-y-4">
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={draft.isActive !== false}
-            onChange={(e) => patch({ isActive: e.target.checked })}
-            className="h-4 w-4 rounded border-slate-400 text-emerald-500 focus:ring-emerald-500/40"
-          />
-          <span className={`text-sm font-medium ${ui.textLabel}`}>
-            {t('balance.patrimony.activeInClose')}
-          </span>
-        </label>
-
         <FormFieldFrame
           label={t('balance.patrimony.provider')}
           hint={
@@ -176,6 +164,27 @@ export function AssetEditModal({
             className={`${ui.input} w-full`}
           />
         </FormFieldFrame>
+
+        {mode === 'edit' ? (
+          <div className={`rounded-xl border px-3 py-3 ${ui.cardMuted}`}>
+            <label className="flex cursor-pointer items-start gap-3">
+              <input
+                type="checkbox"
+                checked={draft.isActive !== false}
+                onChange={(e) => patch({ isActive: e.target.checked })}
+                className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-400 text-emerald-500 focus:ring-emerald-500/40 dark:border-slate-600 dark:bg-slate-900"
+              />
+              <span>
+                <span className={`block text-sm font-medium ${ui.textLabel}`}>
+                  {t('balance.patrimony.activeInClose')}
+                </span>
+                <span className={`mt-1 block text-xs leading-relaxed ${ui.textMuted}`}>
+                  {t('balance.patrimony.activeInCloseHint')}
+                </span>
+              </span>
+            </label>
+          </div>
+        ) : null}
       </div>
     </AppModal>
   );

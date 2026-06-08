@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { annualToMonthlyRate } from './calculations.js';
+import { createContributionEntry } from './contributionEntries.js';
 import {
   buildMonthlyProjectionTable,
   summarizeMonthlyProjection,
@@ -106,5 +107,29 @@ const withAnnual = buildMonthlyProjectionTable({
 });
 assert.equal(withAnnual[0].punctualExpenses, 600);
 assert.equal(withAnnual[0].netContribution, 2011.5 - 600);
+
+const withEntries = buildMonthlyProjectionTable({
+  settings: baseSettings,
+  contributionEntries: [
+    createContributionEntry({
+      id: 'e1',
+      assetId: 'idx',
+      date: '2026-06-10',
+      amount: 500,
+    }),
+  ],
+  assets: [
+    {
+      id: 'idx',
+      category: 'investment',
+      name: 'Indexa',
+      isActive: true,
+    },
+  ],
+  initialPatrimony: 0,
+  startDate: new Date(2026, 5, 1),
+  years: 1,
+});
+assert.equal(withEntries[0].additionalInvestments, 500);
 
 console.log('projectionTable.test.js: ok');
