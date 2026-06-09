@@ -1,9 +1,11 @@
-import { BALANCE_TAB, balancePath } from './balanceTabs.js';
+import { balancePath, DEFAULT_BALANCE_TAB } from './balanceTabs.js';
 import {
   getCurrentMonthKey,
   getLastNMonthKeys,
 } from './dashboardMetrics.js';
-import { formatMonthKey } from '../utils/monthLabel.js';
+import { isSavableLiability } from './patrimonyDrafts.js';
+import { isSavableAssetCatalog } from './patrimonyNames.js';
+import { formatMonthKey, formatMonthName } from '../utils/monthLabel.js';
 
 function getActiveAssets(assets) {
   return (assets ?? []).filter((a) => a.isActive !== false);
@@ -25,6 +27,9 @@ export const MONTHLY_CLOSE_REMINDER_DAY = 25;
 /** Days left in month when urgency rises to warn. */
 export const MONTHLY_CLOSE_URGENT_DAYS_LEFT = 5;
 
+/** Through this day of the month, gentle reminder when the current month is pending. */
+export const MONTHLY_CLOSE_NEW_MONTH_REMINDER_DAYS = 7;
+
 const MONTH_KEY_RE = /^\d{4}-\d{2}$/;
 
 export function isMonthKey(value) {
@@ -33,24 +38,33 @@ export function isMonthKey(value) {
 
 export function hasPatrimonyAccounts(assets, liabilities) {
   return (
-    getActiveAssets(assets).length > 0 ||
-    getActiveLiabilities(liabilities).length > 0
+    getCloseableAssets(assets).length > 0 ||
+    getCloseableLiabilities(liabilities).length > 0
   );
 }
 
-/** Every active asset/liability has a snapshot row for the month. */
+/** Catalog lines that count for monthly close (excludes empty drafts). */
+export function getCloseableAssets(assets) {
+  return getActiveAssets(assets).filter(isSavableAssetCatalog);
+}
+
+export function getCloseableLiabilities(liabilities) {
+  return getActiveLiabilities(liabilities).filter(isSavableLiability);
+}
+
+/** Every closeable asset/liability has a snapshot row for the month. */
 export function isMonthFullyClosed(snapshots, monthKey, assets, liabilities) {
   if (!hasPatrimonyAccounts(assets, liabilities)) return true;
 
   const monthSnaps = groupSnapshotsByMonth(snapshots)[monthKey] ?? [];
   if (!monthSnaps.length) return false;
 
-  for (const asset of getActiveAssets(assets)) {
+  for (const asset of getCloseableAssets(assets)) {
     if (!monthSnaps.some((s) => getSnapshotAssetId(s) === asset.id)) {
       return false;
     }
   }
-  for (const liability of getActiveLiabilities(liabilities)) {
+  for (const liability of getCloseableLiabilities(liabilities)) {
     if (!monthSnaps.some((s) => getSnapshotLiabilityId(s) === liability.id)) {
       return false;
     }
@@ -185,34 +199,67 @@ export function getMonthlyCloseMonthOptions(
 
 export function isMonthlyCloseAlert(alert) {
   return (
-    alert?.id === 'monthly_close_due' || alert?.id === 'monthly_close_overdue'
+    alert?.id === 'monthly_close_due' ||
+    alert?.id === 'monthly_close_overdue' ||
+    alert?.id === 'monthly_close_new_month'
   );
 }
 
-export function getMonthlyCloseAlert(status, locale = 'es') {
+export function getMonthlyCloseAlert(status, locale = 'es', { now = new Date() } = {}) {
   if (!status?.suggestedMonthKey || status.urgency === 'none') return null;
 
-  const monthLabel = formatMonthKey(status.suggestedMonthKey, locale);
   const href = balanceClosePath(status.suggestedMonthKey);
+  const base = {
+    actionKey: 'alerts.monthlyCloseAction',
+    href,
+    monthKey: status.suggestedMonthKey,
+  };
+
+  if (status.overdueMonths?.length > 0) {
+    const oldestOverdue = status.overdueMonths[0];
+    return {
+      ...base,
+      id: 'monthly_close_overdue',
+      severity: 'danger',
+      params: {
+        count: status.overdueMonths.length,
+        month: formatMonthKey(oldestOverdue, locale),
+      },
+      monthKey: oldestOverdue,
+      href: balanceClosePath(oldestOverdue),
+    };
+  }
 
   if (status.urgency === 'warn' && status.currentMonthPending) {
     return {
+      ...base,
       id: 'monthly_close_due',
       severity: 'warn',
-      actionKey: 'alerts.monthlyCloseAction',
       params: {
-        month: monthLabel,
+        month: formatMonthKey(status.suggestedMonthKey, locale),
         days: status.daysLeftInMonth,
       },
-      href,
-      monthKey: status.suggestedMonthKey,
+    };
+  }
+
+  if (
+    status.currentMonthPending &&
+    now.getDate() <= MONTHLY_CLOSE_NEW_MONTH_REMINDER_DAYS
+  ) {
+    return {
+      ...base,
+      id: 'monthly_close_new_month',
+      severity: 'info',
+      params: {
+        month: formatMonthKey(getCurrentMonthKey(now), locale),
+      },
     };
   }
 
   return null;
 }
 
-export function balanceClosePath(monthKey, tab = BALANCE_TAB.PATRIMONY) {
+export function balanceClosePath(monthKey, tab = DEFAULT_BALANCE_TAB) {
   const base = balancePath(tab);
   return monthKey && isMonthKey(monthKey)
     ? `${base}&closeMonth=${monthKey}`
@@ -222,4 +269,38 @@ export function balanceClosePath(monthKey, tab = BALANCE_TAB.PATRIMONY) {
 function getDaysLeftInMonth(date) {
   const last = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
   return Math.max(0, last - date.getDate());
+}
+
+/** User-facing hint when pending months remain after a close attempt. */
+export function getPendingCloseHint(status, locale = 'es') {
+  if (!status?.pendingMonths?.length) return null;
+
+  const currentKey = getCurrentMonthKey();
+  const currentClosed = !status.pendingMonths.includes(currentKey);
+
+  if (status.overdueMonths?.length > 0) {
+    return {
+      key: 'balance.recordBalancesPendingOverdue',
+      params: {
+        count: status.overdueMonths.length,
+        month: formatMonthName(status.overdueMonths[0], locale),
+      },
+    };
+  }
+
+  if (currentClosed) {
+    return {
+      key: 'balance.recordBalancesPendingPast',
+      params: {
+        month: formatMonthName(status.suggestedMonthKey, locale),
+      },
+    };
+  }
+
+  return {
+    key: 'balance.recordBalancesPendingCurrent',
+    params: {
+      month: formatMonthName(currentKey, locale),
+    },
+  };
 }

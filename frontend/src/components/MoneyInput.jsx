@@ -15,6 +15,8 @@ export function MoneyInput({
   disabled = false,
   compact = false,
   fullWidth = false,
+  prefilled = false,
+  hint,
   className = '',
   'aria-label': ariaLabel,
 }) {
@@ -30,6 +32,9 @@ export function MoneyInput({
 
   const displayValue = editing ? draft : formatMoneyDisplay(value);
   const widthClass = fullWidth ? 'w-full max-w-none' : `w-full ${ui.inputAmount}`;
+  const inputClass = prefilled
+    ? `${ui.input} ${ui.inputMoney} w-full max-w-none border-slate-300 bg-slate-50 text-slate-600 dark:border-slate-600 dark:bg-slate-800/80 dark:text-slate-300`
+    : `${ui.input} ${ui.inputMoney} w-full max-w-none`;
 
   return (
     <div className={`relative ${widthClass} ${className}`.trim()}>
@@ -61,10 +66,13 @@ export function MoneyInput({
           commitDraft(raw);
         }}
         placeholder="0"
-        className={`${ui.input} ${ui.inputMoney} w-full max-w-none ${
+        className={`${inputClass} ${
           compact ? `${ui.inputCompact} pl-8` : 'pl-9'
         }${disabled ? ' opacity-60' : ''}`}
       />
+      {hint ? (
+        <p className={`mt-1 text-[11px] leading-snug ${ui.textMuted}`}>{hint}</p>
+      ) : null}
     </div>
   );
 }

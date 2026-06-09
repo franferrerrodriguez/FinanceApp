@@ -53,7 +53,8 @@
     "emergencyFundBalancesAction": "Actualizar saldos",
     "emergencyFundReviewAction": "Ver Activos y pasivos",
     "monthly_close_overdue": "Hay {{count}} meses con saldos incompletos. Actualiza {{month}} primero para ver tu patrimonio al día.",
-    "monthly_close_due": "Quedan {{days}} días de {{month}}. ¿Has registrado los saldos de tus cuentas y deudas?"
+    "monthly_close_due": "Quedan {{days}} días de {{month}}. ¿Has registrado los saldos de tus cuentas y deudas?",
+    "monthly_close_new_month": "Ya empezó {{month}}. Es buen momento para registrar los saldos de tus cuentas y deudas."
   },
   "notifications": {
     "setupSection": "Configuración",
@@ -248,6 +249,7 @@
     "alertsTitle": "Alertas",
     "alerts": {
       "negative_cashflow": "Tus gastos superan tus ingresos este mes.",
+      "missing_income": "No has indicado ingresos netos este mes. Edita el salario en «Salario e ingresos» para que el resumen y las alertas tengan sentido.",
       "low_savings_rate": "Estás ahorrando menos del 10% de tus ingresos.",
       "credit_card_debt": "Tienes deuda en tarjeta. Considera amortizarla primero.",
       "negative_net_worth": "Tu deuda supera tus activos. Revisa tus pasivos."
@@ -304,6 +306,12 @@
   "balance": {
     "title": "Patrimonio",
     "description": "Registra activos y deudas, actualiza saldos cada mes y revisa tu situación. La proyección deduce el reparto del ahorro desde esos saldos.",
+    "recordBalancesHeading": "Actualizar saldos del mes",
+    "recordBalancesDescription": "Acción habitual: indica cuánto tienes en cada cuenta y cuánto debes. Alimenta patrimonio neto, dashboard, fondo de emergencia y aportaciones inferidas.",
+    "viewBalanceHistory": "Ver historial de saldos por mes →",
+    "recordBalancesPendingOverdue": "Puede que el mes en curso esté guardado, pero faltan {{count}} meses anteriores (empieza por {{month}}).",
+    "recordBalancesPendingPast": "Faltan saldos de {{month}}.",
+    "recordBalancesPendingCurrent": "Faltan saldos de {{month}} en alguna cuenta o deuda.",
     "tabsLabel": "Secciones de patrimonio",
     "tabs": {
       "cashflow": "Presupuesto mensual",
@@ -434,7 +442,7 @@
       "emergencyFundTargetBreakdown": "{{months}} meses × {{monthly}}/mes de gastos totales",
       "emergencyFundStatusLabel": "Tu colchón hoy",
       "emergencyFundNoAccounts": "Aún no hay cuentas Banco o Efectivo. Añádelas en Patrimonio e indica su saldo para saber si cubres el objetivo.",
-      "emergencyFundNoBalances": "Tienes cuentas registradas pero faltan los saldos del mes. Usa «Actualizar saldos» en Activos y pasivos.",
+      "emergencyFundNoBalances": "Tienes cuentas registradas pero faltan los saldos del mes. Usa «Actualizar saldos» arriba en esta página.",
       "emergencyFundOnTrack": "Objetivo cubierto.",
       "emergencyFundShortfall": "Te faltan {{amount}} para llegar al objetivo.",
       "emergencyFundLiquidHint": "Liquidez = suma de activos Banco y Efectivo del mes actual.",
@@ -493,8 +501,8 @@
     "patrimony": {
       "title": "Activos y pasivos",
       "subtitle": "Define tus cuentas y actualiza saldos con el botón de arriba. Todo en la tabla de activos y pasivos.",
-      "balancesAsOf": "Saldos a {{date}} · usa «Actualizar saldos» arriba para cambiarlos",
-      "balancesMissing": "Faltan importes — pulsa «Actualizar saldos» arriba",
+      "balancesAsOf": "Saldos a {{date}} · «Actualizar saldos» arriba en esta página",
+      "balancesMissing": "Faltan importes — «Actualizar saldos» arriba en esta página",
       "currentBalancesViewHistory": "Ver historial por meses ↓",
       "tableBalance": "Saldo actual",
       "recordBalances": "Actualizar saldos",
@@ -534,6 +542,24 @@
       "closeHousingMortgageQuota": "Tu cuota en Presupuesto es {{payment}}/mes — no la pongas aquí.",
       "closeHousingMortgageQuotaMissing": "Configura la cuota en Presupuesto → Vivienda. Aquí va el total que debes al banco.",
       "closeHousingMortgageHint": "Escribe cuánto debes en total hoy (capital pendiente). Lo verás en el extracto hipotecario; baja poco a poco cada mes.",
+      "closeMortgagePrevHint": "Mes pasado: {{prev}} — baja ~{{drop}}/mes (estimado)",
+      "closePrefillHint": "Igual que {{month}}",
+      "closeQuickSaveSame": "Todo igual que el mes pasado → Guardar",
+      "closeGroupLiquidity": "Cuentas y liquidez",
+      "closeGroupInvestments": "Fondos y pensiones · {{total}}",
+      "closeGroupInvestmentsHint": "Si no han cambiado, se guardan con el valor del mes pasado.",
+      "closeGroupDebts": "Deudas · {{total}}",
+      "closeGroupDebtsHint": "Si no han cambiado, se guardan con el valor del mes pasado.",
+      "closeGainLossToggle": "Añadir rentabilidad acumulada (de Indexa, Myinvestor…)",
+      "closeGainLossLabel": "Rentabilidad acumulada total (€)",
+      "closeGainLossPlaceholder": "Ej: -30.19  o  +150.00",
+      "closeGainLossHint": "La encontrarás en tu proveedor como «rentabilidad» o «ganancias/pérdidas».",
+      "closeGainLossBreakdown": "Aportado por ti: {{contributed}}  |  Mercado: {{market}} ({{pct}})",
+      "closeSummaryPrev": "Patrimonio neto anterior: {{amount}}",
+      "closeSummaryNew": "Patrimonio neto nuevo: {{amount}}",
+      "closeSummaryNewOnly": "Patrimonio neto: {{amount}}",
+      "closeSummaryDelta": "Variación: {{sign}} {{amount}}",
+      "closeSummaryNoChange": "Sin variación respecto al mes anterior",
       "closeConfirm": "Guardar cierre",
       "value": "Valor (€)",
       "debtValue": "Deuda pendiente (€)",
@@ -551,6 +577,8 @@
       "tableReturnAssetHint": "Rentabilidad anual definida en este activo",
       "assetReturnLabel": "Rentabilidad anual en proyección",
       "assetReturnHint": "Se rellena según el tipo al elegir categoría; ajústala si este producto es distinto (p. ej. otro fondo o cuenta remunerada).",
+      "tracksGainLossLabel": "Pedir rentabilidad acumulada al actualizar saldos",
+      "tracksGainLossHint": "Actívalo en fondos, planes de pensiones o cuentas de inversión donde el proveedor muestra ganancias/pérdidas (Indexa, Myinvestor…).",
       "tableProvider": "Entidad",
       "tablePayment": "Cuota / mes",
       "tableActive": "Activo en saldos",
@@ -701,7 +729,7 @@
   "projection": {
     "title": "Proyección futura",
     "subtitle": "Simulación mes a mes con interés compuesto. Parte de tus saldos reales y extrapola el reparto del ahorro inferido al actualizar saldos.",
-    "simulationNotice": "Simulación a partir de hoy: no sustituye tu histórico real. Los saldos y las aportaciones inferidas se actualizan solo al pulsar «Actualizar saldos».",
+    "simulationNotice": "Simulación a partir de hoy: no sustituye tu histórico real ni predice lo que ocurrirá. Parte de supuestos simplificados (mercados, empleo, gastos…) que pueden no cumplirse; úsala como orientación, no como garantía. Los saldos y las aportaciones inferidas se actualizan solo al pulsar «Actualizar saldos».",
     "buckets": {
       "liquid": "Liquidez (banco / efectivo)",
       "investment": "Inversión (fondos y cotizados)",
@@ -796,7 +824,6 @@
     "table": {
       "scrollHint": "Desliza horizontalmente para ver todas las columnas",
       "tooltipAria": "Más información sobre {{column}}",
-      "howItWorks": "Cada mes: ingresos − gastos − inversión = disponible. A eso se suma la rentabilidad de lo ya invertido → así crece tu patrimonio.",
       "year": "Año",
       "yearShort": "Año",
       "date": "Fecha",

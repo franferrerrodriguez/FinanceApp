@@ -28,6 +28,11 @@ function monthNameForKey(monthKey, language) {
   );
 }
 
+/** Month name only (e.g. "Junio"). */
+export function formatMonthName(monthKey, language) {
+  return monthNameForKey(monthKey, language);
+}
+
 /** Compact label for tables (e.g. "Junio 26"). */
 export function formatMonthKey(monthKey, language) {
   const [year] = monthKey.split('-').map(Number);

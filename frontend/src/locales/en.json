@@ -53,7 +53,8 @@
     "emergencyFundBalancesAction": "Update balances",
     "emergencyFundReviewAction": "View accounts in Net worth",
     "monthly_close_overdue": "{{count}} months have incomplete balances. Update {{month}} first to keep net worth current.",
-    "monthly_close_due": "{{days}} days left in {{month}}. Have you recorded your account and debt balances?"
+    "monthly_close_due": "{{days}} days left in {{month}}. Have you recorded your account and debt balances?",
+    "monthly_close_new_month": "{{month}} just started. Good time to record your account and debt balances."
   },
   "notifications": {
     "setupSection": "Setup",
@@ -248,6 +249,7 @@
     "alertsTitle": "Alerts",
     "alerts": {
       "negative_cashflow": "Your expenses exceed your income this month.",
+      "missing_income": "You haven't set net income for this month. Edit your salary under «Salary & income» so summaries and alerts make sense.",
       "low_savings_rate": "You are saving less than 10% of your income.",
       "credit_card_debt": "You have credit card debt. Consider paying it down first.",
       "negative_net_worth": "Your debt exceeds your assets. Review your liabilities."
@@ -304,6 +306,12 @@
   "balance": {
     "title": "Net worth",
     "description": "Register assets and liabilities, update balances each month, and review your position. The projection infers savings allocation from those balances.",
+    "recordBalancesHeading": "Update monthly balances",
+    "recordBalancesDescription": "Your regular step: enter each account balance and outstanding debt. Powers net worth, dashboard, emergency fund, and inferred contributions.",
+    "viewBalanceHistory": "View month-by-month balance history →",
+    "recordBalancesPendingOverdue": "Current month may be saved, but {{count}} earlier month(s) are still incomplete (start with {{month}}).",
+    "recordBalancesPendingPast": "Balances for {{month}} are still missing.",
+    "recordBalancesPendingCurrent": "Some accounts or debts still need balances for {{month}}.",
     "tabsLabel": "Net worth sections",
     "tabs": {
       "cashflow": "Monthly budget",
@@ -434,7 +442,7 @@
       "emergencyFundTargetBreakdown": "{{months}} months × {{monthly}}/month total expenses",
       "emergencyFundStatusLabel": "Your cushion today",
       "emergencyFundNoAccounts": "No Bank or Cash assets yet. Add them in Net worth and enter balances to see if you meet your goal.",
-      "emergencyFundNoBalances": "You have accounts but no balances for this month. Use «Update balances» under Assets & liabilities.",
+      "emergencyFundNoBalances": "You have accounts but no balances for this month. Use «Update balances» at the top of this page.",
       "emergencyFundOnTrack": "Goal covered.",
       "emergencyFundShortfall": "You are short {{amount}} to reach your goal.",
       "emergencyFundLiquidHint": "Liquidity = sum of Bank and Cash assets for the current month.",
@@ -493,8 +501,8 @@
     "patrimony": {
       "title": "Assets & liabilities",
       "subtitle": "Define your accounts and update balances with the button above. Everything lives in the assets and liabilities tables.",
-      "balancesAsOf": "Balances as of {{date}} · use «Update balances» above to change them",
-      "balancesMissing": "Amounts missing — tap «Update balances» above",
+      "balancesAsOf": "Balances as of {{date}} · «Update balances» at the top of this page",
+      "balancesMissing": "Amounts missing — «Update balances» at the top of this page",
       "currentBalancesViewHistory": "View month-by-month history ↓",
       "tableBalance": "Current balance",
       "recordBalances": "Update balances",
@@ -535,6 +543,24 @@
       "closeHousingMortgageQuotaMissing": "Set the payment under Budget → Housing. Here enter the total you still owe the bank.",
       "closeHousingMortgageHint": "Enter how much you still owe in total today. You’ll find it on your mortgage statement; it drops slowly each month.",
       "closeConfirm": "Save close",
+      "closeMortgagePrevHint": "Last month: {{prev}} — drops ~{{drop}}/mo (estimate)",
+      "closePrefillHint": "Same as {{month}}",
+      "closeQuickSaveSame": "Same as last month → Save",
+      "closeGroupLiquidity": "Accounts & cash",
+      "closeGroupInvestments": "Funds & pensions · {{total}}",
+      "closeGroupInvestmentsHint": "If unchanged, they'll be saved with last month's value.",
+      "closeGroupDebts": "Debts · {{total}}",
+      "closeGroupDebtsHint": "If unchanged, they'll be saved with last month's value.",
+      "closeGainLossToggle": "Add accumulated return (from Indexa, Myinvestor…)",
+      "closeGainLossLabel": "Total accumulated return (€)",
+      "closeGainLossPlaceholder": "E.g. -30.19  or  +150.00",
+      "closeGainLossHint": "You'll find it in your provider as «return» or «gains/losses».",
+      "closeGainLossBreakdown": "Your contributions: {{contributed}}  |  Market: {{market}} ({{pct}})",
+      "closeSummaryPrev": "Previous net worth: {{amount}}",
+      "closeSummaryNew": "New net worth: {{amount}}",
+      "closeSummaryNewOnly": "Net worth: {{amount}}",
+      "closeSummaryDelta": "Change: {{sign}} {{amount}}",
+      "closeSummaryNoChange": "No change from last month",
       "value": "Value (€)",
       "debtValue": "Outstanding debt (€)",
       "netWorth": "Net worth",
@@ -551,6 +577,8 @@
       "tableReturnAssetHint": "Annual return defined on this asset",
       "assetReturnLabel": "Annual return in projection",
       "assetReturnHint": "Prefilled from category; adjust if this product differs (e.g. another fund or savings rate).",
+      "tracksGainLossLabel": "Ask for accumulated return when updating balances",
+      "tracksGainLossHint": "Enable for funds, pension plans or brokerage accounts where your provider shows gains/losses (Indexa, Myinvestor…).",
       "tableProvider": "Institution",
       "tablePayment": "Payment / mo",
       "tableActive": "Include in balances",
@@ -701,7 +729,7 @@
   "projection": {
     "title": "Future projection",
     "subtitle": "Month-by-month simulation with compound interest. Starts from real balances and extrapolates savings allocation inferred when you update balances.",
-    "simulationNotice": "Simulation from today — not a substitute for real history. Balances and inferred contributions update only when you tap Update balances.",
+    "simulationNotice": "Simulation from today: it does not replace your real history or predict what will happen. It uses simplified assumptions (markets, job, spending…) that may not hold — use it for guidance, not as a guarantee. Balances and inferred contributions update only when you tap Update balances.",
     "buckets": {
       "liquid": "Liquidity (bank / cash)",
       "investment": "Investments (funds and ETFs)",
@@ -796,7 +824,6 @@
     "table": {
       "scrollHint": "Swipe sideways to see all columns",
       "tooltipAria": "More about {{column}}",
-      "howItWorks": "Each month: income − spending − investment = available. Plus return on what’s already invested → that’s how your net worth grows.",
       "year": "Year",
       "yearShort": "Yr",
       "date": "Date",

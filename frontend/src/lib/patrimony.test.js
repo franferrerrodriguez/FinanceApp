@@ -9,7 +9,12 @@ import {
   resolveSnapshotDateForMonth,
 } from './patrimony.js';
 
-const asset = createAsset({ id: 'a1', name: 'Cuenta', category: 'bank' });
+const asset = createAsset({
+  id: 'a1',
+  name: 'Cuenta',
+  category: 'bank',
+  provider: 'bankinter',
+});
 const liability = createLiability({
   id: 'l1',
   name: 'Hipoteca',
@@ -39,7 +44,9 @@ const drafts = buildMonthlyCloseDrafts({
 });
 
 assert.equal(drafts.assetRows[0].value, 10000);
+assert.equal(drafts.assetRows[0].prefillSource, 'previous');
 assert.equal(drafts.liabilityRows[0].value, 80000);
+assert.equal(drafts.liabilityRows[0].prefillSource, 'previous');
 
 assert.match(resolveSnapshotDateForMonth('2026-06'), /^\d{4}-\d{2}-\d{2}$/);
 assert.equal(resolveSnapshotDateForMonth('2020-01').endsWith('-01-31'), true);

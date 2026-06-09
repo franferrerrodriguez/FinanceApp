@@ -12,6 +12,7 @@ import { TextField } from '../../../components/TextField';
 import { getAssetCategories } from '../../../lib/categoryLabels';
 import { isSavableAssetCatalog } from '../../../lib/patrimonyNames';
 import { getDefaultReturnForAssetCategory } from '../../../lib/projectionReturns';
+import { defaultTracksGainLossForCategory } from '../../../lib/monthlyCloseForm';
 import {
   SPANISH_BANK_IDS,
   SPANISH_BANK_LEGACY_LABELS,
@@ -47,6 +48,7 @@ export function AssetEditModal({
     patch({
       category,
       customAnnualReturn: getDefaultReturnForAssetCategory(category, settings),
+      tracksGainLoss: defaultTracksGainLossForCategory(category),
     });
   };
 
@@ -117,6 +119,17 @@ export function AssetEditModal({
             reserveHintSpace={false}
           />
         ) : null}
+
+        <FormCheckboxField
+          id="asset-tracks-gain-loss"
+          checked={
+            draft.tracksGainLoss ??
+            defaultTracksGainLossForCategory(draft.category)
+          }
+          onChange={(tracksGainLoss) => patch({ tracksGainLoss })}
+          label={t('balance.patrimony.tracksGainLossLabel')}
+          hint={t('balance.patrimony.tracksGainLossHint')}
+        />
 
         <TextField
           id="asset-notes"

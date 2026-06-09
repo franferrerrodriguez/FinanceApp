@@ -42,6 +42,10 @@ function mapSnapshotFromDb(row) {
     date: row.snapshot_date,
     value: Number(row.value),
     notes: row.notes ?? undefined,
+    gainLossEuros:
+      row.gain_loss_euros != null && Number.isFinite(Number(row.gain_loss_euros))
+        ? Number(row.gain_loss_euros)
+        : undefined,
   };
 }
 

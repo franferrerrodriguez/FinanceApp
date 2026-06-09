@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePrunePatrimonyDrafts } from '../../../hooks/usePrunePatrimonyDrafts';
 import { usePatrimonySave } from '../../../hooks/usePatrimonySave';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
 import {
   notifyAfterSave,
   useToast,
@@ -12,7 +11,7 @@ import { getNetWorthTone, KpiCard } from '../../../components/KpiCard';
 import { useFinanceAlerts } from '../../../hooks/useFinanceAlerts';
 import { getAssetCategories, getLiabilityCategories } from '../../../lib/categoryLabels';
 import { getCurrentMonthKey } from '../../../lib/dashboardMetrics';
-import { isMonthKey, isMonthlyCloseAlert } from '../../../lib/monthlyClose';
+import { isMonthlyCloseAlert } from '../../../lib/monthlyClose';
 import {
   countSnapshotMonthsForAsset,
   countSnapshotMonthsForLiability,
@@ -21,7 +20,6 @@ import { formatInstitutionLabel } from '../../../lib/institutions';
 import {
   createAsset,
   createLiability,
-  getActiveAssets,
   getActiveLiabilities,
   getCurrentPatrimonySummary,
   getSnapshotValueForItem,
@@ -40,15 +38,14 @@ import { ui } from '../../../lib/uiClasses';
 import { useFinanceData, usePreferences } from '../../../store/hooks';
 import {
   formatMonthKey,
-  formatMonthKeyLong,
   formatSnapshotDateLabel,
 } from '../../../utils/monthLabel';
 import { formatMoney } from '../../../utils/formatters';
 import { AssetEditModal } from './AssetEditModal';
 import { LiabilityEditModal } from './LiabilityEditModal';
 import { PatrimonyDeleteConfirmModal } from './PatrimonyDeleteConfirmModal';
-import { MonthlyCloseModal } from './MonthlyCloseModal';
 import { BalanceSetupStepBanner } from './BalanceSetupStepBanner';
+import { useRecordBalances } from './RecordBalancesProvider';
 import { BALANCE_SETUP_STEP } from '../../../lib/balanceSetupProgress';
 import {
   getLiabilityMonthlyPaymentDisplay,
@@ -63,8 +60,9 @@ import { PatrimonyHistoryTable } from './PatrimonyHistoryTable';
 export function PatrimonyPanel() {
   const { t } = useTranslation();
   const { locale } = usePreferences();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const { alerts, monthlyClose } = useFinanceAlerts();
+  const { alerts } = useFinanceAlerts();
+  const { openRecordBalances, goToPatrimonyCatalog, hasAccounts } =
+    useRecordBalances();
   const patrimonyAlerts = useMemo(
     () => alerts.filter((alert) => !isMonthlyCloseAlert(alert)),
     [alerts],
@@ -81,7 +79,6 @@ export function PatrimonyPanel() {
     updateLiability,
     removeLiability,
     applyHousingType,
-    closeMonthSnapshots,
     setLiabilityOutstandingBalance,
   } = useFinanceData();
 
@@ -90,32 +87,8 @@ export function PatrimonyPanel() {
   const { saveToCloud } = usePatrimonySave();
 
   const currentMonthKey = getCurrentMonthKey();
-  const [balancesOpen, setBalancesOpen] = useState(false);
-  const [balancesMonthKey, setBalancesMonthKey] = useState(
-    monthlyClose?.suggestedMonthKey ?? currentMonthKey,
-  );
-
-  const openRecordBalances = useCallback(
-    (monthKey) => {
-      setBalancesMonthKey(monthKey ?? monthlyClose?.suggestedMonthKey ?? currentMonthKey);
-      setBalancesOpen(true);
-    },
-    [monthlyClose?.suggestedMonthKey, currentMonthKey],
-  );
-
-  useEffect(() => {
-    const param = searchParams.get('closeMonth');
-    if (!param || !isMonthKey(param)) return;
-    openRecordBalances(param);
-    const next = new URLSearchParams(searchParams);
-    next.delete('closeMonth');
-    setSearchParams(next, { replace: true });
-  }, [searchParams, setSearchParams, openRecordBalances]);
-
   const summary = getCurrentPatrimonySummary(snapshots, currentMonthKey);
   const monthLabel = formatMonthKey(currentMonthKey, locale);
-  const hasAccounts =
-    getActiveAssets(assets).length > 0 || getActiveLiabilities(liabilities).length > 0;
 
   const hasAnyBalance = summary.hasClose;
 
@@ -179,26 +152,16 @@ export function PatrimonyPanel() {
       />
 
       <div className={`${ui.chartCard} ${ui.stackSection}`}>
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
-          <div className="min-w-0 flex-1 lg:max-w-xl">
-            <h3 className={`text-base font-semibold ${ui.heading}`}>
-              {t('balance.patrimony.title')}
-            </h3>
-            <p className={`mt-1 text-sm ${ui.text}`}>
-              {t('balance.patrimony.subtitle')}
-            </p>
-          </div>
-          <RecordBalancesAction
-            hasAccounts={hasAccounts}
-            pendingMonths={monthlyClose?.pendingMonths?.length}
-            suggestedMonthKey={monthlyClose?.suggestedMonthKey}
-            locale={locale}
-            onOpen={() => openRecordBalances()}
-            onGoToCatalog={scrollToPatrimonyCatalog}
-          />
+        <div>
+          <h3 className={`text-base font-semibold ${ui.heading}`}>
+            {t('balance.patrimony.title')}
+          </h3>
+          <p className={`mt-1 text-sm ${ui.text}`}>
+            {t('balance.patrimony.subtitle')}
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+        <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-3">
           <KpiCard
             compact
             accent
@@ -289,87 +252,6 @@ export function PatrimonyPanel() {
       </section>
 
       <PatrimonyEvolutionSection snapshots={snapshots} locale={locale} />
-
-      <MonthlyCloseModal
-        open={balancesOpen}
-        onClose={() => setBalancesOpen(false)}
-        assets={assets}
-        liabilities={liabilities}
-        snapshots={snapshots}
-        settings={settings}
-        monthKey={balancesMonthKey}
-        onMonthKeyChange={setBalancesMonthKey}
-        onConfirm={(monthKey, snaps) => {
-          closeMonthSnapshots(monthKey, snaps);
-          toast.success(t('toast.balancesSaved'));
-          requestAnimationFrame(() => {
-            document
-              .getElementById('patrimony-assets')
-              ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          });
-        }}
-      />
-    </div>
-  );
-}
-
-function RecordBalancesAction({
-  hasAccounts,
-  pendingMonths,
-  suggestedMonthKey,
-  locale,
-  onOpen,
-  onGoToCatalog,
-}) {
-  const { t } = useTranslation();
-  const currentMonthKey = getCurrentMonthKey();
-  const label =
-    pendingMonths &&
-    suggestedMonthKey &&
-    suggestedMonthKey !== currentMonthKey
-      ? t('balance.patrimony.recordBalancesFor', {
-          month: formatMonthKeyLong(suggestedMonthKey, locale),
-        })
-      : t('balance.patrimony.recordBalances');
-
-  return (
-    <div className="flex w-full min-w-0 flex-col items-stretch gap-2 lg:w-auto lg:max-w-[18rem] lg:shrink-0 lg:items-end">
-      <button
-        type="button"
-        className={`${ui.btnPrimary} w-full lg:w-auto`}
-        disabled={!hasAccounts}
-        aria-disabled={!hasAccounts}
-        aria-describedby={
-          hasAccounts ? 'record-balances-why' : 'record-balances-blocked'
-        }
-        onClick={onOpen}
-      >
-        {label}
-      </button>
-
-      {hasAccounts ? (
-        <p
-          id="record-balances-why"
-          className={`text-xs leading-snug ${ui.textMuted} lg:text-right`}
-        >
-          {t('balance.patrimony.recordBalancesWhy')}
-        </p>
-      ) : (
-        <div
-          id="record-balances-blocked"
-          role="status"
-          className="rounded-xl border border-amber-500/35 bg-amber-500/10 px-3 py-2.5 text-left text-xs leading-snug text-amber-950 dark:border-amber-500/40 dark:bg-amber-500/15 dark:text-amber-100 lg:text-right"
-        >
-          <p>{t('balance.patrimony.recordBalancesBlocked')}</p>
-          <button
-            type="button"
-            className="mt-2 font-semibold underline underline-offset-2 hover:no-underline"
-            onClick={onGoToCatalog}
-          >
-            {t('balance.patrimony.recordBalancesGoToCatalog')}
-          </button>
-        </div>
-      )}
     </div>
   );
 }
@@ -380,7 +262,9 @@ function SectionHeader({ title, subtitle, hint }) {
       <h3 className={`text-base font-semibold ${ui.heading}`}>{title}</h3>
       <p className={`mt-1 text-sm ${ui.textMuted}`}>{subtitle}</p>
       {hint ? (
-        <p className={`mt-1.5 text-xs ${ui.textMuted}`}>{hint}</p>
+        <p className={`${ui.formFieldHint} ${ui.textMuted} ${ui.formFieldHintGap}`}>
+          {hint}
+        </p>
       ) : null}
     </div>
   );
@@ -463,6 +347,7 @@ function PatrimonyAssetsSection({
         'provider',
         'notes',
         'customAnnualReturn',
+        'tracksGainLoss',
         'isActive',
       ]) {
         if (prev[key] !== asset[key]) patch[key] = asset[key];

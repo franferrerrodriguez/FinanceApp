@@ -26,12 +26,13 @@ import {
 } from '../lib/patrimonyDrafts';
 import { rebuildDerivedContributionEntries } from '../lib/deriveContributionsFromSnapshots';
 import { getDefaultReturnForAssetCategory } from '../lib/projectionReturns';
+import { defaultTracksGainLossForCategory } from '../lib/monthlyCloseForm';
 import { syncHousingSettings } from '../lib/housingLiability';
 import { deriveOnboardingResumeStep, resolveOnboardingResumeStep } from '../lib/onboardingAccess';
 import { ONBOARDING_STEP_IDS } from '../modules/onboarding/constants';
 
 export const PERSIST_STORAGE_KEY = 'financia_app_data';
-export const PERSIST_VERSION = 18;
+export const PERSIST_VERSION = 19;
 
 const MAX_ONBOARDING_STEP = ONBOARDING_STEP_IDS.length - 1;
 
@@ -329,6 +330,16 @@ export function migratePersistedState(persisted, version) {
       settings,
       next.cashflowHistory ?? [],
     );
+  }
+
+  if (version < 19) {
+    next.assets = (next.assets ?? []).map((asset) => {
+      if (asset.tracksGainLoss != null) return asset;
+      return {
+        ...asset,
+        tracksGainLoss: defaultTracksGainLossForCategory(asset.category),
+      };
+    });
   }
 
   return next;

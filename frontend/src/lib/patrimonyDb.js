@@ -23,7 +23,7 @@ export function mapLiabilityRow(liability, userId) {
 }
 
 export function mapSnapshotRow(snapshot, userId) {
-  return {
+  const row = {
     id: snapshot.id,
     user_id: userId,
     asset_id: snapshot.assetId ?? null,
@@ -32,4 +32,11 @@ export function mapSnapshotRow(snapshot, userId) {
     value: snapshot.value,
     notes: snapshot.notes ?? null,
   };
+  if (
+    snapshot.gainLossEuros != null &&
+    Number.isFinite(Number(snapshot.gainLossEuros))
+  ) {
+    row.gain_loss_euros = Number(snapshot.gainLossEuros);
+  }
+  return row;
 }

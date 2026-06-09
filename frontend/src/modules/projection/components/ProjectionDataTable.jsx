@@ -323,10 +323,7 @@ export function ProjectionDataTable() {
           </VirtualList>
         </div>
 
-        <div className={`space-y-2 border-t px-4 py-3 sm:px-5 ${ui.divider}`}>
-          <p className={`text-xs leading-relaxed ${ui.textMuted}`}>
-            {t('projection.table.howItWorks')}
-          </p>
+        <div className={`border-t px-4 py-3 sm:px-5 ${ui.divider}`}>
           <p className={`text-xs leading-snug ${ui.textMuted}`}>
             {t('projection.table.monthCount', {
               count: rows.length,

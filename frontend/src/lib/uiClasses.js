@@ -89,11 +89,15 @@ export const ui = {
     'border-emerald-500 bg-emerald-50 text-emerald-900 dark:border-emerald-500 dark:bg-emerald-950/40 dark:text-emerald-100',
   choiceChipIdle:
     'border-slate-200/90 bg-slate-100/90 text-slate-700 hover:border-slate-300 dark:border-slate-600 dark:bg-slate-800/55 dark:text-slate-300',
-  /** Two-line slots so grid columns keep inputs aligned when hints wrap. */
-  formFieldLabel:
-    'mb-1.5 block min-h-10 text-sm font-medium leading-snug line-clamp-2',
-  formFieldHint:
-    'mb-2 h-10 shrink-0 overflow-hidden text-xs leading-snug line-clamp-2',
+  /** Label + hint typography (stacked forms). */
+  formFieldLabel: 'block text-sm font-medium leading-snug',
+  formFieldHint: 'block text-xs leading-snug',
+  /** Gap label → hint, and hint → control. */
+  formFieldHintGap: 'mt-0.5',
+  formFieldHintAfter: 'mb-2',
+  /** Grid columns: reserve slots so inputs align when hints differ. */
+  formFieldLabelGridSlot: 'min-h-[2.75rem] line-clamp-2',
+  formFieldHintGridSlot: 'min-h-[2.5rem] line-clamp-2 overflow-hidden',
   formFieldControl: 'min-h-[2.75rem] shrink-0',
   btnPrimary:
     'inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 disabled:cursor-not-allowed disabled:opacity-40',

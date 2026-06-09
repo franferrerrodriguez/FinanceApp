@@ -5,6 +5,14 @@ import {
 import { calcMonthTotals, getCurrentMonthKey, getLastNMonthKeys } from './dashboardMetrics.js';
 import { SNAPSHOT_ITEM_TYPE } from './snapshotItemTypes.js';
 import {
+  findMostRecentMonthWithItem,
+  getSnapshotGainLoss,
+} from './monthlyCloseForm.js';
+import {
+  getCloseableAssets,
+  getCloseableLiabilities,
+} from './monthlyClose.js';
+import {
   getMonthEndDate,
   getTodayIsoDate,
   getSnapshotAssetId,
@@ -31,6 +39,10 @@ export function createAsset(partial = {}) {
         ? null
         : partial.customAnnualReturn,
     isActive: partial.isActive !== false,
+    tracksGainLoss:
+      partial.tracksGainLoss != null
+        ? Boolean(partial.tracksGainLoss)
+        : undefined,
   };
 }
 
@@ -68,7 +80,50 @@ export function getSnapshotValueForItem(snapshots, monthKey, item) {
   return snap != null ? Number(snap.value) : null;
 }
 
-/** Prefill close form: current month → previous month → 0. */
+function resolveCloseDraftRow(snapshots, monthKey, item, { liability = false } = {}) {
+  const itemRef = { type: item.type, id: item.id };
+  const currentRaw = getSnapshotValueForItem(snapshots, monthKey, itemRef);
+  if (currentRaw != null && Number.isFinite(currentRaw)) {
+    const value = liability ? Math.abs(currentRaw) : Math.max(0, currentRaw);
+    return {
+      value,
+      prefillSource: 'current',
+      prefillMonthKey: monthKey,
+      modified: false,
+      gainLossEuros: liability
+        ? null
+        : getSnapshotGainLoss(snapshots, monthKey, itemRef),
+      showGainLoss: false,
+    };
+  }
+
+  const prevMonthKey = findMostRecentMonthWithItem(snapshots, monthKey, itemRef);
+  if (prevMonthKey) {
+    const prevRaw = getSnapshotValueForItem(snapshots, prevMonthKey, itemRef);
+    if (prevRaw != null && Number.isFinite(prevRaw)) {
+      const value = liability ? Math.abs(prevRaw) : Math.max(0, prevRaw);
+      return {
+        value,
+        prefillSource: 'previous',
+        prefillMonthKey: prevMonthKey,
+        modified: false,
+        gainLossEuros: null,
+        showGainLoss: false,
+      };
+    }
+  }
+
+  return {
+    value: null,
+    prefillSource: 'empty',
+    prefillMonthKey: null,
+    modified: false,
+    gainLossEuros: null,
+    showGainLoss: false,
+  };
+}
+
+/** Prefill close form from selected month, else most recent prior snapshot. */
 export function buildMonthlyCloseDrafts({
   assets,
   liabilities,
@@ -76,42 +131,23 @@ export function buildMonthlyCloseDrafts({
   monthKey = getCurrentMonthKey(),
   asOfDate,
 }) {
-  const keys = getLastNMonthKeys(24);
-  const idx = keys.indexOf(monthKey);
-  const prevKey = idx > 0 ? keys[idx - 1] : null;
+  const assetRows = getCloseableAssets(assets).map((asset) => ({
+    assetId: asset.id,
+    ...resolveCloseDraftRow(snapshots, monthKey, {
+      type: SNAPSHOT_ITEM_TYPE.ASSET,
+      id: asset.id,
+    }),
+  }));
 
-  const assetRows = getActiveAssets(assets).map((asset) => {
-    let value =
-      getSnapshotValueForItem(snapshots, monthKey, {
-        type: SNAPSHOT_ITEM_TYPE.ASSET,
-        id: asset.id,
-      }) ??
-      (prevKey
-        ? getSnapshotValueForItem(snapshots, prevKey, {
-            type: SNAPSHOT_ITEM_TYPE.ASSET,
-            id: asset.id,
-          })
-        : null);
-    if (value == null || !Number.isFinite(value)) value = 0;
-    return { assetId: asset.id, value: Math.max(0, value) };
-  });
-
-  const liabilityRows = getActiveLiabilities(liabilities).map((liability) => {
-    let raw =
-      getSnapshotValueForItem(snapshots, monthKey, {
-        type: SNAPSHOT_ITEM_TYPE.LIABILITY,
-        id: liability.id,
-      }) ??
-      (prevKey
-        ? getSnapshotValueForItem(snapshots, prevKey, {
-            type: SNAPSHOT_ITEM_TYPE.LIABILITY,
-            id: liability.id,
-          })
-        : null);
-    if (raw == null || !Number.isFinite(raw)) raw = 0;
-    const amount = Math.abs(raw);
-    return { liabilityId: liability.id, value: amount };
-  });
+  const liabilityRows = getCloseableLiabilities(liabilities).map((liability) => ({
+    liabilityId: liability.id,
+    ...resolveCloseDraftRow(
+      snapshots,
+      monthKey,
+      { type: SNAPSHOT_ITEM_TYPE.LIABILITY, id: liability.id },
+      { liability: true },
+    ),
+  }));
 
   const snapshotDate = resolveSnapshotDateForMonth(monthKey, asOfDate);
 
@@ -166,6 +202,12 @@ export function buildCloseMonthSnapshots({
       assetId: row.assetId,
       snapshotDate,
       value: Math.max(0, Number(row.value) || 0),
+      gainLossEuros:
+        row.showGainLoss &&
+        row.gainLossEuros != null &&
+        Number.isFinite(Number(row.gainLossEuros))
+          ? Number(row.gainLossEuros)
+          : undefined,
     });
   }
   for (const row of liabilityRows ?? []) {

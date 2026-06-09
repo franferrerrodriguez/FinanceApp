@@ -68,6 +68,14 @@ export function parseMoneyEuros(raw) {
   return normalizeEuros(n);
 }
 
+/** Parse money input allowing negative values (gain/loss). */
+export function parseSignedMoneyEuros(raw) {
+  const cleaned = String(raw).trim().replace(',', '.');
+  const n = parseFloat(cleaned);
+  if (!Number.isFinite(n)) return null;
+  return normalizeEuros(n);
+}
+
 /**
  * Split a total in cents by integer weights (e.g. 40, 35, 15, 10).
  * Uses largest remainder so parts sum exactly to the total.

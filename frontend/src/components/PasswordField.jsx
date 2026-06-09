@@ -20,7 +20,7 @@ export function PasswordField({
   return (
     <div>
       {label ? (
-        <label htmlFor={id} className={`mb-1.5 block text-sm font-medium ${ui.textLabel}`}>
+        <label htmlFor={id} className={`${ui.formFieldLabel} ${ui.textLabel} ${ui.formFieldHintAfter}`}>
           {label}
         </label>
       ) : null}

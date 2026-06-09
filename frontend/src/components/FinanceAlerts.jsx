@@ -8,6 +8,8 @@ const severityStyles = {
     'border-red-500/30 bg-red-500/10 text-red-900 dark:border-red-500/35 dark:text-red-100',
   warn:
     'border-amber-500/30 bg-amber-500/10 text-amber-950 dark:border-amber-500/35 dark:text-amber-100',
+  info:
+    'border-sky-500/30 bg-sky-500/10 text-sky-950 dark:border-sky-500/35 dark:text-sky-100',
 };
 
 function formatAlertParams(params = {}) {

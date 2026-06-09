@@ -340,7 +340,7 @@ function AuthModalHeader({ titleId, title, subtitle, onClose, disabled, icon }) 
 function Field({ label, id, children }) {
   return (
     <div>
-      <label htmlFor={id} className={`mb-1.5 block text-sm font-medium ${ui.textLabel}`}>
+      <label htmlFor={id} className={`${ui.formFieldLabel} ${ui.textLabel} ${ui.formFieldHintAfter}`}>
         {label}
       </label>
       {children}

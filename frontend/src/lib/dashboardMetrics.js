@@ -285,7 +285,12 @@ export function getDashboardAlerts({
     variableExpenses,
   );
 
-  if (cashflow < 0) {
+  const hasOutflows =
+    monthlyInvestment > 0 || fixedExpenses + variableExpenses > 0;
+
+  if (income <= 0 && hasOutflows) {
+    alerts.push({ id: 'missing_income', severity: 'warn' });
+  } else if (cashflow < 0) {
     alerts.push({ id: 'negative_cashflow', severity: 'danger' });
   }
 

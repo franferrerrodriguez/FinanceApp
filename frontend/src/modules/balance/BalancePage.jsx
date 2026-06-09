@@ -10,6 +10,10 @@ import { UnderlineTabNav } from '../../components/UnderlineTabNav';
 import { ui } from '../../lib/uiClasses';
 import { CashflowPanel } from './components/CashflowPanel';
 import { PatrimonyPanel } from './components/PatrimonyPanel';
+import {
+  BalanceRecordBalancesSection,
+  RecordBalancesProvider,
+} from './components/RecordBalancesProvider';
 
 const TAB_PANELS = {
   [BALANCE_TAB.CASHFLOW]: CashflowPanel,
@@ -37,30 +41,34 @@ export function BalancePage() {
   });
 
   return (
-    <div className={ui.stackPage}>
-      <div>
-        <h2 className={`mb-2 text-2xl font-bold tracking-tight ${ui.heading}`}>
-          {t('balance.title')}
-        </h2>
-        <p className={`max-w-3xl text-sm leading-relaxed ${ui.text}`}>
-          {t('balance.description')}
-        </p>
-      </div>
+    <RecordBalancesProvider>
+      <div className={ui.stackPage}>
+        <div>
+          <h2 className={`mb-2 text-2xl font-bold tracking-tight ${ui.heading}`}>
+            {t('balance.title')}
+          </h2>
+          <p className={`max-w-3xl text-sm leading-relaxed ${ui.text}`}>
+            {t('balance.description')}
+          </p>
+        </div>
 
-      <UnderlineTabNav
-        tabs={balanceTabs}
-        activeId={tab}
-        onChange={setTab}
-        ariaLabel={t('balance.tabsLabel')}
-      />
+        <BalanceRecordBalancesSection />
 
-      <div
-        role="tabpanel"
-        id={`tabpanel-${tab}`}
-        aria-labelledby={`tab-${tab}`}
-      >
-        <ActivePanel />
+        <UnderlineTabNav
+          tabs={balanceTabs}
+          activeId={tab}
+          onChange={setTab}
+          ariaLabel={t('balance.tabsLabel')}
+        />
+
+        <div
+          role="tabpanel"
+          id={`tabpanel-${tab}`}
+          aria-labelledby={`tab-${tab}`}
+        >
+          <ActivePanel />
+        </div>
       </div>
-    </div>
+    </RecordBalancesProvider>
   );
 }

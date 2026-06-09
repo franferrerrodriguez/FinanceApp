@@ -57,10 +57,12 @@ export function ProjectionSettingsPanel() {
       ) : (
         <div className="mb-5 max-w-md space-y-2">
           <label className="block">
-            <span className={`mb-1.5 block text-sm font-medium ${ui.textLabel}`}>
+            <span className={`${ui.formFieldLabel} ${ui.textLabel}`}>
               {t('projection.settings.initialPatrimony')}
             </span>
-            <span className={`mb-2 block text-xs leading-snug ${ui.textMuted}`}>
+            <span
+              className={`${ui.formFieldHint} ${ui.textMuted} ${ui.formFieldHintGap} ${ui.formFieldHintAfter}`}
+            >
               {t('projection.settings.initialPatrimonyHint')}
             </span>
             <input
@@ -101,7 +103,7 @@ export function ProjectionSettingsPanel() {
       )}
 
       <label className="block max-w-xs">
-        <span className={`mb-1.5 block text-sm font-medium ${ui.textLabel}`}>
+        <span className={`${ui.formFieldLabel} ${ui.textLabel} ${ui.formFieldHintAfter}`}>
           {t('projection.settings.years')}
         </span>
         <SelectField

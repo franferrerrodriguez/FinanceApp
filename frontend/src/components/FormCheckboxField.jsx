@@ -21,9 +21,11 @@ export function FormCheckboxField({
         className={`${ui.checkbox} mt-0.5`}
       />
       <span className="min-w-0 flex-1">
-        <span className={`block text-sm leading-snug ${ui.textLabel}`}>{label}</span>
+        <span className={`${ui.formFieldLabel} ${ui.textLabel}`}>{label}</span>
         {hint ? (
-          <span className={`mt-1 block text-xs leading-relaxed ${ui.textMuted}`}>
+          <span
+            className={`${ui.formFieldHint} ${ui.textMuted} ${ui.formFieldHintGap}`}
+          >
             {hint}
           </span>
         ) : null}

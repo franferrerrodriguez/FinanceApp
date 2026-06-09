@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useToast } from '../../../context/ToastContext';
 import { EffectiveMonthSelect } from '../../../components/EffectiveMonthSelect';
+import { FormFieldFrame } from '../../../components/FormFieldFrame';
 import { BALANCE_TAB, balancePath } from '../../../lib/balanceTabs';
 import {
   BALANCE_SETUP_STEP,
@@ -294,17 +295,6 @@ export function ContributionsPanel() {
         onSave={handleModalSave}
         onDelete={handleModalDelete}
       />
-    </div>
-  );
-}
-
-function FormFieldFrame({ label, children }) {
-  return (
-    <div>
-      <label className={`mb-1.5 block text-sm font-medium ${ui.textLabel}`}>
-        {label}
-      </label>
-      {children}
     </div>
   );
 }
