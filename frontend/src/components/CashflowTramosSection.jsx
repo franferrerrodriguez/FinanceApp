@@ -26,7 +26,6 @@ export function CashflowTramosSection({
   const sorted = [...items].sort((a, b) =>
     b.effectiveFrom.localeCompare(a.effectiveFrom),
   );
-  const canDelete = items.length > 1;
 
   const openCreate = () => {
     const segment = getCurrentCashflowSegment(items) ?? settings;
@@ -63,7 +62,6 @@ export function CashflowTramosSection({
   };
 
   const handleDelete = (item) => {
-    if (!canDelete) return;
     if (modal?.mode === 'edit' && modal.id === item.id) closeModal();
     onRemove(item.id);
     toast.success(t('toast.salaryDeleted'));
@@ -87,8 +85,7 @@ export function CashflowTramosSection({
           items={sorted}
           isCurrentItem={isCurrentItem}
           onEdit={openEdit}
-          onDelete={canDelete ? handleDelete : undefined}
-          canDelete={canDelete}
+          onDelete={handleDelete}
         />
       ) : (
         <p className={`rounded-xl border border-dashed px-4 py-8 text-center text-sm ${ui.cardDashed} ${ui.text}`}>
@@ -123,7 +120,7 @@ export function CashflowTramosSection({
               )
             : false
         }
-        canDelete={canDelete}
+        canDelete
         onClose={closeModal}
         onSave={handleSave}
         onDelete={() => {

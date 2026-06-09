@@ -9,6 +9,7 @@ export function DateField({
   onChange,
   required = false,
   compact = false,
+  layout = 'stacked',
   reserveHintSpace,
   className = '',
 }) {
@@ -18,15 +19,18 @@ export function DateField({
       ? label.toLowerCase().replace(/\s+/g, '-')
       : 'date-field');
 
+  const resolvedLayout =
+    compact === true ? 'stacked' : compact === false ? 'grid' : layout;
+
   return (
     <FormFieldFrame
       label={label}
       hint={hint}
       required={required}
-      compact={compact}
-      reserveHintSpace={reserveHintSpace ?? !compact}
+      layout={resolvedLayout}
+      reserveHintSpace={reserveHintSpace ?? resolvedLayout === 'grid'}
       className={className}
-      controlClassName={compact ? '' : ui.formFieldControl}
+      controlClassName={resolvedLayout === 'grid' ? ui.formFieldControl : ''}
     >
       <input
         id={fieldId}

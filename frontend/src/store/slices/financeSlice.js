@@ -211,7 +211,6 @@ export const createFinanceSlice = (set, get) => ({
 
   removeCashflowHistoryEntry: (id) =>
     set((state) => {
-      if (state.cashflowHistory.length <= 1) return state;
       const cashflowHistory = state.cashflowHistory.filter((e) => e.id !== id);
       return {
         cashflowHistory,

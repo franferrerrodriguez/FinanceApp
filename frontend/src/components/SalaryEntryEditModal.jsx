@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { enrichCashflowEntry } from '../lib/cashflowHistory';
+import { resolveNumPagas } from '../lib/salary';
 import { ui } from '../lib/uiClasses';
 import { formatMoney } from '../utils/formatters';
 import { MoneyField } from './MoneyField';
@@ -37,7 +38,7 @@ export function SalaryEntryEditModal({
   );
 
   const preset = draft.salaryPaysPreset ?? '12';
-  const canSave = (draft.monthlyNetSalary ?? 0) > 0 && Boolean(draft.effectiveFrom);
+  const canSave = Boolean(draft.effectiveFrom);
   const patch = (p) => setDraft((prev) => ({ ...prev, ...p }));
 
   const handleSave = () => {
@@ -169,6 +170,7 @@ export function SalaryEntryEditModal({
         <p className={`text-sm ${ui.textMuted}`}>
           {t('balance.cashflow.salaryHistoryEffective', {
             amount: formatMoney(preview.monthlyNetSalaryEffective ?? 0),
+            count: resolveNumPagas(preview),
           })}
         </p>
 

@@ -11,6 +11,7 @@ export function SelectFormField({
   children,
   required = false,
   compact = false,
+  layout = 'stacked',
   className = '',
   selectClassName = '',
   disabled = false,
@@ -22,15 +23,18 @@ export function SelectFormField({
       ? label.toLowerCase().replace(/\s+/g, '-')
       : 'select-field');
 
+  const resolvedLayout =
+    compact === true ? 'stacked' : compact === false ? 'grid' : layout;
+
   return (
     <FormFieldFrame
       label={label}
       hint={hint}
       required={required}
-      compact={compact}
-      reserveHintSpace={reserveHintSpace ?? !compact}
+      layout={resolvedLayout}
+      reserveHintSpace={reserveHintSpace ?? resolvedLayout === 'grid'}
       className={className}
-      controlClassName={compact ? '' : ui.formFieldControl}
+      controlClassName={resolvedLayout === 'grid' ? ui.formFieldControl : ''}
     >
       <SelectField
         id={fieldId}

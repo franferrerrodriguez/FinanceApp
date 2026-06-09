@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   clampOnboardingStep,
-  deriveOnboardingResumeStep,
   hasCompletedWelcome,
 } from '../lib/onboardingAccess';
 import {
@@ -26,21 +25,13 @@ export function useOnboardingBootstrap() {
     return unsub;
   }, [hydrated]);
 
-  const profile = useAppStore((s) => s.profile);
-  const settings = useAppStore((s) => s.settings);
   const onboardingCompleted = useAppStore((s) => s.onboardingCompleted);
-  const onboardingStep = useAppStore((s) => s.onboardingStep);
 
   useEffect(() => {
     if (!hydrated || onboardingCompleted) return;
-
-    const derived = deriveOnboardingResumeStep(settings, profile);
-    if (onboardingStep !== derived) {
-      useAppStore.setState({ onboardingStep: derived });
-    }
-
     if (!pathname.startsWith('/onboarding')) return;
 
+    const { settings, profile } = useAppStore.getState();
     const urlStep = onboardingStepFromPathname(pathname);
     if (urlStep === null) return;
 
@@ -53,13 +44,5 @@ export function useOnboardingBootstrap() {
     if (!hasCompletedWelcome(profile) && urlStep > 0) {
       navigate('/onboarding', { replace: true });
     }
-  }, [
-    pathname,
-    navigate,
-    hydrated,
-    profile,
-    settings,
-    onboardingCompleted,
-    onboardingStep,
-  ]);
+  }, [pathname, navigate, hydrated, onboardingCompleted]);
 }

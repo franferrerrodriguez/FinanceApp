@@ -13,7 +13,6 @@ export function IncomeStep({ onBack, onNext }) {
   const { settings, setSettings } = useSettings();
 
   const total = calcTotalIncome(settings);
-  const canContinue = total > 0;
 
   return (
     <>
@@ -35,8 +34,8 @@ export function IncomeStep({ onBack, onNext }) {
             hint={t('balance.cashflow.salaryNormalHint')}
             value={settings.monthlyNetSalary}
             onChange={(v) => setSettings({ monthlyNetSalary: v })}
-            required
             fullWidth
+            layout="grid"
           />
           <MoneyField
             id="other-monthly-income"
@@ -45,6 +44,7 @@ export function IncomeStep({ onBack, onNext }) {
             value={settings.otherMonthlyIncome}
             onChange={(v) => setSettings({ otherMonthlyIncome: v })}
             fullWidth
+            layout="grid"
           />
         </div>
         <SalaryFields
@@ -60,11 +60,7 @@ export function IncomeStep({ onBack, onNext }) {
         />
       </div>
 
-      <OnboardingActions
-        onBack={onBack}
-        onNext={onNext}
-        nextDisabled={!canContinue}
-      />
+      <OnboardingActions onBack={onBack} onNext={onNext} />
     </>
   );
 }

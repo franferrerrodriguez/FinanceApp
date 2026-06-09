@@ -1,9 +1,6 @@
 import { useEffect } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
-import {
-  clampOnboardingStep,
-  deriveOnboardingResumeStep,
-} from '../../lib/onboardingAccess';
+import { clampOnboardingStep } from '../../lib/onboardingAccess';
 import { useOnboardingState, useProfile, useSettings } from '../../store/hooks';
 import { StepHeader } from './components/StepHeader';
 import { useOnboardingRouteGuard } from './hooks/useOnboardingRouteGuard';
@@ -23,7 +20,7 @@ function scrollOnboardingToTop() {
 export function OnboardingStepper() {
   const navigate = useNavigate();
   const { stepSlug } = useParams();
-  const { step, setStep, complete } = useOnboardingState();
+  const { setStep, complete } = useOnboardingState();
   const { settings } = useSettings();
   const { profile } = useProfile();
 
@@ -37,24 +34,8 @@ export function OnboardingStepper() {
 
   useEffect(() => {
     if (stepFromUrl === null) return;
-    if (allowedStep !== stepFromUrl) return;
-    if (step !== allowedStep) {
-      setStep(allowedStep);
-    }
-  }, [stepFromUrl, allowedStep, step, setStep]);
-
-  useEffect(() => {
-    if (stepFromUrl === null) return;
     scrollOnboardingToTop();
   }, [stepSlug, stepFromUrl]);
-
-  useEffect(() => {
-    if (stepSlug) return;
-    const resumeStep = deriveOnboardingResumeStep(settings, profile);
-    if (resumeStep > 0) {
-      navigate(onboardingPathForStep(resumeStep), { replace: true });
-    }
-  }, [stepSlug, settings, profile, navigate]);
 
   if (stepFromUrl === null) {
     return <Navigate to="/onboarding" replace />;
@@ -65,11 +46,15 @@ export function OnboardingStepper() {
   }
 
   const goForward = (next) => {
+    setStep(next);
     navigate(onboardingPathForStep(next));
   };
 
   const goBack = () => {
-    navigate(-1);
+    if (allowedStep <= 0) return;
+    const prev = allowedStep - 1;
+    setStep(prev);
+    navigate(onboardingPathForStep(prev));
   };
 
   const handleFinish = () => {

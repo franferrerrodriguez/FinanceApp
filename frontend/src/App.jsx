@@ -14,12 +14,20 @@ import { BalancePage } from './modules/balance/BalancePage';
 import { DashboardPage } from './modules/dashboard/DashboardPage';
 import { OnboardingGate } from './modules/onboarding/OnboardingGate';
 import { ProjectionPage } from './modules/projection/ProjectionPage';
-import { useOnboardingState } from './store/hooks';
+import { getOnboardingEntryPath } from './lib/onboardingAccess';
+import { useOnboardingState, useProfile, useSettings } from './store/hooks';
 
 function HomeRedirect() {
   const { completed: onboardingCompleted } = useOnboardingState();
+  const { settings } = useSettings();
+  const { profile } = useProfile();
+
+  if (onboardingCompleted) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
-    <Navigate to={onboardingCompleted ? '/dashboard' : '/onboarding'} replace />
+    <Navigate to={getOnboardingEntryPath(settings, profile)} replace />
   );
 }
 

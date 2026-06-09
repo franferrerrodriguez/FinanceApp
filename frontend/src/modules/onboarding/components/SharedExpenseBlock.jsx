@@ -56,9 +56,8 @@ export function SharedExpenseBlock({
       {shared ? (
         <div className={`space-y-2 border-t pt-3 ${ui.divider}`}>
           <FormFieldFrame
-            compact
+            layout="stacked"
             label={t('onboarding.expenses.yourSharePercent')}
-            controlClassName=""
           >
             <div className="flex items-center gap-3">
               <SharePercentInput

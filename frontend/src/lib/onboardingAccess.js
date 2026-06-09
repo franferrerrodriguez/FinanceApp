@@ -32,16 +32,15 @@ export function hasCompletedWelcome(profile) {
  */
 export function getMaxAccessibleOnboardingStep(settings, profile) {
   if (!hasCompletedWelcome(profile)) return 0;
-  if (calcTotalIncome(settings) <= 0) return 1;
   return 3;
 }
 
 /** Continue-from step based on saved profile/income/expenses — not stored onboardingStep. */
 export function deriveOnboardingResumeStep(settings, profile) {
   if (!hasCompletedWelcome(profile)) return 0;
-  if (calcTotalIncome(settings) <= 0) return 1;
-  if (!calcHasAnyExpense(settings)) return 2;
-  return 3;
+  if (calcHasAnyExpense(settings)) return 3;
+  if (calcTotalIncome(settings) > 0) return 2;
+  return 1;
 }
 
 export function clampOnboardingStep(requestedStep, settings, profile) {
@@ -51,9 +50,13 @@ export function clampOnboardingStep(requestedStep, settings, profile) {
   return Math.min(step, max);
 }
 
-/** Resume step from profile/income/expenses — ignores stale stored onboardingStep. */
-export function resolveOnboardingResumeStep(_storedStep, settings, profile) {
-  return deriveOnboardingResumeStep(settings, profile);
+/** Resume step from profile/income/expenses; stored step only advances, never skips profile. */
+export function resolveOnboardingResumeStep(storedStep, settings, profile) {
+  const derived = deriveOnboardingResumeStep(settings, profile);
+  const stored = Number(storedStep);
+  if (!Number.isFinite(stored) || stored < 0) return derived;
+  const max = getMaxAccessibleOnboardingStep(settings, profile);
+  return Math.min(Math.max(derived, stored), max);
 }
 
 export function getOnboardingEntryPath(settings, profile, storedStep = 0) {

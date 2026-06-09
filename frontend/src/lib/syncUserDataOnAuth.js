@@ -11,6 +11,7 @@ export function hasLocalDataToMigrate(state) {
   if (!s) return false;
   return (
     (s.monthlyNetSalary ?? 0) > 0 ||
+    (s.otherMonthlyIncome ?? 0) > 0 ||
     (state.assets?.length ?? 0) > 0 ||
     (state.annualExpenses?.length ?? 0) > 0 ||
     (state.cashflowHistory?.length ?? 0) > 0

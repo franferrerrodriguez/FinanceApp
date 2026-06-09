@@ -1,8 +1,9 @@
 import { ui } from '../lib/uiClasses';
 
 /**
- * Shared label + hint + control slot so grid columns align across forms.
- * Label and hint use fixed two-line height so wrapped text does not shift inputs.
+ * Label + hint + control.
+ * - stacked (default): tight vertical rhythm for forms and sections.
+ * - grid: fixed label/hint slots so inputs align in multi-column grids.
  */
 export function FormFieldFrame({
   label,
@@ -10,33 +11,33 @@ export function FormFieldFrame({
   required = false,
   children,
   className = '',
-  controlClassName = ui.formFieldControl,
-  /** When false, no hint row (use for stacked forms; avoids empty spacer in grids). */
+  controlClassName = '',
+  layout = 'stacked',
+  /** @deprecated Use layout="grid" */
+  compact = undefined,
+  /** Grid only: reserve hint row when hint is empty */
   reserveHintSpace = true,
-  /** Stacked forms (modals): tight label/hint without grid alignment slots. */
-  compact = false,
 }) {
-  const showHintRow = !compact && (reserveHintSpace || hint);
-  const showHint = compact ? Boolean(hint) : showHintRow;
+  const resolvedLayout =
+    compact === true ? 'stacked' : compact === false ? 'grid' : layout;
+  const isGrid = resolvedLayout === 'grid';
 
   return (
     <div className={`flex min-w-0 flex-col ${className}`}>
       <span
         className={
-          compact
-            ? `mb-1 block text-sm font-medium leading-snug ${ui.textLabel}`
-            : `block text-sm font-medium leading-snug ${ui.textLabel} ${
-                showHintRow ? ui.formFieldLabel : 'mb-1.5'
+          isGrid
+            ? `block text-sm font-medium leading-snug ${ui.textLabel} ${
+                reserveHintSpace || hint ? ui.formFieldLabel : 'mb-1.5'
               }`
+            : `mb-1 block text-sm font-medium leading-snug ${ui.textLabel}`
         }
       >
         {label}
         {required ? <span className="text-emerald-500"> *</span> : null}
       </span>
-      {showHint ? (
-        compact ? (
-          <p className={`mb-1.5 text-xs leading-relaxed ${ui.textMuted}`}>{hint}</p>
-        ) : (
+      {isGrid ? (
+        reserveHintSpace || hint ? (
           <p
             className={`${ui.formFieldHint} ${ui.textMuted} ${hint ? '' : 'invisible'}`}
             aria-hidden={!hint}
@@ -44,9 +45,11 @@ export function FormFieldFrame({
           >
             {hint || '\u00a0'}
           </p>
-        )
+        ) : null
+      ) : hint ? (
+        <p className={`mb-2 text-xs leading-relaxed ${ui.textMuted}`}>{hint}</p>
       ) : null}
-      <div className={compact ? '' : controlClassName}>{children}</div>
+      <div className={controlClassName || undefined}>{children}</div>
     </div>
   );
 }

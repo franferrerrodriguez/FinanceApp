@@ -25,7 +25,6 @@ export function SalaryHistoryTable({
   isCurrentItem,
   onEdit,
   onDelete,
-  canDelete,
 }) {
   const { t } = useTranslation();
   const { locale } = usePreferences();
@@ -116,7 +115,7 @@ export function SalaryHistoryTable({
                       >
                         {t('balance.patrimony.editRow')}
                       </button>
-                      {canDelete && onDelete ? (
+                      {onDelete ? (
                         <button
                           type="button"
                           onClick={() => onDelete(item)}

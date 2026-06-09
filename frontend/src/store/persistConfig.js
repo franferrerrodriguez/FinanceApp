@@ -27,7 +27,7 @@ import {
 import { rebuildDerivedContributionEntries } from '../lib/deriveContributionsFromSnapshots';
 import { getDefaultReturnForAssetCategory } from '../lib/projectionReturns';
 import { syncHousingSettings } from '../lib/housingLiability';
-import { deriveOnboardingResumeStep } from '../lib/onboardingAccess';
+import { deriveOnboardingResumeStep, resolveOnboardingResumeStep } from '../lib/onboardingAccess';
 import { ONBOARDING_STEP_IDS } from '../modules/onboarding/constants';
 
 export const PERSIST_STORAGE_KEY = 'financia_app_data';
@@ -114,7 +114,8 @@ export function mergePersistedState(persisted, current, options = {}) {
     liabilities,
     snapshots,
     profile: persisted.profile ?? current.profile,
-    onboardingStep: deriveOnboardingResumeStep(
+    onboardingStep: resolveOnboardingResumeStep(
+      persisted.onboardingStep ?? current.onboardingStep,
       settings,
       persisted.profile ?? current.profile,
     ),
@@ -343,10 +344,14 @@ function calcHasAnyExpense(settings) {
   );
 }
 
-/** After rehydrate, drop stored step if profile/income do not allow it. */
+/** After rehydrate, align stored step with profile/income/expenses progress. */
 export function onRehydrateOnboardingState(state) {
   if (!state) return state;
-  const step = deriveOnboardingResumeStep(state.settings, state.profile);
+  const step = resolveOnboardingResumeStep(
+    state.onboardingStep,
+    state.settings,
+    state.profile,
+  );
   if (step === state.onboardingStep) return state;
   return { ...state, onboardingStep: step };
 }

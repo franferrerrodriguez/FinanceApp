@@ -19,6 +19,7 @@ export function TextField({
   max,
   narrow = false,
   compact = false,
+  layout = 'stacked',
   reserveHintSpace,
   className = '',
   describedBy,
@@ -33,15 +34,18 @@ export function TextField({
     narrow ? ui.inputNarrow : ''
   } w-full`;
 
+  const resolvedLayout =
+    compact === true ? 'stacked' : compact === false ? 'grid' : layout;
+
   return (
     <FormFieldFrame
       label={label}
       hint={hint}
       required={required}
-      compact={compact}
-      reserveHintSpace={reserveHintSpace ?? !compact}
+      layout={resolvedLayout}
+      reserveHintSpace={reserveHintSpace ?? resolvedLayout === 'grid'}
       className={className}
-      controlClassName={compact ? '' : ui.formFieldControl}
+      controlClassName={resolvedLayout === 'grid' ? ui.formFieldControl : ''}
     >
       <input
         id={fieldId}

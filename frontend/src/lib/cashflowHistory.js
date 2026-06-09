@@ -221,30 +221,35 @@ export function getCashflowTotalsForDate(settings, cashflowHistory, date = new D
   return { income, fixed, leisure, investment, savings, savingsRate, resolved };
 }
 
-/** Mirror the current tramo into settings without zeroing salary or unrelated fields. */
+/** Mirror the current tramo into settings (including zero salary / empty history). */
 export function syncSettingsFromCashflowHistory(settings, cashflowHistory) {
   const segment = getCurrentCashflowSegment(cashflowHistory);
-  if (!segment) return settings;
+  if (!segment) {
+    return enrichSettingsWithSalary(
+      {
+        monthlyNetSalary: 0,
+        salaryPaysPreset: settings?.salaryPaysPreset ?? '12',
+        numPagas: settings?.numPagas ?? 12,
+      },
+      settings ?? {},
+    );
+  }
 
   const expenseOverlay = Object.fromEntries(
     Object.entries(segment.expenses ?? {}).filter(([, value]) => value !== undefined),
   );
   let next = { ...settings, ...expenseOverlay };
 
-  if ((segment.monthlyNetSalary ?? 0) > 0) {
-    next = enrichSettingsWithSalary(
-      {
-        monthlyNetSalary: segment.monthlyNetSalary,
-        salaryPaysPreset: segment.salaryPaysPreset ?? '12',
-        numPagas: segment.numPagas ?? 12,
-      },
-      next,
-    );
-  }
+  next = enrichSettingsWithSalary(
+    {
+      monthlyNetSalary: segment.monthlyNetSalary ?? 0,
+      salaryPaysPreset: segment.salaryPaysPreset ?? '12',
+      numPagas: segment.numPagas ?? 12,
+    },
+    next,
+  );
 
-  if ((segment.otherMonthlyIncome ?? 0) > 0) {
-    next = { ...next, otherMonthlyIncome: segment.otherMonthlyIncome };
-  }
+  next.otherMonthlyIncome = segment.otherMonthlyIncome ?? 0;
 
   return next;
 }

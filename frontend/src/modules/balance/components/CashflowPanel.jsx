@@ -42,18 +42,11 @@ export function CashflowPanel() {
     addAnnualExpense,
     updateAnnualExpense,
     removeAnnualExpense,
-    ensureCurrentCashflowTramo,
     addCashflowHistoryEntry,
     updateCashflowHistoryEntry,
     removeCashflowHistoryEntry,
   } = useFinanceData();
   const { alerts } = useFinanceAlerts();
-
-  useEffect(() => {
-    if (cashflowHistory.length > 0) return;
-    ensureCurrentCashflowTramo();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- bootstrap once
-  }, [cashflowHistory.length, ensureCurrentCashflowTramo]);
 
   const totals = useMemo(
     () => getCashflowTotalsForDate(settings, cashflowHistory, new Date()),

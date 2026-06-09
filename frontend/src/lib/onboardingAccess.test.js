@@ -13,6 +13,10 @@ assert.equal(hasCompletedWelcome({ name: 'Ana', age: 30 }), true);
 
 assert.equal(getMaxAccessibleOnboardingStep({}, null), 0);
 assert.equal(
+  getMaxAccessibleOnboardingStep({}, { name: 'Ana', age: 30 }),
+  3,
+);
+assert.equal(
   getMaxAccessibleOnboardingStep(
     { monthlyNetSalary: 2000, monthlyNetSalaryEffective: 2000 },
     { name: 'Ana', age: 30 },
@@ -27,8 +31,23 @@ assert.equal(
 );
 
 assert.equal(deriveOnboardingResumeStep({}, null), 0);
+assert.equal(
+  deriveOnboardingResumeStep({}, { name: 'Ana', age: 30 }),
+  1,
+);
+assert.equal(
+  resolveOnboardingResumeStep(2, {}, { name: 'Ana', age: 30 }),
+  2,
+);
 assert.equal(resolveOnboardingResumeStep(2, {}, null), 0);
-assert.equal(resolveOnboardingResumeStep(2, { monthlyNetSalaryEffective: 2000 }, { name: 'Ana', age: 30 }), 2);
+assert.equal(
+  resolveOnboardingResumeStep(
+    2,
+    { monthlyNetSalaryEffective: 2000 },
+    { name: 'Ana', age: 30 },
+  ),
+  2,
+);
 assert.equal(getOnboardingEntryPath({}, null, 2), '/onboarding');
 assert.equal(
   getOnboardingEntryPath(

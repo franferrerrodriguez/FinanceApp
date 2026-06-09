@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { FormCheckboxField } from './FormCheckboxField';
 import { FormSection } from './FormSection';
+import { FormSectionHeader } from './FormSectionHeader';
 import { getEffectiveBudgetInvestment } from '../lib/calculations';
-import { ui } from '../lib/uiClasses';
 import { MoneyField } from './MoneyField';
 
 export function PayYourselfFirstBlock({ settings, setSettings }) {
@@ -12,14 +12,10 @@ export function PayYourselfFirstBlock({ settings, setSettings }) {
 
   return (
     <FormSection>
-      <div>
-        <p className={`text-sm font-medium ${ui.textLabel}`}>
-          {t('balance.cashflow.investmentsTitle')}
-        </p>
-        <p className={`mt-0.5 text-sm italic ${ui.accentSoft}`}>
-          {t('balance.cashflow.investmentsTagline')}
-        </p>
-      </div>
+      <FormSectionHeader
+        title={t('balance.cashflow.investmentsTitle')}
+        accent={t('balance.cashflow.investmentsTagline')}
+      />
 
       <MoneyField
         id="budget-investment"

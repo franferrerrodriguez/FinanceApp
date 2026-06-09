@@ -110,7 +110,19 @@ const synced = syncSettingsFromCashflowHistory(
     },
   ],
 );
-assert.equal(synced.monthlyNetSalary, 3000);
+assert.equal(synced.monthlyNetSalary, 0);
 assert.equal(synced.mortgageRentTotal, 0);
+
+assert.equal(
+  syncSettingsFromCashflowHistory(settings, []).monthlyNetSalary,
+  0,
+);
+assert.equal(
+  syncSettingsFromCashflowHistory(
+    { ...settings, otherMonthlyIncome: 400 },
+    [],
+  ).otherMonthlyIncome,
+  400,
+);
 
 console.log('cashflowHistory.test.js: ok');

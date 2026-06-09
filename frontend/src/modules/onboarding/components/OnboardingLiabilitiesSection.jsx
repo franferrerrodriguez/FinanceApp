@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { FormSectionHeader } from '../../../components/FormSectionHeader';
 import { useHousingLiability } from '../../../hooks/useHousingLiability';
 import { getLiabilityCategories } from '../../../lib/categoryLabels';
 import {
@@ -99,14 +100,10 @@ export function OnboardingLiabilitiesSection() {
 
   return (
     <section className={`${ui.block} space-y-3 p-4`}>
-      <div>
-        <h3 className={`text-sm font-semibold ${ui.heading}`}>
-          {t('onboarding.expenses.liabilitiesTitle')}
-        </h3>
-        <p className={`mt-1 text-xs ${ui.textMuted}`}>
-          {t('onboarding.expenses.liabilitiesHint')}
-        </p>
-      </div>
+      <FormSectionHeader
+        title={t('onboarding.expenses.liabilitiesTitle')}
+        hint={t('onboarding.expenses.liabilitiesHint')}
+      />
 
       <div
         className="flex gap-2"

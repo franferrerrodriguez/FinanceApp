@@ -38,8 +38,8 @@ export function SalaryFields({
 
       <FormFieldFrame
         label={t('balance.cashflow.salaryPaysLabel')}
-        reserveHintSpace={false}
-        controlClassName=""
+        hint={t('balance.cashflow.salaryPaysHint')}
+        layout="stacked"
       >
         <div className="flex flex-wrap gap-2">
           {PAY_PRESETS.map((value) => (
@@ -83,27 +83,16 @@ export function SalaryFields({
           min={1}
           max={24}
           narrow
-          compact
+          layout="stacked"
         />
       ) : null}
 
       <p className={`text-xs leading-relaxed ${ui.textMuted}`}>
         {t('balance.cashflow.salaryEffectiveHint', {
           amount: formatMoney(effective),
+          count: numPagas,
         })}
       </p>
-
-      {preset === '14' ? (
-        <p className={`text-xs leading-relaxed ${ui.textMuted}`}>
-          {t('balance.cashflow.salaryFourteenNote')}
-        </p>
-      ) : null}
-
-      {preset === 'other' && numPagas !== 12 ? (
-        <p className={`text-xs leading-relaxed ${ui.textMuted}`}>
-          {t('balance.cashflow.salaryOtherNote', { count: numPagas })}
-        </p>
-      ) : null}
     </div>
   );
 }

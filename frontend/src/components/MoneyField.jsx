@@ -15,6 +15,7 @@ export function MoneyField({
   id,
   className = '',
   compact = false,
+  layout = 'stacked',
   fullWidth = false,
   disabled = false,
   reserveHintSpace,
@@ -45,30 +46,17 @@ export function MoneyField({
     />
   );
 
-  const hintSpace = reserveHintSpace ?? !compact;
-
-  if (compact) {
-    return (
-      <FormFieldFrame
-        label={labelNode}
-        hint={hint}
-        required={required}
-        compact
-        className={className}
-      >
-        {input}
-      </FormFieldFrame>
-    );
-  }
+  const hintSpace = reserveHintSpace ?? layout === 'grid';
 
   return (
     <FormFieldFrame
       label={labelNode}
       hint={hint}
       required={required}
+      layout={layout}
       className={className}
       reserveHintSpace={hintSpace}
-      controlClassName={ui.formFieldControl}
+      controlClassName={layout === 'grid' ? ui.formFieldControl : ''}
     >
       {input}
     </FormFieldFrame>

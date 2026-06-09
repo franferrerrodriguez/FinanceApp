@@ -13,6 +13,7 @@ export function PercentField({
   step = 0.1,
   nullable = false,
   compact = false,
+  layout = 'stacked',
   reserveHintSpace,
   className = '',
 }) {
@@ -22,16 +23,19 @@ export function PercentField({
       ? label.toLowerCase().replace(/\s+/g, '-')
       : 'percent-field');
 
+  const resolvedLayout =
+    compact === true ? 'stacked' : compact === false ? 'grid' : layout;
+
   const display = pctToDisplay(value);
 
   return (
     <FormFieldFrame
       label={label}
       hint={hint}
-      compact={compact}
-      reserveHintSpace={reserveHintSpace ?? !compact}
+      layout={resolvedLayout}
+      reserveHintSpace={reserveHintSpace ?? resolvedLayout === 'grid'}
       className={className}
-      controlClassName={compact ? '' : ui.formFieldControl}
+      controlClassName={resolvedLayout === 'grid' ? ui.formFieldControl : ''}
     >
       <div className="relative inline-block w-full max-w-[5.5rem] shrink-0">
         <input
