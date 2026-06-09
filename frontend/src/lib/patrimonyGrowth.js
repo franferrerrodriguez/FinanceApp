@@ -2,10 +2,7 @@ import {
   buildNetWorthHistory,
   groupSnapshotsByMonth,
 } from './dashboardMetrics.js';
-
-function roundMoney(value) {
-  return Math.round((value ?? 0) * 100) / 100;
-}
+import { roundMoney } from './money.js';
 
 /**
  * Summarizes observed net-worth growth from monthly balance snapshots (real data only).

@@ -1,29 +1,40 @@
 import {
   getSnapshotAssetId,
   getSnapshotLiabilityId,
+  getSnapshotMonthKey,
 } from './snapshotUtils.js';
 import { mapSnapshotRow } from './patrimonyDb.js';
 
-/** Natural key for monthly_snapshots unique constraints. */
+/** Natural key: one snapshot per asset/liability per calendar month. */
 export function snapshotNaturalKey(snap) {
-  const date = String(snap?.snapshotDate ?? snap?.snapshot_date ?? '').slice(
-    0,
-    10,
-  );
+  const month = getSnapshotMonthKey(snap);
   const assetId = getSnapshotAssetId(snap);
   const liabilityId = getSnapshotLiabilityId(snap);
-  if (assetId && date) return `a:${assetId}:${date}`;
-  if (liabilityId && date) return `l:${liabilityId}:${date}`;
+  if (assetId && month) return `a:${assetId}:${month}`;
+  if (liabilityId && month) return `l:${liabilityId}:${month}`;
   return snap?.id ? `id:${snap.id}` : null;
 }
 
-/** One row per asset/liability + date (last wins). Fixes duplicate-id cloud conflicts. */
+function snapshotDateValue(snap) {
+  return String(snap?.snapshotDate ?? snap?.snapshot_date ?? '').slice(0, 10);
+}
+
+function pickPreferredSnapshot(prev, next) {
+  const prevDate = snapshotDateValue(prev);
+  const nextDate = snapshotDateValue(next);
+  const preferred = nextDate >= prevDate ? next : prev;
+  const other = preferred === next ? prev : next;
+  return { ...preferred, id: preferred.id ?? other.id };
+}
+
+/** One row per asset/liability + month (latest date wins). */
 export function dedupeSnapshots(snapshots = []) {
   const byKey = new Map();
   for (const snap of snapshots) {
     const key = snapshotNaturalKey(snap);
     if (!key) continue;
-    byKey.set(key, snap);
+    const prev = byKey.get(key);
+    byKey.set(key, prev ? pickPreferredSnapshot(prev, snap) : snap);
   }
   return [...byKey.values()];
 }
@@ -35,7 +46,7 @@ export async function upsertSnapshotsToSupabase(supabase, snapshots, userId) {
 
   if (assetRows.length) {
     const { error } = await supabase.from('monthly_snapshots').upsert(assetRows, {
-      onConflict: 'asset_id,snapshot_date',
+      onConflict: 'id',
     });
     if (error) throw error;
   }
@@ -44,7 +55,7 @@ export async function upsertSnapshotsToSupabase(supabase, snapshots, userId) {
     const { error } = await supabase
       .from('monthly_snapshots')
       .upsert(liabilityRows, {
-        onConflict: 'liability_id,snapshot_date',
+        onConflict: 'id',
       });
     if (error) throw error;
   }

@@ -247,6 +247,24 @@
       "monthlyChange": "Monthly change"
     },
     "alertsTitle": "Alerts",
+    "diagnosis": {
+      "title": "Financial diagnosis",
+      "subtitle": "Personalized observations based on your real data.",
+      "viewAction": "Learn more",
+      "actionUpdateBalances": "Update balances →",
+      "actionReviewPatrimony": "View net worth →",
+      "actionViewProjection": "View projection →",
+      "actionReviewBudget": "Review budget →",
+      "items": {
+        "stale_balances": "{{count}} months with incomplete balances — your projection and net worth may be outdated.",
+        "emergency_fund_covered": "Emergency fund covered ✓ ({{months}} months of expenses).",
+        "emergency_fund_excess": "Emergency fund covered ✓ — you could move {{amount}} from cash to investments.",
+        "emergency_fund_gap": "Your cushion covers {{monthsCovered}} months; target is {{monthsTarget}}. Short by {{shortfall}}.",
+        "investment_rate_strong": "Your investment rate is {{rate}} — above the {{benchmark}} reference. To reach FIRE in {{years}} years, keep it up.",
+        "investment_rate_fire": "You invest {{rate}} of income. At this pace, FIRE could arrive in about {{years}} years.",
+        "low_investment_high_savings": "You save {{savingsRate}} but invest only {{investmentRate}}. See if you can allocate more to investments."
+      }
+    },
     "alerts": {
       "negative_cashflow": "Your expenses exceed your income this month.",
       "missing_income": "You haven't set net income for this month. Edit your salary under «Salary & income» so summaries and alerts make sense.",
@@ -319,7 +337,11 @@
       "contributions": "Contributions",
       "contributionsShort": "Contrib.",
       "patrimony": "Assets & liabilities",
-      "patrimonyShort": "Assets"
+      "patrimonyShort": "Assets",
+      "mortgage": "Mortgage repayment",
+      "mortgageShort": "Mortgage",
+      "analysis": "Analysis",
+      "analysisShort": "Analysis"
     },
     "setup": {
       "title": "Set up your net worth",
@@ -378,6 +400,7 @@
       "housingMortgageName": "Mortgage",
       "housingDebtTitle": "Outstanding mortgage principal",
       "housingDebtMissing": "Pending — update balances",
+      "housingDebtShareHint": "Your share: {{share}} ({{percent}}%)",
       "housingDebtAction": "Update balances",
       "tramosTitle": "Salary and income",
       "tramosSubtitle": "Your situation today. If salary or paychecks change, add an entry with the month it starts.",
@@ -542,6 +565,10 @@
       "closeHousingMortgageQuota": "Your Budget payment is {{payment}}/month — do not enter that here.",
       "closeHousingMortgageQuotaMissing": "Set the payment under Budget → Housing. Here enter the total you still owe the bank.",
       "closeHousingMortgageHint": "Enter how much you still owe in total today. You’ll find it on your mortgage statement; it drops slowly each month.",
+      "closeHousingMortgageSharedHint": "Enter total outstanding principal. Split uses the same % as Budget → Housing.",
+      "closeHousingMortgageSharedShort": "Total outstanding principal (not the payment)",
+      "closeHousingMortgageSharePreview": "Your share: {{share}} ({{percent}}%)",
+      "closeHousingMortgageShort": "Total still owed to the bank (not the monthly payment)",
       "closeConfirm": "Save close",
       "closeMortgagePrevHint": "Last month: {{prev}} — drops ~{{drop}}/mo (estimate)",
       "closePrefillHint": "Same as {{month}}",
@@ -581,6 +608,8 @@
       "tracksGainLossHint": "Enable for funds, pension plans or brokerage accounts where your provider shows gains/losses (Indexa, Myinvestor…).",
       "tableProvider": "Institution",
       "tablePayment": "Payment / mo",
+      "tablePaymentFull": "Full payment: {{amount}}",
+      "tableBalanceTotal": "Total: {{total}}",
       "tableActive": "Include in balances",
       "editRow": "Edit",
       "deleteRow": "Delete",
@@ -609,7 +638,8 @@
       "liabilitiesTitle": "Liabilities",
       "liabilitiesSubtitle": "Monthly payment (expense) and outstanding balance. You update the balance with Update balances — the app does not calculate amortization.",
       "liabilitiesEmpty": "No liabilities registered.",
-      "monthlyPaymentMortgageHint": "Mortgage payment is edited under Budget → Housing.",
+      "monthlyPaymentMortgageHint": "Payment is edited under Budget → Housing.",
+      "monthlyPaymentSharePreview": "Your budget share: {{share}} ({{percent}}%)",
       "addFirstLiability": "Add first liability",
       "addLiability": "Add liability",
       "addAnotherLiability": "Add another liability",
@@ -629,7 +659,10 @@
       "monthlyPayment": "Monthly payment (€)",
       "monthlyPaymentHint": "Monthly payment (budget expense). Not the principal you pay down.",
       "outstandingBalance": "Outstanding balance (€)",
+      "outstandingBalanceTotal": "Total outstanding principal (€)",
       "outstandingBalanceHint": "How much you owe today. Also updated with Update balances.",
+      "outstandingBalanceSharedConfigHint": "Split uses the same % as Budget → Housing.",
+      "outstandingBalanceSharePreview": "Your share: {{share}} ({{percent}}%)",
       "interestRate": "Interest rate (%)",
       "interestRateHint": "Optional; for future amortization",
       "realDataBadge": "Real data",
@@ -648,6 +681,72 @@
       "historyEmpty": "Update balances for at least one month to see the detail table.",
       "historyScrollHint": "Swipe right: saved balances appear in the latest month column (e.g. June)",
       "historyRow": "Account / debt"
+    },
+    "amortization": {
+      "title": "Early mortgage repayment",
+      "subtitle": "Simulate how much interest and time you save by repaying mortgage principal early. Fields are prefilled and you can adjust them.",
+      "empty": "You don't have a mortgage registered. Add one under Assets & liabilities to use this calculator.",
+      "goToPatrimony": "Go to Assets & liabilities →",
+      "mortgageData": "Mortgage details",
+      "simulateSection": "Simulate scenario",
+      "fullMonthlyPayment": "Full monthly payment (€)",
+      "fullMonthlyPaymentHint": "Use the amount on your bank receipt (not budget estimate if it differs).",
+      "yourShareHint": "Your budget share: {{amount}} ({{percent}}%)",
+      "fullCapital": "Total outstanding principal (€)",
+      "yourShareCapital": "Your share of principal (€)",
+      "yourShareCapitalHint": "Your share: {{amount}} ({{percent}}%)",
+      "missingPayment": "Enter the bank's full monthly payment",
+      "toggle": "Calculate early repayment",
+      "modeNone": "No extra repayment",
+      "modeOneTime": "One-off payment",
+      "modeMonthly": "Extra monthly payment",
+      "modeReduceTerm": "Finish sooner (same payment)",
+      "modeReducePayment": "Pay less each month (same term)",
+      "extraOneTime": "How much do you want to repay?",
+      "extraMonthlyAmount": "How much extra would you pay each month?",
+      "currentSituation": "Current situation",
+      "withRepayment": "With early repayment",
+      "months": "months",
+      "endDate": "Expected end",
+      "totalInterest": "Total interest",
+      "monthlySaving": "Monthly payment",
+      "savingsTitle": "Your savings",
+      "interestSaved": "You save {{amount}} in interest",
+      "timeSavedDurationMonths": "{{months}} months",
+      "timeSavedDurationYears": "{{years}} years",
+      "timeSavedDurationYearsMonths": "{{years}} years and {{months}} months",
+      "timeSavedBeforeMonths": "You finish {{months}} months earlier",
+      "timeSavedBeforeYears": "You finish {{years}} years earlier",
+      "timeSavedBeforeYearsMonths": "You finish {{years}} years and {{months}} months earlier",
+      "impliedReturn": "By repaying early, you stop paying {{rate}} annual interest on that money. It's a sure saving — unlike stock market returns.",
+      "portfolioVsMortgage_invest": "Your estimated portfolio ({{portfolio}}) beats your mortgage ({{mortgage}}). Mathematically, investing that money earns more than repaying. Repaying can still feel safer psychologically.",
+      "portfolioVsMortgage_repay": "Your mortgage ({{mortgage}}) costs more than your estimated portfolio ({{portfolio}}). Mathematically, repaying is better than investing right now.",
+      "portfolioVsMortgage_equal": "They're roughly even. The choice depends on your risk tolerance, not the numbers.",
+      "fullSchedule": "View full amortization schedule",
+      "scheduleSection": "Amortization schedule",
+      "viewBaseline": "No early repayment",
+      "viewWithRepayment": "With early repayment",
+      "baselineInterestHint": "Without early repayment",
+      "interestSavedLabel": "Interest saved",
+      "timeSavedLabel": "Time saved",
+      "interestAfterHint": "Total interest with your scenario",
+      "vsEndDate": "Before: {{date}}",
+      "totalExtraPaid": "Total extra paid: {{amount}}",
+      "missingRate": "Enter your mortgage interest rate to calculate",
+      "missingCapital": "Update the outstanding mortgage balance in Update balances",
+      "scheduleDate": "Date",
+      "schedulePayment": "Payment",
+      "scheduleInterest": "Interest",
+      "schedulePrincipal": "Principal",
+      "scheduleStartBalance": "Starting balance",
+      "scheduleBalance": "Outstanding",
+      "scheduleBalanceShort": "Balance",
+      "scheduleStartBalanceShort": "Base",
+      "scheduleTotals": "Totals",
+      "scheduleMonth": "Month",
+      "tableScrollHint": "Swipe to see all columns",
+      "tableRowCount": "{{count}} installments",
+      "tableTotalsSummary": "Totals: {{paid}} paid · {{principal}} principal · {{interest}} interest"
     },
     "institutionUnspecified": "Not specified",
     "institutionOtherPlaceholder": "Bank or institution name",
@@ -894,9 +993,9 @@
     "expenses": {
       "title": "Your monthly expenses",
       "subtitle": "Housing, household, groceries and leisure. Use averages if they vary.",
-      "liabilitiesTitle": "Debt",
-      "liabilitiesHint": "Choose housing and add other debts if you have any.",
-      "liabilitiesEmpty": "No debts. If you choose mortgage, it will appear here.",
+      "liabilitiesTitle": "Other debts",
+      "liabilitiesHint": "Loans, cards or other debts besides housing.",
+      "liabilitiesEmpty": "No other debts.",
       "housingTypeLabel": "Housing type",
       "housingType": {
         "mortgage": "Mortgage",
@@ -968,5 +1067,177 @@
     "conservative": "Conservative",
     "moderate": "Moderate",
     "optimistic": "Optimistic"
+  },
+  "statementAnalysis": {
+    "title": "Bank statement analysis",
+    "subtitle": "Upload your bank CSV to detect subscriptions, categories and anomalies.",
+    "privacyNote": "The CSV is parsed on your device. Only anonymized descriptions and amounts are sent to our server to generate the report.",
+    "analyze": "Analyze statement",
+    "analyzing": "Analyzing…",
+    "insightImpact": "Estimated impact: {{amount}}",
+    "errors": {
+      "NOT_CONFIGURED": "Analysis is not available right now",
+      "UNAUTHORIZED": "Sign in to analyze the statement",
+      "QUOTA_EXCEEDED": "Analysis quota exceeded — try again later",
+      "API_ERROR": "Analysis failed — try again later",
+      "PARSE_ERROR": "Could not parse the report"
+    },
+    "reportSummary": {
+      "expenses": "Total expenses",
+      "income": "Total income",
+      "monthlyAvg": "Average monthly spend"
+    },
+    "dropHint": "Drop your CSV statement here",
+    "selectFile": "Choose file",
+    "summary": "{{count}} transactions · {{from}} to {{to}} · detected bank: {{bank}}",
+    "tempWarning": "Statements are temporary: they disappear when you leave this tab or refresh. Only expenses you add to the budget are saved.",
+    "tabsLabel": "Analysis sections",
+    "tabs": {
+      "subscriptions": "Subscriptions",
+      "categories": "By category",
+      "alerts": "Alerts",
+      "movements": "Transactions"
+    },
+    "addedToBudget": "Added to budget subscriptions",
+    "frequency": {
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "annual": "Annual"
+    },
+    "manualMap": {
+      "title": "Unrecognized format",
+      "hint": "Review the preview and map columns manually.",
+      "dateCol": "Date column",
+      "descCol": "Description column",
+      "amountCol": "Amount column",
+      "apply": "Analyze with this mapping"
+    },
+    "subscriptions": {
+      "name": "Name",
+      "amount": "Amount",
+      "frequency": "Frequency",
+      "last": "Last seen",
+      "yearTotal": "Total/year",
+      "action": "Action",
+      "addToBudget": "Add to budget",
+      "ignore": "Ignore",
+      "empty": "No recurring charges detected in this statement.",
+      "footer": "{{count}} subscriptions · {{monthly}}/mo · {{yearly}}/yr"
+    },
+    "categories": {
+      "category": "Category",
+      "actual": "Actual spend",
+      "budgeted": "Budgeted",
+      "diff": "Difference",
+      "over": "↑ {{amount}}",
+      "empty": "No categorizable expenses in the statement.",
+      "supermarket": "Supermarket",
+      "gas": "Gas station",
+      "restaurants": "Restaurants",
+      "pharmacy": "Pharmacy",
+      "amazon": "Online shopping",
+      "other": "Other"
+    },
+    "alerts": {
+      "empty": "No anomalies detected ✓",
+      "duplicate_charge": "Possible duplicate on {{date}}: {{description}} ({{amount}}, {{count}} times)",
+      "duplicate": "{{description}} ({{amount}} · {{date}})",
+      "price_increase": "{{description}} ({{amount}} · {{date}})",
+      "unusual_amount": "{{description}} ({{amount}} · {{date}})",
+      "foreign_currency": "Foreign currency or FX fee: {{description}} ({{amount}})",
+      "high_spending_month": "High spending in {{month}}: {{total}} (avg {{average}})"
+    },
+    "movements": {
+      "date": "Date",
+      "description": "Description",
+      "category": "Category",
+      "amount": "Amount",
+      "allCategories": "All categories",
+      "minAmount": "Min amount"
+    }
+  },
+  "diagnostics": {
+    "card": {
+      "title": "Your diagnosis",
+      "subtitle": "Insights based on your real data",
+      "viewAll": "View full diagnosis →"
+    },
+    "page": {
+      "title": "Your financial diagnosis",
+      "subtitle": "Based on your real data, not generic advice.",
+      "updated": "Updated today",
+      "empty": "Complete your profile in Net worth to see your diagnosis.",
+      "emptyAction": "Go to Net worth →",
+      "sectionOk": "What's going well",
+      "sectionWarn": "Points of attention",
+      "sectionOpportunity": "Opportunities"
+    },
+    "emergencyFund": {
+      "ok": {
+        "title": "Strong emergency fund",
+        "body": "Your liquidity covers {{months}} months of expenses — above the usual 6-month target."
+      },
+      "mid": {
+        "title": "Emergency fund could improve",
+        "body": "You have {{months}} months covered. The usual target is 6."
+      },
+      "low": {
+        "title": "Low emergency fund",
+        "body": "You only have {{months}} months covered. Prioritize reaching 3 before investing more."
+      },
+      "action": "Review emergency fund →"
+    },
+    "investmentRate": {
+      "ok": {
+        "title": "Good investment rate",
+        "body": "You invest {{rate}} of your salary — above the recommended 20%."
+      },
+      "mid": {
+        "title": "Room to increase investing",
+        "body": "You invest {{rate}} of your salary. Reaching 20% could shorten your FIRE horizon by ~{{yearsSaved}} years."
+      },
+      "low": {
+        "title": "Low investment rate",
+        "body": "You only invest {{rate}} of your salary. With current expenses you could add {{gap}}/month."
+      },
+      "action": "Adjust monthly investment →"
+    },
+    "excessLiquidity": {
+      "title": "Excess liquidity",
+      "body": "You have {{liquid}} in accounts — covering {{months}} months of expenses. Excess above 6 months ({{excess}}) could earn {{indexRate}} in index funds instead of {{savingsRate}} in cash.",
+      "action": "Review assets →"
+    },
+    "highInterest": {
+      "title": "High-interest debt",
+      "body": "{{name}} has a {{rate}} interest rate. Paying it down before investing is a guaranteed return.",
+      "action": "View liabilities →"
+    },
+    "staleSnapshots": {
+      "title": "Outdated balances",
+      "body": "You haven't updated balances for {{days}} days. Net worth and projections may be stale.",
+      "action": "Update now →"
+    },
+    "portfolioReturn": {
+      "below": {
+        "title": "Return below estimate",
+        "body": "Your portfolio shows {{real}} actual vs. {{estimated}} projected. Consider adjusting projection assumptions."
+      },
+      "above": {
+        "title": "Return above estimate",
+        "body": "Your portfolio shows {{real}} actual — above the {{estimated}} estimate. Good pace."
+      },
+      "action": "Go to projection →"
+    },
+    "fire": {
+      "reachable": {
+        "title": "Financial independence horizon",
+        "body": "At your current pace you'd reach financial independence in {{year}} ({{years}} years), when investments generate ~{{monthlyIncome}}/month."
+      },
+      "unreachable": {
+        "title": "Financial independence out of reach",
+        "body": "With current return and contributions, FI isn't reached in 50 years. Adding {{extra}}/month could make it possible in {{years}} years."
+      },
+      "action": "View projection →"
+    }
   }
 }

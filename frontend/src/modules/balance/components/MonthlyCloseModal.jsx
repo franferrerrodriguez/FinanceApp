@@ -1,14 +1,24 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AppModal } from '../../../components/AppModal';
 import { EffectiveMonthSelect } from '../../../components/EffectiveMonthSelect';
+import { FormCheckboxField } from '../../../components/FormCheckboxField';
 import { FormFieldFrame } from '../../../components/FormFieldFrame';
+import { FormSection } from '../../../components/FormSection';
+import { FormSectionHeader } from '../../../components/FormSectionHeader';
+import { HelpTooltip } from '../../../components/HelpTooltip';
 import { ModalFormFooter } from '../../../components/ModalFormFooter';
 import { MoneyInput } from '../../../components/MoneyInput';
 import { getEffectiveMortgageRent } from '../../../lib/calculations';
 import { getCurrentMonthKey } from '../../../lib/dashboardMetrics';
-import { isLinkedHousingMortgage } from '../../../lib/housingLiability';
+import {
+  getMortgageBalanceShareInfoFromTotal,
+  getMortgageFullMonthlyPayment,
+  isLinkedHousingMortgage,
+  mortgageEnteredOutstandingTotal,
+  mortgageOutstandingShareToTotal,
+  mortgageOutstandingTotalToShare,
+} from '../../../lib/housingLiability';
 import {
   getCloseableAssets,
   getCloseableLiabilities,
@@ -33,7 +43,7 @@ import {
   sumDraftLiabilities,
 } from '../../../lib/monthlyCloseForm';
 import { parseSignedMoneyEuros } from '../../../lib/money';
-import { usePreferences } from '../../../store/hooks';
+import { useFinanceData, usePreferences } from '../../../store/hooks';
 import { formatInstitutionLabel } from '../../../lib/institutions';
 import { formatMonthKeyLong, formatMonthKeyLabel, formatSnapshotDateLabel } from '../../../utils/monthLabel';
 import {
@@ -43,53 +53,33 @@ import {
 import { ui } from '../../../lib/uiClasses';
 import { formatMoney } from '../../../utils/formatters';
 
-function CollapsibleGroup({ title, subtitle, defaultOpen = true, children }) {
-  const [open, setOpen] = useState(defaultOpen);
+function CloseSection({ title, subtitle, children }) {
   return (
-    <section>
-      <button
-        type="button"
-        className="flex w-full items-start justify-between gap-3 rounded-lg px-1 py-2 text-left transition hover:bg-slate-50/90 dark:hover:bg-slate-800/40"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-      >
-        <div className="min-w-0">
-          <h3 className={`text-sm font-semibold ${ui.heading}`}>{title}</h3>
-          {subtitle ? (
-            <p className={`${ui.formFieldHint} ${ui.textMuted} ${ui.formFieldHintGap}`}>
-              {subtitle}
-            </p>
-          ) : null}
-        </div>
-        <ChevronDown
-          className={`mt-0.5 h-4 w-4 shrink-0 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`}
-          aria-hidden
-        />
-      </button>
-      {open ? (
-        <ul className={`mt-1 divide-y border-t ${ui.divider}`}>{children}</ul>
-      ) : null}
-    </section>
+    <FormSection className="space-y-4">
+      <FormSectionHeader title={title} hint={subtitle} />
+      <ul className="divide-y divide-slate-200 dark:divide-slate-600/80">{children}</ul>
+    </FormSection>
   );
 }
 
-function CloseBalanceRow({ name, meta, children, below, accent = false }) {
+function CloseBalanceRow({ name, meta, help, children, below }) {
   return (
-    <li
-      className={`py-3.5 ${accent ? 'border-l-2 border-amber-500/50 pl-3' : ''}`}
-    >
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-        <div className="min-w-0 flex-1 sm:pt-2">
-          <p className={`${ui.formFieldLabel} ${ui.textLabel}`}>{name}</p>
-          {meta ? (
-            <p className={`${ui.formFieldHint} ${ui.textMuted} ${ui.formFieldHintGap}`}>
-              {meta}
-            </p>
+    <li className="space-y-3 py-5 first:pt-0 last:pb-0">
+      <div className="space-y-1">
+        <div className="flex items-center gap-1.5">
+          <p className={`text-sm font-semibold ${ui.textLabel}`}>{name}</p>
+          {help ? (
+            <HelpTooltip ariaLabel={help}>{help}</HelpTooltip>
           ) : null}
         </div>
-        <div className="w-full shrink-0 sm:w-[9.5rem]">{children}</div>
+        {meta ? (
+          <p className={`text-xs leading-relaxed ${ui.textMuted}`}>{meta}</p>
+        ) : null}
       </div>
-      {below ? <div className="mt-3">{below}</div> : null}
+      <div className="w-full sm:max-w-[12rem]">{children}</div>
+      {below ? (
+        <div className={`space-y-3 border-t pt-4 ${ui.divider}`}>{below}</div>
+      ) : null}
     </li>
   );
 }
@@ -98,32 +88,26 @@ function GainLossField({ row, assetId, t, onChange }) {
   const breakdown = computeGainLossBreakdown(row.value, row.gainLossEuros);
 
   return (
-    <div className="mt-3 border-t border-dashed border-slate-200 pt-3 dark:border-slate-700">
-      <label className="flex cursor-pointer items-start gap-2">
-        <input
-          type="checkbox"
-          className={ui.checkbox}
-          checked={row.showGainLoss}
-          onChange={(e) =>
-            onChange(assetId, {
-              showGainLoss: e.target.checked,
-              gainLossEuros: e.target.checked ? row.gainLossEuros : null,
-            })
-          }
-        />
-        <span className={`text-xs leading-snug ${ui.textLabel}`}>
-          {t('balance.patrimony.closeGainLossToggle')}
-        </span>
-      </label>
+    <div className="space-y-2">
+      <FormCheckboxField
+        id={`gain-toggle-${assetId}`}
+        checked={row.showGainLoss}
+        onChange={(checked) =>
+          onChange(assetId, {
+            showGainLoss: checked,
+            gainLossEuros: checked ? row.gainLossEuros : null,
+          })
+        }
+        label={t('balance.patrimony.closeGainLossToggle')}
+        hint={row.showGainLoss ? t('balance.patrimony.closeGainLossHint') : undefined}
+      />
       {row.showGainLoss ? (
-        <div className="space-y-2 pl-7">
-          <label className={`block text-xs font-medium ${ui.textLabel}`} htmlFor={`gain-${assetId}`}>
-            {t('balance.patrimony.closeGainLossLabel')}
-          </label>
+        <div className="pl-8">
           <input
             id={`gain-${assetId}`}
             type="text"
             inputMode="decimal"
+            aria-label={t('balance.patrimony.closeGainLossLabel')}
             placeholder={t('balance.patrimony.closeGainLossPlaceholder')}
             value={row.gainLossEuros == null ? '' : String(row.gainLossEuros)}
             onChange={(e) => {
@@ -134,11 +118,8 @@ function GainLossField({ row, assetId, t, onChange }) {
             }}
             className={`${ui.input} w-full max-w-none text-sm`}
           />
-          <p className={`text-[11px] leading-relaxed ${ui.textMuted}`}>
-            {t('balance.patrimony.closeGainLossHint')}
-          </p>
           {breakdown ? (
-            <p className={`text-xs leading-relaxed ${ui.textMuted}`}>
+            <p className={`mt-1.5 text-xs leading-snug ${ui.textMuted}`}>
               {t('balance.patrimony.closeGainLossBreakdown', {
                 contributed: formatMoney(breakdown.contributed),
                 market: formatMoney(breakdown.gain),
@@ -168,6 +149,7 @@ export function MonthlyCloseModal({
 }) {
   const { t } = useTranslation();
   const { locale } = usePreferences();
+  const { updateLiability } = useFinanceData();
   const activeAssets = getCloseableAssets(assets);
   const activeLiabilities = getCloseableLiabilities(liabilities);
   const currentMonthKey = getCurrentMonthKey();
@@ -203,8 +185,18 @@ export function MonthlyCloseModal({
   useEffect(() => {
     if (!open) return;
     setAssetRows(initial.assetRows);
-    setLiabilityRows(initial.liabilityRows);
-  }, [open, initial]);
+    setLiabilityRows(
+      initial.liabilityRows.map((row) => {
+        const liability = activeLiabilities.find((l) => l.id === row.liabilityId);
+        if (!liability || row.value == null) return row;
+        if (!isLinkedHousingMortgage(liability, settings, liabilities)) return row;
+        return {
+          ...row,
+          value: mortgageOutstandingShareToTotal(settings, liability, row.value),
+        };
+      }),
+    );
+  }, [open, initial, activeLiabilities, settings, liabilities]);
 
   const { liquidity, investments } = useMemo(
     () => groupActiveAssetsForClose(assets),
@@ -282,9 +274,28 @@ export function MonthlyCloseModal({
   };
 
   const handleSubmit = () => {
+    const liabilityRowsForSnapshot = liabilityRows.map((row) => {
+      const liability = activeLiabilities.find((l) => l.id === row.liabilityId);
+      if (!liability || row.value == null) return row;
+      return {
+        ...row,
+        value: mortgageOutstandingTotalToShare(settings, liability, row.value),
+      };
+    });
+    for (const row of liabilityRows) {
+      if (row.value == null) continue;
+      const liability = activeLiabilities.find((l) => l.id === row.liabilityId);
+      if (!liability || !isLinkedHousingMortgage(liability, settings, liabilities)) {
+        continue;
+      }
+      updateLiability(liability.id, {
+        enteredOutstandingTotal: mortgageEnteredOutstandingTotal(row.value),
+      });
+    }
+
     const snaps = buildCloseMonthSnapshots({
       assetRows,
-      liabilityRows,
+      liabilityRows: liabilityRowsForSnapshot,
       snapshotDate: initial.snapshotDate,
       existingSnapshots: snapshots,
     });
@@ -295,16 +306,19 @@ export function MonthlyCloseModal({
   const renderAssetRow = (asset) => {
     const row = assetRows.find((r) => r.assetId === asset.id);
     if (!row) return null;
-    const preview = deriveContributionPreviewForAsset({
-      snapshots,
-      assets,
-      settings,
-      monthKey: resolvedMonthKey,
-      assetId: asset.id,
-      newBalance: row.value ?? 0,
-    });
+    const preview =
+      row.modified &&
+      deriveContributionPreviewForAsset({
+        snapshots,
+        assets,
+        settings,
+        monthKey: resolvedMonthKey,
+        assetId: asset.id,
+        newBalance: row.value ?? 0,
+      });
     const isPrefilled =
       !row.modified && row.prefillSource === 'previous' && row.prefillMonthKey;
+    const tracksGainLoss = assetTracksGainLoss(asset);
 
     const meta = [
       t(`categories.asset.${asset.category}`),
@@ -321,34 +335,36 @@ export function MonthlyCloseModal({
       .filter(Boolean)
       .join(' · ');
 
-    const below = (
-      <>
-        {preview ? (
-          <p className={`${ui.formFieldHint} leading-relaxed ${ui.textMuted}`}>
-            {t('balance.patrimony.derivedContributionHint', {
-              delta: formatMoney(preview.delta),
-              contribution: formatMoney(preview.amount),
-              returnAmount: formatMoney(preview.estimatedReturn),
-            })}
-          </p>
-        ) : null}
-        {assetTracksGainLoss(asset) ? (
-          <GainLossField
-            row={row}
-            assetId={asset.id}
-            t={t}
-            onChange={updateAssetRow}
-          />
-        ) : null}
-      </>
-    );
+    const below = [];
+    if (preview) {
+      below.push(
+        <p key="preview" className={`text-xs leading-snug ${ui.textMuted}`}>
+          {t('balance.patrimony.derivedContributionHint', {
+            delta: formatMoney(preview.delta),
+            contribution: formatMoney(preview.amount),
+            returnAmount: formatMoney(preview.estimatedReturn),
+          })}
+        </p>,
+      );
+    }
+    if (tracksGainLoss) {
+      below.push(
+        <GainLossField
+          key="gain"
+          row={row}
+          assetId={asset.id}
+          t={t}
+          onChange={updateAssetRow}
+        />,
+      );
+    }
 
     return (
       <CloseBalanceRow
         key={asset.id}
         name={asset.name}
         meta={meta}
-        below={preview || assetTracksGainLoss(asset) ? below : null}
+        below={below.length ? below : null}
       >
         <MoneyInput
           id={`close-asset-${asset.id}`}
@@ -369,26 +385,58 @@ export function MonthlyCloseModal({
     const isPrefilled =
       !row.modified && row.prefillSource === 'previous' && row.prefillMonthKey;
     const prevBalance = row.prefillSource === 'previous' ? row.value : null;
+    const fullMortgagePayment = housing
+      ? getMortgageFullMonthlyPayment(settings, liability)
+      : 0;
     const monthlyDrop =
       housing && prevBalance != null
-        ? estimateMortgageMonthlyDrop(liability, prevBalance)
+        ? estimateMortgageMonthlyDrop(
+            {
+              ...liability,
+              monthlyPayment: fullMortgagePayment,
+            },
+            prevBalance,
+          )
         : null;
 
-    const meta = housing
-      ? [
-          monthlyMortgagePayment > 0
-            ? t('balance.patrimony.closeHousingMortgageQuota', {
-                payment: formatMoney(monthlyMortgagePayment),
-              })
-            : t('balance.patrimony.closeHousingMortgageQuotaMissing'),
-          prevBalance != null && monthlyDrop != null
-            ? t('balance.patrimony.closeMortgagePrevHint', {
-                prev: formatMoney(prevBalance),
-                drop: formatMoney(monthlyDrop),
-              })
-            : t('balance.patrimony.closeHousingMortgageHint'),
-        ].join(' · ')
-      : t(`categories.liability.${liability.category}`);
+    let meta;
+    let help;
+    if (housing) {
+      const shared = settings?.mortgageRentShared;
+      const rowValue = row.value != null ? Number(row.value) : null;
+      const sharePreview =
+        shared && rowValue != null
+          ? getMortgageBalanceShareInfoFromTotal(settings, liability, rowValue)
+          : null;
+
+      meta =
+        prevBalance != null && monthlyDrop != null
+          ? t('balance.patrimony.closeMortgagePrevHint', {
+              prev: formatMoney(prevBalance),
+              drop: formatMoney(monthlyDrop),
+            })
+          : shared
+            ? t('balance.patrimony.closeHousingMortgageSharedShort')
+            : t('balance.patrimony.closeHousingMortgageShort');
+      if (sharePreview) {
+        meta = t('balance.patrimony.closeHousingMortgageSharePreview', {
+          share: formatMoney(sharePreview.yourShare),
+          percent: sharePreview.percent,
+        });
+      }
+      help = [
+        monthlyMortgagePayment > 0
+          ? t('balance.patrimony.closeHousingMortgageQuota', {
+              payment: formatMoney(monthlyMortgagePayment),
+            })
+          : t('balance.patrimony.closeHousingMortgageQuotaMissing'),
+        shared
+          ? t('balance.patrimony.closeHousingMortgageSharedHint')
+          : t('balance.patrimony.closeHousingMortgageHint'),
+      ].join(' ');
+    } else {
+      meta = t(`categories.liability.${liability.category}`);
+    }
 
     return (
       <CloseBalanceRow
@@ -399,7 +447,7 @@ export function MonthlyCloseModal({
             : liability.name
         }
         meta={meta}
-        accent={housing}
+        help={help}
       >
         <MoneyInput
           id={`close-liability-${liability.id}`}
@@ -439,132 +487,120 @@ export function MonthlyCloseModal({
       }
     >
       {monthOptions.length > 0 ? (
-        <FormFieldFrame
-          label={t('balance.patrimony.recordBalancesMonth')}
-          hint={
-            selectedOption
-              ? `${selectedOption.hasClose ? t('balance.patrimony.recordBalancesMonthClosed') : t('balance.patrimony.recordBalancesMonthPending')}${
-                  isCurrentMonth
-                    ? ` · ${t('balance.patrimony.recordBalancesCurrentMonthHint')}`
-                    : ''
-                }`
-              : undefined
-          }
-          reserveHintSpace={false}
-          className="mb-5"
-        >
-          <EffectiveMonthSelect
-            id="record-balances-month"
-            value={resolvedMonthKey}
-            extraMonthKeys={monthOptions.map((o) => o.monthKey)}
-            lookbackMonths={48}
-            onChange={(mk) => onMonthKeyChange?.(mk)}
-            ariaLabel={t('balance.patrimony.recordBalancesMonth')}
-          />
-        </FormFieldFrame>
+        <FormSection className="mb-2">
+          <FormFieldFrame
+            label={t('balance.patrimony.recordBalancesMonth')}
+            hint={
+              selectedOption
+                ? `${selectedOption.hasClose ? t('balance.patrimony.recordBalancesMonthClosed') : t('balance.patrimony.recordBalancesMonthPending')}${
+                    isCurrentMonth
+                      ? ` · ${t('balance.patrimony.recordBalancesCurrentMonthHint')}`
+                      : ''
+                  }`
+                : undefined
+            }
+            reserveHintSpace={false}
+          >
+            <EffectiveMonthSelect
+              id="record-balances-month"
+              value={resolvedMonthKey}
+              extraMonthKeys={monthOptions.map((o) => o.monthKey)}
+              lookbackMonths={48}
+              onChange={(mk) => onMonthKeyChange?.(mk)}
+              ariaLabel={t('balance.patrimony.recordBalancesMonth')}
+            />
+          </FormFieldFrame>
+        </FormSection>
       ) : null}
 
       {activeAssets.length === 0 && activeLiabilities.length === 0 ? (
         <p className={`text-sm ${ui.text}`}>{t('balance.patrimony.closeEmpty')}</p>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-8">
           {quickSaveAvailable ? (
             <button
               type="button"
-              className={`w-full rounded-xl border border-dashed border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-left text-sm font-medium text-emerald-900 transition hover:bg-emerald-500/15 dark:text-emerald-100`}
+              className={`w-full rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-5 py-4 text-left text-sm font-medium text-emerald-800 transition hover:bg-emerald-500/15 dark:text-emerald-200`}
               onClick={handleSubmit}
             >
               {t('balance.patrimony.closeQuickSaveSame')}
             </button>
           ) : null}
 
-          <div className={`space-y-5 border-t pt-5 ${ui.divider}`}>
-            {liquidity.length > 0 ? (
-              <CollapsibleGroup
-                title={t('balance.patrimony.closeGroupLiquidity')}
-                defaultOpen
-              >
-                {liquidity.map((asset) => renderAssetRow(asset))}
-              </CollapsibleGroup>
-            ) : null}
+          {liquidity.length > 0 ? (
+            <CloseSection title={t('balance.patrimony.closeGroupLiquidity')}>
+              {liquidity.map((asset) => renderAssetRow(asset))}
+            </CloseSection>
+          ) : null}
 
-            {investments.length > 0 ? (
-              <CollapsibleGroup
-                title={t('balance.patrimony.closeGroupInvestments', {
-                  total: formatMoney(investmentGroupTotal),
-                })}
-                subtitle={t('balance.patrimony.closeGroupInvestmentsHint')}
-                defaultOpen={false}
-              >
-                {investments.map((asset) => renderAssetRow(asset))}
-              </CollapsibleGroup>
-            ) : null}
+          {investments.length > 0 ? (
+            <CloseSection
+              title={t('balance.patrimony.closeGroupInvestments', {
+                total: formatMoney(investmentGroupTotal),
+              })}
+              subtitle={t('balance.patrimony.closeGroupInvestmentsHint')}
+            >
+              {investments.map((asset) => renderAssetRow(asset))}
+            </CloseSection>
+          ) : null}
 
-            {activeLiabilities.length > 0 ? (
-              <CollapsibleGroup
-                title={t('balance.patrimony.closeGroupDebts', {
-                  total: formatMoney(liabilitiesGroupTotal),
-                })}
-                subtitle={t('balance.patrimony.closeGroupDebtsHint')}
-                defaultOpen={false}
-              >
-                {housingMortgage
-                  ? renderLiabilityRow(housingMortgage, { housing: true })
-                  : null}
-                {otherLiabilities.map((liability) =>
-                  renderLiabilityRow(liability),
-                )}
-              </CollapsibleGroup>
-            ) : null}
-          </div>
+          {activeLiabilities.length > 0 ? (
+            <CloseSection
+              title={t('balance.patrimony.closeGroupDebts', {
+                total: formatMoney(liabilitiesGroupTotal),
+              })}
+              subtitle={t('balance.patrimony.closeGroupDebtsHint')}
+            >
+              {housingMortgage
+                ? renderLiabilityRow(housingMortgage, { housing: true })
+                : null}
+              {otherLiabilities.map((liability) =>
+                renderLiabilityRow(liability),
+              )}
+            </CloseSection>
+          ) : null}
 
           {previousNetWorth != null || canSubmit ? (
-            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 px-4 py-3 text-sm dark:bg-emerald-950/20">
+            <FormSection className="space-y-2">
               {previousNetWorth != null ? (
-                <>
-                  <p className={ui.textLabel}>
-                    {t('balance.patrimony.closeSummaryPrev', {
-                      amount: formatMoney(previousNetWorth),
-                    })}
-                  </p>
-                  {canSubmit ? (
-                    <p className={`mt-1 ${ui.textLabel}`}>
-                      {t('balance.patrimony.closeSummaryNew', {
+                <p className={`text-sm ${ui.textMuted}`}>
+                  {t('balance.patrimony.closeSummaryPrev', {
+                    amount: formatMoney(previousNetWorth),
+                  })}
+                </p>
+              ) : null}
+              {canSubmit ? (
+                <p className={`text-base font-semibold ${ui.textLabel}`}>
+                  {previousNetWorth != null
+                    ? t('balance.patrimony.closeSummaryNew', {
+                        amount: formatMoney(newNetWorth),
+                      })
+                    : t('balance.patrimony.closeSummaryNewOnly', {
                         amount: formatMoney(newNetWorth),
                       })}
-                    </p>
-                  ) : null}
-                  {canSubmit && netWorthDelta != null ? (
-                    netWorthDelta === 0 ? (
-                      <p className={`mt-1 text-xs ${ui.textMuted}`}>
-                        {t('balance.patrimony.closeSummaryNoChange')}
-                      </p>
-                    ) : (
-                      <p
-                        className={`mt-1 font-semibold ${
-                          netWorthDelta > 0
-                            ? 'text-emerald-600 dark:text-emerald-400'
-                            : 'text-red-600 dark:text-red-400'
-                        }`}
-                      >
-                        {t('balance.patrimony.closeSummaryDelta', {
-                          amount: formatMoney(Math.abs(netWorthDelta)),
-                          sign: netWorthDelta > 0 ? '↑' : '↓',
-                        })}
-                      </p>
-                    )
-                  ) : null}
-                </>
-              ) : (
-                canSubmit && (
-                  <p className={ui.textLabel}>
-                    {t('balance.patrimony.closeSummaryNewOnly', {
-                      amount: formatMoney(newNetWorth),
+                </p>
+              ) : null}
+              {canSubmit && netWorthDelta != null ? (
+                netWorthDelta === 0 ? (
+                  <p className={`text-sm ${ui.textMuted}`}>
+                    {t('balance.patrimony.closeSummaryNoChange')}
+                  </p>
+                ) : (
+                  <p
+                    className={`text-sm font-semibold ${
+                      netWorthDelta > 0
+                        ? 'text-emerald-600 dark:text-emerald-400'
+                        : 'text-red-600 dark:text-red-400'
+                    }`}
+                  >
+                    {t('balance.patrimony.closeSummaryDelta', {
+                      amount: formatMoney(Math.abs(netWorthDelta)),
+                      sign: netWorthDelta > 0 ? '↑' : '↓',
                     })}
                   </p>
                 )
-              )}
-            </div>
+              ) : null}
+            </FormSection>
           ) : null}
         </div>
       )}

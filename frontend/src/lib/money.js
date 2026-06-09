@@ -1,3 +1,5 @@
+import { resolveIntlLocale } from '../utils/monthLabel.js';
+
 /**
  * Money arithmetic in integer cents to avoid floating-point errors.
  * Amounts in state/UI stay in euros; critical operations go through here.
@@ -20,6 +22,11 @@ export function fromCents(cents) {
 /** Normalize a euro value after user input or intermediate calculation. */
 export function normalizeEuros(euros) {
   return fromCents(toCents(euros));
+}
+
+/** Round euros to the cent (alias of normalizeEuros). */
+export function roundMoney(euros) {
+  return normalizeEuros(euros ?? 0);
 }
 
 export function clampPercent(percent, min = 1, max = 100) {
@@ -47,6 +54,14 @@ export function applyShareEuros(totalEuros, shared, percent) {
   return fromCents(shareCents(totalCents, percent));
 }
 
+/** Reconstruct total from your share and percentage (inverse of applyShareEuros). */
+export function totalFromShareEuros(shareEuros, percent) {
+  const shareCents = toCents(shareEuros);
+  if (shareCents <= 0) return 0;
+  const pct = clampPercent(percent);
+  return fromCents(Math.round((shareCents * 100) / pct));
+}
+
 /** Sum euro amounts, result normalized to the cent. */
 export function sumEuros(...amounts) {
   const totalCents = amounts.reduce((acc, e) => acc + toCents(e), 0);
@@ -59,6 +74,17 @@ export function subtractEuros(minuend, ...subtrahends) {
     toCents(minuend) -
     subtrahends.reduce((acc, s) => acc + toCents(s), 0);
   return fromCents(resultCents);
+}
+
+/** Input display: always 2 decimals (91207.60 → "91207,60" in es). */
+export function formatMoneyInputValue(euros, language) {
+  if (euros == null || euros === '' || !Number.isFinite(Number(euros))) return '';
+  if (Number(euros) === 0) return '';
+  return new Intl.NumberFormat(resolveIntlLocale(language), {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    useGrouping: false,
+  }).format(normalizeEuros(euros));
 }
 
 /** Parse money input text and return normalized euros (≥ 0). */

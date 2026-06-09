@@ -163,7 +163,7 @@ export function resolveSnapshotDateForMonth(monthKey, asOfDate) {
     : getMonthEndDate(monthKey);
 }
 
-function getLatestSnapshotDateInMonth(snapshots, monthKey) {
+export function getLatestSnapshotDateInMonth(snapshots, monthKey) {
   const monthSnaps = groupSnapshotsByMonth(snapshots)[monthKey] ?? [];
   if (!monthSnaps.length) return null;
   let latest = '';

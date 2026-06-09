@@ -24,7 +24,8 @@ import {
 } from '../../../lib/contributionEntries';
 import { ui } from '../../../lib/uiClasses';
 import { useFinanceData, usePreferences } from '../../../store/hooks';
-import { formatMoney, formatPercent } from '../../../utils/formatters';
+import { roundMoney } from '../../../lib/money';
+import { formatMoney, formatPercent, formatRatePercent } from '../../../utils/formatters';
 import { formatMonthKeyLong } from '../../../utils/monthLabel';
 import { BalanceSetupStepBanner } from './BalanceSetupStepBanner';
 import { ContributionDeleteConfirmModal } from './ContributionDeleteConfirmModal';
@@ -73,7 +74,7 @@ export function ContributionsPanel() {
     assets,
   );
   const monthlySavings = calcMonthlySavingsFromSettings(settings);
-  const staysInBank = Math.round((monthlySavings - monthInvest) * 100) / 100;
+  const staysInBank = roundMoney(monthlySavings - monthInvest);
   const exceedsSavings = monthInvest > monthlySavings + 0.005;
   const activeAccounts = filterDraftAssets(assets).filter(
     (a) => a.isActive !== false,
@@ -216,7 +217,7 @@ export function ContributionsPanel() {
           {monthTotal > 0 ? (
             <Stat
               label={t('balance.contributions.weightedReturn')}
-              value={formatPercent(returnSummary.rate)}
+              value={formatRatePercent(returnSummary.rate)}
               hint={t('balance.contributions.weightedReturnHint')}
             />
           ) : null}

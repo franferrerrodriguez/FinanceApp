@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { Fragment, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   HorizontalScrollRegion,
@@ -7,18 +7,34 @@ import {
 import { getKpiValueClass } from '../../../components/KpiCard';
 import { getAssetAnnualReturn } from '../../../lib/projectionReturns';
 import { ui } from '../../../lib/uiClasses';
-import { formatMoney, formatPercent } from '../../../utils/formatters';
+import { formatMoney, formatRatePercent } from '../../../utils/formatters';
+
+function TableMetricCell({ primary, subtext, className = '' }) {
+  return (
+    <td className={`px-3 py-2.5 text-right tabular-nums ${className}`.trim()}>
+      <span className="block whitespace-nowrap">{primary}</span>
+      {subtext ? (
+        <span className={`mt-0.5 block text-xs font-normal ${ui.textMuted}`}>
+          {subtext}
+        </span>
+      ) : null}
+    </td>
+  );
+}
 
 export function PatrimonyCatalogTable({
   items,
   kind,
   categoryLabel,
   providerLabel,
+  getPaymentSubtext,
   getBalance,
+  getBalanceSubtext,
   settings,
   onEdit,
   onDelete,
   canDeleteItem,
+  renderAfterRow,
 }) {
   const { t } = useTranslation();
   const scrollRef = useRef(null);
@@ -79,8 +95,8 @@ export function PatrimonyCatalogTable({
               const inactive = item.isActive === false;
 
               return (
+                <Fragment key={item.id}>
                 <tr
-                  key={item.id}
                   className={`border-b last:border-b-0 ${ui.divider} ${
                     inactive ? 'opacity-55' : ''
                   }`}
@@ -101,29 +117,29 @@ export function PatrimonyCatalogTable({
                       className={`hidden whitespace-nowrap px-3 py-2.5 text-right tabular-nums sm:table-cell ${ui.textMuted}`}
                       title={t('balance.patrimony.tableReturnAssetHint')}
                     >
-                      {formatPercent(getAssetAnnualReturn(settings, item))}
+                      {formatRatePercent(getAssetAnnualReturn(settings, item))}
                     </td>
                   ) : null}
                   {kind === 'liability' ? (
-                    <td
-                      className={`hidden whitespace-nowrap px-3 py-2.5 text-right tabular-nums sm:table-cell ${ui.textLabel}`}
-                    >
-                      {providerLabel?.(item)}
-                    </td>
+                    <TableMetricCell
+                      className={`hidden sm:table-cell ${ui.textLabel}`}
+                      primary={providerLabel?.(item)}
+                      subtext={getPaymentSubtext?.(item)}
+                    />
                   ) : null}
                   {getBalance ? (
-                    <td
-                      className={`whitespace-nowrap px-3 py-2.5 text-right tabular-nums ${
+                    <TableMetricCell
+                      className={
                         kind === 'liability'
                           ? getKpiValueClass('liability')
                           : getKpiValueClass('assets')
-                      }`}
-                    >
-                      {(() => {
+                      }
+                      primary={(() => {
                         const balance = getBalance(item);
                         return balance != null ? formatMoney(balance) : '—';
                       })()}
-                    </td>
+                      subtext={getBalanceSubtext?.(item)}
+                    />
                   ) : null}
                   <td className="px-2 py-2.5 text-right">
                     <div className="flex flex-col items-end gap-1 sm:flex-row sm:justify-end sm:gap-3">
@@ -146,6 +162,8 @@ export function PatrimonyCatalogTable({
                     </div>
                   </td>
                 </tr>
+                {renderAfterRow?.(item)}
+                </Fragment>
               );
             })}
           </tbody>

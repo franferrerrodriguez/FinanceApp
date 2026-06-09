@@ -1,6 +1,7 @@
 import { getCurrentMonthKey } from './dashboardMetrics.js';
 import {
   buildCloseMonthSnapshots,
+  getLatestSnapshotDateInMonth,
   resolveSnapshotDateForMonth,
 } from './patrimony.js';
 import {
@@ -42,7 +43,10 @@ export function mergeLiabilityOutstandingSnapshot({
   }
 
   const value = Math.max(0, Number(amount));
-  const date = snapshotDate ?? resolveSnapshotDateForMonth(monthKey);
+  const date =
+    snapshotDate ??
+    getLatestSnapshotDateInMonth(snapshots, monthKey) ??
+    resolveSnapshotDateForMonth(monthKey);
   const otherMonth = snapshots.filter((s) => getSnapshotMonthKey(s) !== monthKey);
   const monthAssetSnaps = snapshots.filter(
     (s) =>

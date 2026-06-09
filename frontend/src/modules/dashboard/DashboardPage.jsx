@@ -15,6 +15,7 @@ import { KpiGrid } from './components/KpiGrid';
 import { IneInflationCard } from './components/IneInflationCard';
 import { NetWorthChart } from './components/NetWorthChart';
 import { TopHoldingsTable } from './components/TopHoldingsTable';
+import { DiagnosticCard } from '../diagnostics/DiagnosticoPage';
 
 export function DashboardPage() {
   const { t } = useTranslation();
@@ -45,6 +46,8 @@ export function DashboardPage() {
       />
 
       <EmergencyFundCard emergencyFund={data.emergencyFund} />
+
+      <DiagnosticCard />
 
       <IneInflationCard />
 

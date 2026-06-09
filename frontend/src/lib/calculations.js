@@ -1,5 +1,6 @@
 import {
   applyShareEuros,
+  roundMoney,
   subtractEuros,
   sumEuros,
 } from './money.js';
@@ -79,14 +80,14 @@ export const buildProjectionTable = ({
 
     table.push({
       year,
-      patrimonioInicio: Math.round(patrimonioInicio),
-      aportacionAnual: Math.round(aportacionAnual),
-      rentabilidadGenerada: Math.round(
+      patrimonioInicio: roundMoney(patrimonioInicio),
+      aportacionAnual: roundMoney(aportacionAnual),
+      rentabilidadGenerada: roundMoney(
         patrimonioFin - patrimonioInicio - aportacionAnual,
       ),
-      patrimonioFin: Math.round(patrimonioFin),
-      totalAportaciones: Math.round(totalAportaciones),
-      interesCompuestoTotal: Math.round(interesGenerado),
+      patrimonioFin: roundMoney(patrimonioFin),
+      totalAportaciones: roundMoney(totalAportaciones),
+      interesCompuestoTotal: roundMoney(interesGenerado),
     });
 
     patrimonioInicio = patrimonioFin;
@@ -244,10 +245,6 @@ export function scaleByAnnualSteps(baseAmount, monthIndex, annualIncrease) {
   const yearsElapsed = Math.floor(monthIndex / 12);
   if (!annualIncrease || yearsElapsed <= 0) return baseAmount;
   return baseAmount * Math.pow(1 + annualIncrease, yearsElapsed);
-}
-
-function roundMoney(value) {
-  return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
 function addMonths(date, count) {

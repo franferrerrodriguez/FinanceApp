@@ -6,7 +6,17 @@ import { MoneyField } from '../../../components/MoneyField';
 import { SelectFormField } from '../../../components/SelectFormField';
 import { TextField } from '../../../components/TextField';
 import { getLiabilityCategories, getManualLiabilityCategories } from '../../../lib/categoryLabels';
-import { isLinkedMortgageLiability } from '../../../lib/housingLiability';
+import {
+  getMortgageBalanceShareInfoFromTotal,
+  getMortgageFullMonthlyPayment,
+  getMortgageYourSharePayment,
+  isLinkedMortgageLiability,
+  isMortgageCapitalShared,
+  mortgageEnteredOutstandingTotal,
+  mortgageOutstandingTotalToShare,
+} from '../../../lib/housingLiability';
+import { formatMoney } from '../../../utils/formatters';
+import { ui } from '../../../lib/uiClasses';
 import { isSavableLiability } from '../../../lib/patrimonyDrafts';
 
 export function LiabilityEditModal({
@@ -39,14 +49,35 @@ export function LiabilityEditModal({
   const canSave = isSavableLiability(liabilityFields);
   const patch = (p) => setDraft((prev) => ({ ...prev, ...p }));
 
+  const outstandingTotal =
+    draft.outstandingBalance === '' || draft.outstandingBalance == null
+      ? null
+      : Math.max(0, Number(draft.outstandingBalance) || 0);
+  const balanceShare =
+    isLinkedMortgage && outstandingTotal != null
+      ? getMortgageBalanceShareInfoFromTotal(settings, draft, outstandingTotal)
+      : null;
+  const fullMonthlyPayment = isLinkedMortgage
+    ? getMortgageFullMonthlyPayment(settings, draft)
+    : draft.monthlyPayment ?? 0;
+  const paymentShare = isLinkedMortgage
+    ? getMortgageYourSharePayment(settings, draft)
+    : null;
+
   const handleSave = () => {
     const { outstandingBalance, ...fields } = draft;
+    const total =
+      outstandingBalance === '' || outstandingBalance == null
+        ? null
+        : Math.max(0, Number(outstandingBalance) || 0);
     onSave({
       ...fields,
       outstandingBalance:
-        outstandingBalance === '' || outstandingBalance == null
+        total == null
           ? null
-          : Math.max(0, Number(outstandingBalance) || 0),
+          : mortgageOutstandingTotalToShare(settings, draft, total),
+      enteredOutstandingTotal:
+        total == null ? undefined : mortgageEnteredOutstandingTotal(total),
     });
   };
 
@@ -96,13 +127,25 @@ export function LiabilityEditModal({
 
         <MoneyField
           id="liability-monthly-payment"
-          label={t('balance.patrimony.monthlyPayment')}
+          label={
+            paymentShare
+              ? t('balance.amortization.fullMonthlyPayment')
+              : t('balance.patrimony.monthlyPayment')
+          }
           hint={
             isLinkedMortgage
               ? t('balance.patrimony.monthlyPaymentMortgageHint')
               : t('balance.patrimony.monthlyPaymentHint')
           }
-          value={draft.monthlyPayment ?? 0}
+          hintAfter={
+            paymentShare
+              ? t('balance.patrimony.monthlyPaymentSharePreview', {
+                  share: formatMoney(paymentShare.amount),
+                  percent: paymentShare.percent,
+                })
+              : undefined
+          }
+          value={fullMonthlyPayment}
           onChange={(monthlyPayment) => patch({ monthlyPayment })}
           disabled={isLinkedMortgage}
           reserveHintSpace={false}
@@ -110,8 +153,24 @@ export function LiabilityEditModal({
 
         <MoneyField
           id="liability-outstanding-balance"
-          label={t('balance.patrimony.outstandingBalance')}
-          hint={t('balance.patrimony.outstandingBalanceHint')}
+          label={
+            isLinkedMortgage && isMortgageCapitalShared(settings, draft)
+              ? t('balance.patrimony.outstandingBalanceTotal')
+              : t('balance.patrimony.outstandingBalance')
+          }
+          hint={
+            isLinkedMortgage && isMortgageCapitalShared(settings, draft)
+              ? t('balance.patrimony.outstandingBalanceSharedConfigHint')
+              : t('balance.patrimony.outstandingBalanceHint')
+          }
+          hintAfter={
+            balanceShare
+              ? t('balance.patrimony.outstandingBalanceSharePreview', {
+                  share: formatMoney(balanceShare.yourShare),
+                  percent: balanceShare.percent,
+                })
+              : undefined
+          }
           value={draft.outstandingBalance ?? 0}
           onChange={(outstandingBalance) => patch({ outstandingBalance })}
           reserveHintSpace={false}

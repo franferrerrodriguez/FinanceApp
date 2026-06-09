@@ -1,13 +1,7 @@
 import { ui } from '../lib/uiClasses';
+import { displayToPct, pctToDisplay } from '../utils/formatters';
 
-export function pctToDisplay(decimal) {
-  return Math.round((decimal ?? 0) * 1000) / 10;
-}
-
-export function displayToPct(value) {
-  const n = parseFloat(value);
-  return Number.isFinite(n) ? n / 100 : 0;
-}
+export { displayToPct, pctToDisplay };
 
 export function PercentRow({ label, hint, value, onChange }) {
   return (
@@ -21,7 +15,7 @@ export function PercentRow({ label, hint, value, onChange }) {
       <div className="relative shrink-0">
         <input
           type="number"
-          step="0.1"
+          step="0.01"
           min={0}
           max={30}
           value={pctToDisplay(value)}

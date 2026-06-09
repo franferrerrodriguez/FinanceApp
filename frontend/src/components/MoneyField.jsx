@@ -7,6 +7,7 @@ import { MoneyInput } from './MoneyInput';
 export function MoneyField({
   label,
   hint,
+  hintAfter,
   help,
   helpAriaLabel,
   value,
@@ -52,6 +53,7 @@ export function MoneyField({
     <FormFieldFrame
       label={labelNode}
       hint={hint}
+      hintAfter={hintAfter}
       required={required}
       layout={layout}
       className={className}

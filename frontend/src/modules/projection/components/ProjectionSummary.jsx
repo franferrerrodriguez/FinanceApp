@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { GROWTH_BUCKETS } from '../../../lib/projectionBuckets';
 import { ui } from '../../../lib/uiClasses';
-import { formatMoney, formatPercent } from '../../../utils/formatters';
+import { formatMoney, formatPercent, formatRatePercent } from '../../../utils/formatters';
 
 export function ProjectionSummary({
   summary,
@@ -43,7 +43,7 @@ export function ProjectionSummary({
         />
         <MetricCard
           label={t('projection.summary.weightedReturn')}
-          value={formatPercent(weightedPortfolioReturn ?? 0)}
+          value={formatRatePercent(weightedPortfolioReturn ?? 0)}
           hint={t('projection.summary.weightedReturnHint')}
         />
         <MetricCard
@@ -70,7 +70,7 @@ export function ProjectionSummary({
                 <span className={`shrink-0 font-medium ${ui.heading}`}>
                   {formatMoney(buckets[bucket])}{' '}
                   <span className={`text-xs font-normal ${ui.textMuted}`}>
-                    @ {formatPercent(bucketRates[bucket] ?? 0)}
+                    @ {formatRatePercent(bucketRates[bucket] ?? 0)}
                   </span>
                 </span>
               </li>

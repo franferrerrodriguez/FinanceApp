@@ -1,6 +1,6 @@
 import { annualToMonthlyRate } from './calculations.js';
 import { getCurrentMonthKey } from './dashboardMetrics.js';
-import { sumEuros } from './money.js';
+import { roundMoney, sumEuros } from './money.js';
 import { resolveContributionsForMonth } from './contributionPlans.js';
 import {
   getSnapshotAssetId,
@@ -51,11 +51,7 @@ export function sumBucketBalances(buckets) {
 }
 
 export function netWorthFromState(buckets, debtBalance = 0) {
-  return round(sumBucketBalances(buckets) - Math.max(0, debtBalance));
-}
-
-function round(value) {
-  return Math.round((value ?? 0) * 100) / 100;
+  return roundMoney(sumBucketBalances(buckets) - Math.max(0, debtBalance));
 }
 
 /** Build starting buckets from snapshots, or fallback initial patrimony → investment. */
@@ -80,16 +76,16 @@ export function buildInitialBucketState({
 
       if (assetId && assetMap[assetId]?.isActive !== false) {
         const bucket = assetCategoryToBucket(assetMap[assetId].category);
-        buckets[bucket] = round((buckets[bucket] ?? 0) + Math.max(0, value));
+        buckets[bucket] = roundMoney((buckets[bucket] ?? 0) + Math.max(0, value));
       } else if (liabilityId) {
         const liability = (liabilities ?? []).find((l) => l.id === liabilityId);
         if (liability?.isActive !== false) {
-          debtBalance = round(debtBalance + Math.abs(value));
+          debtBalance = roundMoney(debtBalance + Math.abs(value));
         }
       }
     }
   } else if ((initialPatrimony ?? 0) > 0) {
-    buckets.investment = round(initialPatrimony);
+    buckets.investment = roundMoney(initialPatrimony);
   }
 
   const bucketRates = computeBucketAnnualRates({
@@ -175,13 +171,13 @@ export function computeWeightedPortfolioReturn(buckets, bucketRates) {
 export function splitContributionBreakdownToBuckets(breakdown = [], netContribution = 0) {
   const bucketContrib = createEmptyBuckets();
   const total = sumEuros(...breakdown.map((item) => item.amount ?? 0));
-  const freeSavings = round(Math.max(0, netContribution - total));
+  const freeSavings = roundMoney(Math.max(0, netContribution - total));
   bucketContrib.liquid += freeSavings;
 
   for (const item of breakdown) {
     if ((item.amount ?? 0) <= 0) continue;
     const bucket = planCategoryToBucket(item.category);
-    bucketContrib[bucket] = round(bucketContrib[bucket] + item.amount);
+    bucketContrib[bucket] = roundMoney(bucketContrib[bucket] + item.amount);
   }
 
   return bucketContrib;
@@ -224,7 +220,7 @@ function computeDebtMonthDelta(debtBalance, liabilities = [], settings = {}) {
     }
   }
   const annualDebtRate = weightTotal > 0 ? weightedRate / weightTotal : 0;
-  const interest = round(debtBalance * annualToMonthlyRate(annualDebtRate));
+  const interest = roundMoney(debtBalance * annualToMonthlyRate(annualDebtRate));
   const payments = sumEuros(...active.map((l) => liabilityPayment(settings, l)));
   return { interest, payments };
 }
@@ -244,16 +240,16 @@ export function applyMonthToBucketState({
   for (const bucket of GROWTH_BUCKETS) {
     const balance = nextBuckets[bucket] ?? 0;
     if (balance <= 0) continue;
-    const ret = round(balance * annualToMonthlyRate(bucketRates[bucket] ?? 0));
+    const ret = roundMoney(balance * annualToMonthlyRate(bucketRates[bucket] ?? 0));
     monthlyReturn += ret;
-    nextBuckets[bucket] = round(balance + ret);
+    nextBuckets[bucket] = roundMoney(balance + ret);
   }
 
   // Debt balance comes from real snapshots only; cuota ≠ amortización en proyección.
   const nextDebt = debtBalance;
 
   for (const bucket of GROWTH_BUCKETS) {
-    nextBuckets[bucket] = round(
+    nextBuckets[bucket] = roundMoney(
       (nextBuckets[bucket] ?? 0) + (bucketContributions[bucket] ?? 0),
     );
   }

@@ -1,13 +1,10 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FormSectionHeader } from '../../../components/FormSectionHeader';
-import { useHousingLiability } from '../../../hooks/useHousingLiability';
 import { getLiabilityCategories } from '../../../lib/categoryLabels';
 import {
-  HOUSING_TYPE,
-  getLiabilityMonthlyPaymentDisplay,
-  inferHousingType,
   isLinkedHousingMortgage,
+  mortgageOutstandingShareToTotal,
 } from '../../../lib/housingLiability';
 import { getLiabilityOutstandingFromSnapshots } from '../../../lib/liabilitySnapshots';
 import { getCurrentMonthKey } from '../../../lib/dashboardMetrics';
@@ -30,12 +27,13 @@ export function OnboardingLiabilitiesSection() {
     removeLiability,
     setLiabilityOutstandingBalance,
   } = useFinanceData();
-  const { enableMortgageTracking, disableMortgageTracking } = useHousingLiability();
 
-  const housingType = inferHousingType(settings, liabilities);
-  const catalogLiabilities = useMemo(
-    () => getActiveLiabilities(liabilities),
-    [liabilities],
+  const otherLiabilities = useMemo(
+    () =>
+      getActiveLiabilities(liabilities).filter(
+        (item) => !isLinkedHousingMortgage(item, settings, liabilities),
+      ),
+    [liabilities, settings],
   );
   const categories = getLiabilityCategories(t);
   const categoryLabel = (cat) =>
@@ -49,7 +47,7 @@ export function OnboardingLiabilitiesSection() {
       draft: { ...createLiability({ name: '' }), outstandingBalance: '' },
     });
   const openEdit = (liability) => {
-    const outstanding = getLiabilityOutstandingFromSnapshots(
+    const share = getLiabilityOutstandingFromSnapshots(
       snapshots,
       liability.id,
       monthKey,
@@ -57,20 +55,30 @@ export function OnboardingLiabilitiesSection() {
     setModal({
       mode: 'edit',
       id: liability.id,
-      draft: { ...liability, outstandingBalance: outstanding ?? '' },
+      draft: {
+        ...liability,
+        outstandingBalance:
+          mortgageOutstandingShareToTotal(settings, liability, share) ??
+          share ??
+          '',
+      },
     });
   };
 
   const handleSave = (draft) => {
-    const { outstandingBalance, ...fields } = draft;
+    const { outstandingBalance, enteredOutstandingTotal, ...fields } = draft;
+    const liabilityPatch = {
+      ...fields,
+      ...(enteredOutstandingTotal != null ? { enteredOutstandingTotal } : {}),
+    };
     if (modal?.mode === 'create') {
-      const created = createLiability(fields);
+      const created = createLiability(liabilityPatch);
       addLiability(created);
       if (outstandingBalance != null) {
         setLiabilityOutstandingBalance(created.id, outstandingBalance, monthKey);
       }
     } else if (modal?.mode === 'edit') {
-      updateLiability(modal.id, fields);
+      updateLiability(modal.id, liabilityPatch);
       if (outstandingBalance != null) {
         setLiabilityOutstandingBalance(modal.id, outstandingBalance, monthKey);
       }
@@ -81,21 +89,8 @@ export function OnboardingLiabilitiesSection() {
   const handleDeleteFromModal = () => {
     if (modal?.mode !== 'edit') return;
     const liability = liabilities.find((l) => l.id === modal.id);
-    if (liability) handleDelete(liability);
+    if (liability) removeLiability(liability.id);
     setModal(null);
-  };
-
-  const handleDelete = (item) => {
-    if (isLinkedHousingMortgage(item, settings, liabilities)) {
-      disableMortgageTracking();
-    } else {
-      removeLiability(item.id);
-    }
-  };
-
-  const setHousing = (type) => {
-    if (type === HOUSING_TYPE.MORTGAGE) enableMortgageTracking();
-    else disableMortgageTracking();
   };
 
   return (
@@ -105,52 +100,23 @@ export function OnboardingLiabilitiesSection() {
         hint={t('onboarding.expenses.liabilitiesHint')}
       />
 
-      <div
-        className="flex gap-2"
-        role="group"
-        aria-label={t('onboarding.expenses.housingTypeLabel')}
-      >
-        {[HOUSING_TYPE.MORTGAGE, HOUSING_TYPE.RENT].map((type) => {
-          const active = housingType === type;
-          return (
-            <button
-              key={type}
-              type="button"
-              className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
-                active
-                  ? 'border-emerald-500 bg-emerald-500/15 text-emerald-800 dark:text-emerald-200'
-                  : `border-slate-300 bg-transparent ${ui.textMuted} hover:border-slate-400 dark:border-slate-600`
-              }`}
-              aria-pressed={active}
-              onClick={() => setHousing(type)}
-            >
-              {t(`onboarding.expenses.housingType.${type}`)}
-            </button>
-          );
-        })}
-      </div>
-
-      {catalogLiabilities.length > 0 ? (
+      {otherLiabilities.length > 0 ? (
         <PatrimonyCatalogTable
           kind="liability"
-          items={catalogLiabilities}
+          items={otherLiabilities}
           categoryLabel={categoryLabel}
-          providerLabel={(item) =>
-            formatMoney(getLiabilityMonthlyPaymentDisplay(settings, item))
-          }
+          providerLabel={(item) => formatMoney(item.monthlyPayment ?? 0)}
           onEdit={openEdit}
-          onDelete={handleDelete}
+          onDelete={(item) => removeLiability(item.id)}
         />
       ) : (
         <p className={`text-sm ${ui.textMuted}`}>
-          {housingType === HOUSING_TYPE.RENT
-            ? t('onboarding.expenses.rentOnlyHint')
-            : t('onboarding.expenses.liabilitiesEmpty')}
+          {t('onboarding.expenses.liabilitiesEmpty')}
         </p>
       )}
 
       <button type="button" className={ui.btnSecondary} onClick={openCreate}>
-        {catalogLiabilities.length > 0
+        {otherLiabilities.length > 0
           ? t('onboarding.expenses.addAnotherLiability')
           : t('onboarding.expenses.addLiability')}
       </button>

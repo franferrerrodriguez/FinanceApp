@@ -1,0 +1,503 @@
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { KpiCard } from '../../../components/KpiCard';
+import { MoneyField } from '../../../components/MoneyField';
+import { MoneyInput } from '../../../components/MoneyInput';
+import { pctToDisplay } from '../../../components/PercentRow';
+import { resolveMortgageAmortization } from '../../../lib/amortization';
+import { AmortizationScheduleTable } from './AmortizationScheduleTable';
+import {
+  buildInitialBucketState,
+  computeWeightedPortfolioReturn,
+} from '../../../lib/projectionBuckets';
+import { parseMoneyEuros } from '../../../lib/money';
+import { ui } from '../../../lib/uiClasses';
+import { useFinanceData, usePreferences } from '../../../store/hooks';
+import { formatMoney, formatRatePercent } from '../../../utils/formatters';
+
+const PORTFOLIO_TOLERANCE = 0.005;
+
+export function AmortizationCalculator({
+  fullCapital: snapshotFullCapital,
+  balanceShareInfo,
+  monthlyPayment: fullMonthlyPayment,
+  yourSharePayment,
+  annualRate: liabilityRate,
+}) {
+  const { t } = useTranslation();
+  const { locale } = usePreferences();
+  const { settings, assets, liabilities, snapshots } = useFinanceData();
+
+  const [mode, setMode] = useState('none');
+  const [lumpMode, setLumpMode] = useState('reduce_term');
+  const [extraLump, setExtraLump] = useState('');
+  const [extraMonthly, setExtraMonthly] = useState('');
+  const [capitalEuros, setCapitalEuros] = useState(0);
+  const [paymentEuros, setPaymentEuros] = useState(0);
+  const [rateInput, setRateInput] = useState('');
+  const [scheduleView, setScheduleView] = useState('baseline');
+
+  useEffect(() => {
+    setCapitalEuros(snapshotFullCapital > 0 ? snapshotFullCapital : 0);
+  }, [snapshotFullCapital]);
+
+  useEffect(() => {
+    setPaymentEuros(fullMonthlyPayment > 0 ? fullMonthlyPayment : 0);
+  }, [fullMonthlyPayment]);
+
+  useEffect(() => {
+    setRateInput(liabilityRate != null ? String(pctToDisplay(liabilityRate)) : '');
+  }, [liabilityRate]);
+
+  const remainingCapital = capitalEuros > 0 ? capitalEuros : null;
+  const monthlyPayment = paymentEuros > 0 ? paymentEuros : null;
+  const annualRate = parseRateInput(rateInput);
+
+  const missingCapital = remainingCapital == null || remainingCapital <= 0;
+  const missingRate = annualRate == null;
+  const missingPayment = monthlyPayment == null || monthlyPayment <= 0;
+  const canCalculate = !missingCapital && !missingRate && !missingPayment;
+
+  const scenario = useMemo(() => {
+    if (!canCalculate || mode === 'none') return null;
+    if (mode === 'lump') {
+      const extra = parseMoneyEuros(extraLump);
+      if (extra <= 0) return null;
+      return { type: 'lump', extraPayment: extra, mode: lumpMode };
+    }
+    const extra = parseMoneyEuros(extraMonthly);
+    if (extra <= 0) return null;
+    return { type: 'recurring', extraMonthly: extra };
+  }, [canCalculate, mode, lumpMode, extraLump, extraMonthly]);
+
+  const resolved = useMemo(() => {
+    if (!canCalculate) return null;
+    return resolveMortgageAmortization({
+      remainingCapital,
+      annualRate,
+      monthlyPayment,
+      scenario,
+    });
+  }, [canCalculate, remainingCapital, annualRate, monthlyPayment, scenario]);
+
+  useEffect(() => {
+    setScheduleView(scenario ? 'scenario' : 'baseline');
+  }, [scenario]);
+
+  const portfolioPreview = useMemo(
+    () =>
+      buildInitialBucketState({
+        settings,
+        assets,
+        liabilities,
+        snapshots,
+        initialPatrimony: settings.initialPatrimony ?? 0,
+      }),
+    [settings, assets, liabilities, snapshots],
+  );
+
+  const weightedPortfolioReturn = useMemo(
+    () =>
+      computeWeightedPortfolioReturn(
+        portfolioPreview.buckets,
+        portfolioPreview.bucketRates,
+      ),
+    [portfolioPreview],
+  );
+
+  const hasInvestmentAssets =
+    (portfolioPreview.buckets.investment ?? 0) +
+      (portfolioPreview.buckets.pension ?? 0) >
+    0;
+
+  const activeSummary =
+    scheduleView === 'scenario' && resolved?.scenario
+      ? resolved.scenario
+      : resolved?.baseline;
+
+  const compareBanner = useMemo(() => {
+    if (!resolved?.savings || !hasInvestmentAssets) return null;
+    const mortgage = resolved.impliedReturn;
+    const portfolio = weightedPortfolioReturn;
+    if (portfolio > mortgage + PORTFOLIO_TOLERANCE) {
+      return { tone: 'info', key: 'portfolioVsMortgage_invest' };
+    }
+    if (portfolio < mortgage - PORTFOLIO_TOLERANCE) {
+      return { tone: 'success', key: 'portfolioVsMortgage_repay' };
+    }
+    return { tone: 'neutral', key: 'portfolioVsMortgage_equal' };
+  }, [resolved, hasInvestmentAssets, weightedPortfolioReturn]);
+
+  const formatScheduleDate = (date) =>
+    date.toLocaleDateString(locale, {
+      day: '2-digit',
+      month: 'short',
+      year: '2-digit',
+    });
+
+  const formatEndDate = (date) =>
+    date?.toLocaleDateString(locale, { month: 'short', year: 'numeric' }) ??
+    '—';
+
+  const paymentHint = [
+    t('balance.amortization.fullMonthlyPaymentHint'),
+    yourSharePayment
+      ? t('balance.amortization.yourShareHint', {
+          amount: formatMoney(yourSharePayment.amount),
+          percent: yourSharePayment.percent,
+        })
+      : null,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  return (
+    <div className={ui.stackSection}>
+      <div>
+        <p className={`text-xs font-semibold uppercase tracking-wide ${ui.textLabel}`}>
+          {t('balance.amortization.mortgageData')}
+        </p>
+        <div className="mt-3 grid grid-cols-1 items-stretch gap-3 sm:grid-cols-3">
+          <MortgageDataField
+            label={t('balance.amortization.fullCapital')}
+            kind="money"
+            value={capitalEuros}
+            onChange={setCapitalEuros}
+            missingHint={t('balance.amortization.missingCapital')}
+            highlight={missingCapital}
+            hint={
+              balanceShareInfo
+                ? t('balance.amortization.yourShareCapitalHint', {
+                    amount: formatMoney(balanceShareInfo.yourShare),
+                    percent: balanceShareInfo.percent,
+                  })
+                : undefined
+            }
+          />
+          <MortgageDataField
+            label={t('balance.amortization.fullMonthlyPayment')}
+            kind="money"
+            value={paymentEuros}
+            onChange={setPaymentEuros}
+            missingHint={t('balance.amortization.missingPayment')}
+            highlight={missingPayment}
+            hint={paymentHint}
+          />
+          <MortgageDataField
+            label={t('balance.patrimony.interestRate')}
+            kind="rate"
+            value={rateInput}
+            onChange={setRateInput}
+            missingHint={t('balance.amortization.missingRate')}
+            highlight={missingRate}
+          />
+        </div>
+        {resolved ? (
+          <div className="mt-3 max-w-xs">
+            <KpiCard
+              compact
+              label={t('balance.amortization.totalInterest')}
+              value={formatMoney(resolved.baseline.totalInterest)}
+              hint={t('balance.amortization.baselineInterestHint')}
+              hideFooter
+            />
+          </div>
+        ) : null}
+      </div>
+
+      {canCalculate ? (
+        <>
+          <div>
+            <p className={`text-xs font-semibold uppercase tracking-wide ${ui.textLabel}`}>
+              {t('balance.amortization.simulateSection')}
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {[
+                ['none', 'modeNone'],
+                ['lump', 'modeOneTime'],
+                ['monthly', 'modeMonthly'],
+              ].map(([value, labelKey]) => (
+                <button
+                  key={value}
+                  type="button"
+                  className={mode === value ? ui.scenarioChipActive : ui.scenarioChip}
+                  onClick={() => setMode(value)}
+                >
+                  {t(`balance.amortization.${labelKey}`)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {mode === 'lump' ? (
+            <div className={`${ui.stackBlocks} max-w-xl`}>
+              <MoneyField
+                label={t('balance.amortization.extraOneTime')}
+                value={extraLump}
+                onChange={setExtraLump}
+              />
+              <div className="flex flex-wrap gap-2">
+                {[
+                  ['reduce_term', 'modeReduceTerm'],
+                  ['reduce_payment', 'modeReducePayment'],
+                ].map(([value, labelKey]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className={
+                      lumpMode === value ? ui.scenarioChipActive : ui.scenarioChip
+                    }
+                    onClick={() => setLumpMode(value)}
+                  >
+                    {t(`balance.amortization.${labelKey}`)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {mode === 'monthly' ? (
+            <div className="max-w-md">
+              <MoneyField
+                label={t('balance.amortization.extraMonthlyAmount')}
+                value={extraMonthly}
+                onChange={setExtraMonthly}
+              />
+            </div>
+          ) : null}
+
+          {resolved?.savings ? (
+            <div className={ui.stackBlocks}>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <KpiCard
+                  compact
+                  accent
+                  label={t('balance.amortization.interestSavedLabel')}
+                  value={formatMoney(resolved.savings.interest)}
+                  valueTone="savings"
+                  hideFooter
+                />
+                {resolved.savings.months > 0 ? (
+                  <KpiCard
+                    compact
+                    accent
+                    label={t('balance.amortization.timeSavedLabel')}
+                    value={formatTimeSavedDuration(t, resolved.savings.months)}
+                    hideFooter
+                  />
+                ) : null}
+                <KpiCard
+                  compact
+                  label={t('balance.amortization.withRepayment')}
+                  value={formatMoney(resolved.scenario.totalInterest)}
+                  hint={t('balance.amortization.interestAfterHint')}
+                  hideFooter
+                />
+                <KpiCard
+                  compact
+                  label={t('balance.amortization.endDate')}
+                  value={formatEndDate(resolved.scenario.endDate)}
+                  hint={t('balance.amortization.vsEndDate', {
+                    date: formatEndDate(resolved.baseline.endDate),
+                  })}
+                  hideFooter
+                />
+              </div>
+
+              <div
+                className={`rounded-xl border border-emerald-500/40 bg-emerald-50/80 p-4 text-sm dark:bg-emerald-950/30 ${ui.heading}`}
+              >
+                <p className="font-semibold">
+                  {t('balance.amortization.interestSaved', {
+                    amount: formatMoney(resolved.savings.interest),
+                  })}
+                </p>
+                {resolved.savings.months > 0 ? (
+                  <p>
+                    {formatTimeSavedBefore(t, resolved.savings.months)}
+                  </p>
+                ) : null}
+                {resolved.savings.totalExtraPaid != null ? (
+                  <p className={`mt-1 ${ui.textMuted}`}>
+                    {t('balance.amortization.totalExtraPaid', {
+                      amount: formatMoney(resolved.savings.totalExtraPaid),
+                    })}
+                  </p>
+                ) : null}
+                <p className={`mt-2 ${ui.textMuted}`}>
+                  {t('balance.amortization.impliedReturn', {
+                    rate: formatRatePercent(resolved.impliedReturn),
+                  })}
+                </p>
+              </div>
+
+              {compareBanner ? (
+                <PortfolioBanner
+                  tone={compareBanner.tone}
+                  message={t(`balance.amortization.${compareBanner.key}`, {
+                    portfolio: formatRatePercent(weightedPortfolioReturn),
+                    mortgage: formatRatePercent(resolved.impliedReturn),
+                  })}
+                />
+              ) : null}
+            </div>
+          ) : null}
+
+          <div>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className={`text-xs font-semibold uppercase tracking-wide ${ui.textLabel}`}>
+                {t('balance.amortization.scheduleSection')}
+              </p>
+              {resolved?.scenario ? (
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    className={
+                      scheduleView === 'scenario'
+                        ? ui.scenarioChipActive
+                        : ui.scenarioChip
+                    }
+                    onClick={() => setScheduleView('scenario')}
+                  >
+                    {t('balance.amortization.viewWithRepayment')}
+                  </button>
+                  <button
+                    type="button"
+                    className={
+                      scheduleView === 'baseline'
+                        ? ui.scenarioChipActive
+                        : ui.scenarioChip
+                    }
+                    onClick={() => setScheduleView('baseline')}
+                  >
+                    {t('balance.amortization.viewBaseline')}
+                  </button>
+                </div>
+              ) : null}
+            </div>
+
+            {activeSummary?.schedule?.length ? (
+              <AmortizationScheduleTable
+                rows={activeSummary.schedule}
+                totals={activeSummary}
+                formatDate={formatScheduleDate}
+              />
+            ) : null}
+          </div>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
+function formatTimeSavedDuration(t, totalMonths) {
+  const years = Math.floor(totalMonths / 12);
+  const months = totalMonths % 12;
+  if (years > 0 && months > 0) {
+    return t('balance.amortization.timeSavedDurationYearsMonths', { years, months });
+  }
+  if (years > 0) {
+    return t('balance.amortization.timeSavedDurationYears', { years });
+  }
+  return t('balance.amortization.timeSavedDurationMonths', { months });
+}
+
+function formatTimeSavedBefore(t, totalMonths) {
+  const years = Math.floor(totalMonths / 12);
+  const months = totalMonths % 12;
+  if (years > 0 && months > 0) {
+    return t('balance.amortization.timeSavedBeforeYearsMonths', { years, months });
+  }
+  if (years > 0) {
+    return t('balance.amortization.timeSavedBeforeYears', { years });
+  }
+  return t('balance.amortization.timeSavedBeforeMonths', { months });
+}
+
+function parseRateInput(raw) {
+  const cleaned = String(raw).trim().replace(',', '.');
+  if (!cleaned) return null;
+  const n = parseFloat(cleaned);
+  return Number.isFinite(n) && n >= 0 ? n / 100 : null;
+}
+
+function isValidRateDraft(raw) {
+  return raw === '' || /^[0-9]*[,.]?[0-9]*$/.test(raw);
+}
+
+const MORTGAGE_FIELD_SHELL =
+  'flex h-full flex-col rounded-xl border border-slate-200/80 p-3 dark:border-slate-700/80';
+const MORTGAGE_FIELD_SHELL_WARN =
+  'flex h-full flex-col rounded-xl border border-amber-400/50 bg-amber-50/40 p-3 dark:bg-amber-950/15';
+
+function MortgageDataField({
+  label,
+  kind,
+  hint,
+  missingHint,
+  value,
+  onChange,
+  highlight,
+}) {
+  const footnote =
+    highlight && missingHint ? missingHint : hint || null;
+  const footnoteClass =
+    highlight && missingHint
+      ? 'text-amber-800 dark:text-amber-200'
+      : ui.textMuted;
+
+  return (
+    <div className={highlight ? MORTGAGE_FIELD_SHELL_WARN : MORTGAGE_FIELD_SHELL}>
+      <p className={`min-h-[2.5rem] text-xs font-medium leading-snug ${ui.textLabel}`}>
+        {label}
+      </p>
+      <div className="mt-1 w-full">
+        {kind === 'rate' ? (
+          <div className="relative w-full">
+            <input
+              type="text"
+              inputMode="decimal"
+              value={value}
+              onChange={(e) => {
+                const next = e.target.value;
+                if (isValidRateDraft(next)) onChange(next);
+              }}
+              placeholder="2,25"
+              className={`${ui.input} w-full max-w-none py-2.5 pr-8 text-right text-sm tabular-nums`}
+            />
+            <span
+              className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm ${ui.textMuted}`}
+            >
+              %
+            </span>
+          </div>
+        ) : (
+          <MoneyInput fullWidth value={value} onChange={onChange} className="max-w-none" />
+        )}
+      </div>
+      <p
+        className={`mt-2 min-h-[2.75rem] text-[11px] leading-snug ${footnoteClass} ${
+          footnote ? '' : 'invisible'
+        }`}
+      >
+        {footnote || '\u00a0'}
+      </p>
+    </div>
+  );
+}
+
+function PortfolioBanner({ tone, message }) {
+  const styles = {
+    info: 'border-sky-500/40 bg-sky-50/80 text-sky-950 dark:bg-sky-950/30 dark:text-sky-100',
+    success:
+      'border-emerald-500/40 bg-emerald-50/80 text-emerald-950 dark:bg-emerald-950/30 dark:text-emerald-100',
+    neutral:
+      'border-slate-400/40 bg-slate-50/80 text-slate-800 dark:bg-slate-900/50 dark:text-slate-200',
+  };
+  return (
+    <p className={`rounded-xl border p-3 text-sm ${styles[tone] ?? styles.neutral}`}>
+      {message}
+    </p>
+  );
+}
+

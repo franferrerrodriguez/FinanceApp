@@ -1,3 +1,5 @@
+import { roundMoney } from './money.js';
+
 /** Payroll: base pay and number of pays → uniform effective monthly salary. */
 
 export function resolveNumPagas(settings) {
@@ -15,7 +17,7 @@ export function resolveNumPagas(settings) {
 export function computeMonthlyNetSalaryEffective(settings) {
   const paga = Math.max(0, settings?.monthlyNetSalary ?? 0);
   const numPagas = resolveNumPagas(settings);
-  return Math.round(((paga * numPagas) / 12) * 100) / 100;
+  return roundMoney((paga * numPagas) / 12);
 }
 
 /** Effective monthly payroll income (explicit alias). */

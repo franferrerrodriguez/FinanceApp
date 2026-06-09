@@ -247,6 +247,24 @@
       "monthlyChange": "Variación mensual"
     },
     "alertsTitle": "Alertas",
+    "diagnosis": {
+      "title": "Diagnóstico financiero",
+      "subtitle": "Observaciones personalizadas a partir de tus datos reales.",
+      "viewAction": "Ver más",
+      "actionUpdateBalances": "Actualizar saldos →",
+      "actionReviewPatrimony": "Ver patrimonio →",
+      "actionViewProjection": "Ver proyección →",
+      "actionReviewBudget": "Revisar presupuesto →",
+      "items": {
+        "stale_balances": "Llevas {{count}} meses con saldos incompletos — tu proyección y patrimonio pueden estar desactualizados.",
+        "emergency_fund_covered": "Tu fondo de emergencia está cubierto ✓ ({{months}} meses de gastos).",
+        "emergency_fund_excess": "Tu fondo de emergencia está cubierto ✓ — podrías mover {{amount}} de liquidez a inversión.",
+        "emergency_fund_gap": "Tu colchón cubre {{monthsCovered}} meses; el objetivo es {{monthsTarget}}. Te faltan {{shortfall}}.",
+        "investment_rate_strong": "Tu tasa de inversión es {{rate}} — por encima del {{benchmark}} de referencia. Para alcanzar FIRE en {{years}} años conviene mantenerla.",
+        "investment_rate_fire": "Inviertes el {{rate}} de tus ingresos. Con el ritmo actual, FIRE podría llegar en unos {{years}} años.",
+        "low_investment_high_savings": "Ahorras el {{savingsRate}} pero inviertes solo el {{investmentRate}}. Revisa si puedes destinar más a inversión."
+      }
+    },
     "alerts": {
       "negative_cashflow": "Tus gastos superan tus ingresos este mes.",
       "missing_income": "No has indicado ingresos netos este mes. Edita el salario en «Salario e ingresos» para que el resumen y las alertas tengan sentido.",
@@ -319,7 +337,11 @@
       "contributions": "Aportaciones",
       "contributionsShort": "Aportaciones",
       "patrimony": "Activos y pasivos",
-      "patrimonyShort": "Patrimonio"
+      "patrimonyShort": "Patrimonio",
+      "mortgage": "Amortización hipoteca",
+      "mortgageShort": "Hipoteca",
+      "analysis": "Análisis",
+      "analysisShort": "Análisis"
     },
     "setup": {
       "title": "Configura tu patrimonio",
@@ -378,6 +400,7 @@
       "housingMortgageName": "Hipoteca",
       "housingDebtTitle": "Capital pendiente de la hipoteca",
       "housingDebtMissing": "Pendiente — actualiza saldos",
+      "housingDebtShareHint": "Tu parte: {{share}} ({{percent}}%)",
       "housingDebtAction": "Actualizar saldos",
       "tramosTitle": "Salario e ingresos",
       "tramosSubtitle": "Tu situación de hoy. Si cambia el salario o las pagas, añade un registro con el mes desde el que aplica.",
@@ -542,6 +565,10 @@
       "closeHousingMortgageQuota": "Tu cuota en Presupuesto es {{payment}}/mes — no la pongas aquí.",
       "closeHousingMortgageQuotaMissing": "Configura la cuota en Presupuesto → Vivienda. Aquí va el total que debes al banco.",
       "closeHousingMortgageHint": "Escribe cuánto debes en total hoy (capital pendiente). Lo verás en el extracto hipotecario; baja poco a poco cada mes.",
+      "closeHousingMortgageSharedHint": "Introduce el capital total pendiente. El reparto usa el mismo % que en Presupuesto → Vivienda.",
+      "closeHousingMortgageSharedShort": "Capital total pendiente (no la cuota)",
+      "closeHousingMortgageSharePreview": "Tu parte: {{share}} ({{percent}}%)",
+      "closeHousingMortgageShort": "Total pendiente con el banco (no la cuota mensual)",
       "closeMortgagePrevHint": "Mes pasado: {{prev}} — baja ~{{drop}}/mes (estimado)",
       "closePrefillHint": "Igual que {{month}}",
       "closeQuickSaveSame": "Todo igual que el mes pasado → Guardar",
@@ -581,6 +608,8 @@
       "tracksGainLossHint": "Actívalo en fondos, planes de pensiones o cuentas de inversión donde el proveedor muestra ganancias/pérdidas (Indexa, Myinvestor…).",
       "tableProvider": "Entidad",
       "tablePayment": "Cuota / mes",
+      "tablePaymentFull": "Cuota íntegra: {{amount}}",
+      "tableBalanceTotal": "Total: {{total}}",
       "tableActive": "Activo en saldos",
       "editRow": "Editar",
       "deleteRow": "Eliminar",
@@ -609,7 +638,8 @@
       "liabilitiesTitle": "Pasivos",
       "liabilitiesSubtitle": "Cuota mensual (gasto) y capital pendiente (saldo). El saldo lo actualizas tú con «Actualizar saldos» — la app no calcula la amortización.",
       "liabilitiesEmpty": "Sin deudas registradas.",
-      "monthlyPaymentMortgageHint": "La cuota de la hipoteca se edita en Presupuesto → Vivienda.",
+      "monthlyPaymentMortgageHint": "La cuota se edita en Presupuesto → Vivienda.",
+      "monthlyPaymentSharePreview": "Tu parte en el presupuesto: {{share}} ({{percent}}%)",
       "addFirstLiability": "Añadir primer pasivo",
       "addLiability": "Añadir pasivo",
       "addAnotherLiability": "Añadir otro pasivo",
@@ -629,7 +659,10 @@
       "monthlyPayment": "Cuota mensual (€)",
       "monthlyPaymentHint": "Cuota que pagas cada mes (gasto en tu presupuesto). No es lo que amortizas de capital.",
       "outstandingBalance": "Capital pendiente (€)",
+      "outstandingBalanceTotal": "Capital pendiente total (€)",
       "outstandingBalanceHint": "Cuánto debes hoy. También lo actualizas con «Actualizar saldos».",
+      "outstandingBalanceSharedConfigHint": "El reparto usa el mismo % que en Presupuesto → Vivienda.",
+      "outstandingBalanceSharePreview": "Tu parte: {{share}} ({{percent}}%)",
       "interestRate": "Tipo de interés (%)",
       "interestRateHint": "Opcional; para amortización futura",
       "realDataBadge": "Datos reales",
@@ -648,6 +681,72 @@
       "historyEmpty": "Actualiza saldos en al menos un mes para ver el detalle histórico.",
       "historyScrollHint": "Desliza a la derecha: los saldos guardados aparecen en el mes más reciente (p. ej. junio)",
       "historyRow": "Cuenta / deuda"
+    },
+    "amortization": {
+      "title": "Amortización anticipada",
+      "subtitle": "Simula cuánto ahorras en intereses y tiempo si amortizas capital de tu hipoteca. Los datos se rellenan solos y puedes ajustarlos.",
+      "empty": "No tienes ninguna hipoteca registrada. Añádela en Activos y pasivos para usar esta calculadora.",
+      "goToPatrimony": "Ir a Activos y pasivos →",
+      "mortgageData": "Datos de la hipoteca",
+      "simulateSection": "Simular escenario",
+      "fullMonthlyPayment": "Cuota íntegra (€)",
+      "fullMonthlyPaymentHint": "La cuota de tu recibo bancario (no solo la del presupuesto si difiere).",
+      "yourShareHint": "Tu parte en el presupuesto: {{amount}} ({{percent}}%)",
+      "fullCapital": "Capital pendiente total (€)",
+      "yourShareCapital": "Tu parte del capital (€)",
+      "yourShareCapitalHint": "Tu parte: {{amount}} ({{percent}}%)",
+      "missingPayment": "Indica la cuota íntegra del banco",
+      "toggle": "Calcular amortización anticipada",
+      "modeNone": "Sin amortización extra",
+      "modeOneTime": "Pago único",
+      "modeMonthly": "Pago mensual extra",
+      "modeReduceTerm": "Acabar antes (misma cuota)",
+      "modeReducePayment": "Pagar menos cada mes (mismo plazo)",
+      "extraOneTime": "¿Cuánto quieres amortizar?",
+      "extraMonthlyAmount": "¿Cuánto más pagarías cada mes?",
+      "currentSituation": "Situación actual",
+      "withRepayment": "Con amortización",
+      "months": "meses",
+      "endDate": "Fin previsto",
+      "totalInterest": "Intereses totales",
+      "monthlySaving": "Cuota mensual",
+      "savingsTitle": "Tu ahorro",
+      "interestSaved": "Ahorras {{amount}} en intereses",
+      "timeSavedDurationMonths": "{{months}} meses",
+      "timeSavedDurationYears": "{{years}} años",
+      "timeSavedDurationYearsMonths": "{{years}} años y {{months}} meses",
+      "timeSavedBeforeMonths": "Acabas {{months}} meses antes",
+      "timeSavedBeforeYears": "Acabas {{years}} años antes",
+      "timeSavedBeforeYearsMonths": "Acabas {{years}} años y {{months}} meses antes",
+      "impliedReturn": "Al amortizar, dejas de pagar intereses sobre ese dinero al {{rate}} anual. Es un ahorro seguro: no depende de la bolsa ni de otros productos.",
+      "portfolioVsMortgage_invest": "Tu cartera estimada ({{portfolio}}) rinde más que tu hipoteca ({{mortgage}}). Matemáticamente, invertir ese dinero genera más que amortizar. Aunque amortizar da más tranquilidad psicológica.",
+      "portfolioVsMortgage_repay": "Tu hipoteca ({{mortgage}}) cuesta más que tu cartera estimada ({{portfolio}}). Matemáticamente, amortizar es mejor que invertir en este momento.",
+      "portfolioVsMortgage_equal": "Están prácticamente igualadas. La decisión depende de tu tolerancia al riesgo, no de los números.",
+      "fullSchedule": "Ver tabla completa de amortización",
+      "scheduleSection": "Tabla de amortización",
+      "viewBaseline": "Sin amortización",
+      "viewWithRepayment": "Con amortización",
+      "baselineInterestHint": "Sin amortización anticipada",
+      "interestSavedLabel": "Ahorro en intereses",
+      "timeSavedLabel": "Tiempo ahorrado",
+      "interestAfterHint": "Intereses totales con tu escenario",
+      "vsEndDate": "Antes: {{date}}",
+      "totalExtraPaid": "Total extra aportado: {{amount}}",
+      "missingRate": "Introduce el tipo de interés de tu hipoteca para calcular",
+      "missingCapital": "Actualiza el saldo pendiente de la hipoteca en «Actualizar saldos»",
+      "scheduleDate": "Fecha",
+      "schedulePayment": "Cuota",
+      "scheduleInterest": "Intereses",
+      "schedulePrincipal": "Capital",
+      "scheduleStartBalance": "Base cálculo",
+      "scheduleBalance": "Saldo pendiente",
+      "scheduleBalanceShort": "Saldo",
+      "scheduleStartBalanceShort": "Base",
+      "scheduleTotals": "Totales",
+      "scheduleMonth": "Mes",
+      "tableScrollHint": "Desliza para ver todas las columnas",
+      "tableRowCount": "{{count}} cuotas",
+      "tableTotalsSummary": "Totales: {{paid}} pagados · {{principal}} capital · {{interest}} intereses"
     },
     "institutionUnspecified": "Sin especificar",
     "institutionOtherPlaceholder": "Nombre del banco o entidad",
@@ -894,9 +993,9 @@
     "expenses": {
       "title": "Tus gastos al mes",
       "subtitle": "Vivienda, hogar, supermercado y ocio. Usa medias si varían.",
-      "liabilitiesTitle": "Deudas",
-      "liabilitiesHint": "Elige vivienda y añade otras deudas si las tienes.",
-      "liabilitiesEmpty": "Sin deudas. Si eliges hipoteca, aparecerá aquí.",
+      "liabilitiesTitle": "Otras deudas",
+      "liabilitiesHint": "Préstamos, tarjetas u otras deudas además de la vivienda.",
+      "liabilitiesEmpty": "Sin otras deudas.",
       "housingTypeLabel": "Tipo de vivienda",
       "housingType": {
         "mortgage": "Hipoteca",
@@ -968,5 +1067,177 @@
     "conservative": "Conservador",
     "moderate": "Moderado",
     "optimistic": "Optimista"
+  },
+  "statementAnalysis": {
+    "title": "Análisis de extractos",
+    "subtitle": "Sube el CSV de tu banco para detectar suscripciones, categorías y anomalías.",
+    "privacyNote": "El CSV se procesa en tu dispositivo. Solo se envían descripciones e importes anonimizados a nuestro servidor para generar el informe.",
+    "analyze": "Analizar extracto",
+    "analyzing": "Analizando…",
+    "insightImpact": "Impacto estimado: {{amount}}",
+    "errors": {
+      "NOT_CONFIGURED": "El análisis no está disponible en este momento",
+      "UNAUTHORIZED": "Inicia sesión para analizar el extracto",
+      "QUOTA_EXCEEDED": "Cuota de análisis agotada — inténtalo más tarde",
+      "API_ERROR": "Error al analizar — inténtalo más tarde",
+      "PARSE_ERROR": "No se pudo interpretar el informe"
+    },
+    "reportSummary": {
+      "expenses": "Gastos totales",
+      "income": "Ingresos totales",
+      "monthlyAvg": "Media mensual de gasto"
+    },
+    "dropHint": "Arrastra tu extracto CSV aquí",
+    "selectFile": "Seleccionar archivo",
+    "summary": "{{count}} movimientos · del {{from}} al {{to}} · banco detectado: {{bank}}",
+    "tempWarning": "Los extractos son temporales: al salir de esta pestaña o refrescar desaparecen. Solo se guardan los gastos que añadas al presupuesto.",
+    "tabsLabel": "Secciones del análisis",
+    "tabs": {
+      "subscriptions": "Suscripciones",
+      "categories": "Por categoría",
+      "alerts": "Alertas",
+      "movements": "Movimientos"
+    },
+    "addedToBudget": "Añadido a suscripciones del presupuesto",
+    "frequency": {
+      "monthly": "Mensual",
+      "quarterly": "Trimestral",
+      "annual": "Anual"
+    },
+    "manualMap": {
+      "title": "Formato no reconocido",
+      "hint": "Revisa la vista previa y asigna las columnas manualmente.",
+      "dateCol": "Columna fecha",
+      "descCol": "Columna descripción",
+      "amountCol": "Columna importe",
+      "apply": "Analizar con este mapeo"
+    },
+    "subscriptions": {
+      "name": "Nombre",
+      "amount": "Importe",
+      "frequency": "Frecuencia",
+      "last": "Última vez",
+      "yearTotal": "Total/año",
+      "action": "Acción",
+      "addToBudget": "Añadir a presupuesto",
+      "ignore": "Ignorar",
+      "empty": "No hemos detectado cargos recurrentes en este extracto.",
+      "footer": "{{count}} suscripciones · {{monthly}}/mes · {{yearly}}/año"
+    },
+    "categories": {
+      "category": "Categoría",
+      "actual": "Gasto real",
+      "budgeted": "Presupuestado",
+      "diff": "Diferencia",
+      "over": "↑ {{amount}}",
+      "empty": "Sin gastos categorizables en el extracto.",
+      "supermarket": "Supermercado",
+      "gas": "Gasolinera",
+      "restaurants": "Restaurantes",
+      "pharmacy": "Farmacia",
+      "amazon": "Compras online",
+      "other": "Otros"
+    },
+    "alerts": {
+      "empty": "Sin anomalías detectadas ✓",
+      "duplicate_charge": "Posible cargo duplicado el {{date}}: {{description}} ({{amount}}, {{count}} veces)",
+      "duplicate": "{{description}} ({{amount}} · {{date}})",
+      "price_increase": "{{description}} ({{amount}} · {{date}})",
+      "unusual_amount": "{{description}} ({{amount}} · {{date}})",
+      "foreign_currency": "Cargo en moneda extranjera o con comisión: {{description}} ({{amount}})",
+      "high_spending_month": "Gasto alto en {{month}}: {{total}} (media {{average}})"
+    },
+    "movements": {
+      "date": "Fecha",
+      "description": "Descripción",
+      "category": "Categoría",
+      "amount": "Importe",
+      "allCategories": "Todas las categorías",
+      "minAmount": "Importe mínimo"
+    }
+  },
+  "diagnostics": {
+    "card": {
+      "title": "Tu diagnóstico",
+      "subtitle": "Observaciones basadas en tus datos reales",
+      "viewAll": "Ver diagnóstico completo →"
+    },
+    "page": {
+      "title": "Tu diagnóstico financiero",
+      "subtitle": "Basado en tus datos reales, no en consejos genéricos.",
+      "updated": "Actualizado hoy",
+      "empty": "Completa tu perfil en Patrimonio para ver tu diagnóstico.",
+      "emptyAction": "Ir a Patrimonio →",
+      "sectionOk": "Lo que va bien",
+      "sectionWarn": "Puntos de atención",
+      "sectionOpportunity": "Oportunidades"
+    },
+    "emergencyFund": {
+      "ok": {
+        "title": "Fondo de emergencia sólido",
+        "body": "Tu liquidez cubre {{months}} meses de gastos — por encima del objetivo habitual de 6."
+      },
+      "mid": {
+        "title": "Fondo de emergencia mejorable",
+        "body": "Tienes {{months}} meses cubiertos. El objetivo habitual son 6."
+      },
+      "low": {
+        "title": "Fondo de emergencia bajo",
+        "body": "Solo tienes {{months}} meses cubiertos. Prioriza llegar a 3 antes de invertir más."
+      },
+      "action": "Revisar fondo de emergencia →"
+    },
+    "investmentRate": {
+      "ok": {
+        "title": "Buena tasa de inversión",
+        "body": "Inviertes el {{rate}} de tu salario — por encima del 20% recomendado."
+      },
+      "mid": {
+        "title": "Puedes subir tu inversión",
+        "body": "Inviertes el {{rate}} de tu salario. Subir al 20% reduciría tu horizonte FIRE en ~{{yearsSaved}} años."
+      },
+      "low": {
+        "title": "Tasa de inversión baja",
+        "body": "Solo inviertes el {{rate}} de tu salario. Con tus gastos actuales tienes margen para subir {{gap}}/mes."
+      },
+      "action": "Ajustar inversión mensual →"
+    },
+    "excessLiquidity": {
+      "title": "Liquidez por encima de lo necesario",
+      "body": "Tienes {{liquid}} en cuentas — cubres {{months}} meses de gastos. El exceso sobre 6 meses ({{excess}}) podría estar generando un {{indexRate}} real en fondos indexados en lugar del {{savingsRate}} en cuenta.",
+      "action": "Revisar activos →"
+    },
+    "highInterest": {
+      "title": "Deuda con interés alto",
+      "body": "Tienes {{name}} con un {{rate}} de interés. Amortizarlo antes de invertir te garantiza esa rentabilidad libre de riesgo.",
+      "action": "Ver pasivos →"
+    },
+    "staleSnapshots": {
+      "title": "Saldos desactualizados",
+      "body": "Llevas {{days}} días sin actualizar saldos. Tu patrimonio neto y proyección pueden estar desactualizados.",
+      "action": "Actualizar ahora →"
+    },
+    "portfolioReturn": {
+      "below": {
+        "title": "Rentabilidad por debajo de lo estimado",
+        "body": "Tu cartera lleva un {{real}} real vs. el {{estimated}} estimado en proyección. ¿Quieres ajustar el parámetro para una proyección más realista?"
+      },
+      "above": {
+        "title": "Rentabilidad por encima de lo estimado",
+        "body": "Tu cartera lleva un {{real}} real — por encima del {{estimated}} estimado. Buen ritmo."
+      },
+      "action": "Ir a proyección →"
+    },
+    "fire": {
+      "reachable": {
+        "title": "Horizonte de independencia financiera",
+        "body": "A tu ritmo actual alcanzarías independencia financiera en {{year}} (en {{years}} años), cuando tus inversiones generen ~{{monthlyIncome}}/mes."
+      },
+      "unreachable": {
+        "title": "Independencia financiera lejana",
+        "body": "Con la rentabilidad y aportación actuales no se alcanza independencia financiera en 50 años. Aumentar la aportación mensual en {{extra}} lo haría posible en {{years}} años."
+      },
+      "action": "Ver proyección →"
+    }
   }
 }

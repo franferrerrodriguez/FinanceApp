@@ -8,6 +8,7 @@ import { ui } from '../lib/uiClasses';
 export function FormFieldFrame({
   label,
   hint,
+  hintAfter,
   required = false,
   children,
   className = '',
@@ -60,6 +61,11 @@ export function FormFieldFrame({
         </p>
       ) : null}
       <div className={controlClassName || undefined}>{children}</div>
+      {hintAfter ? (
+        <p className={`${ui.formFieldHint} ${ui.textMuted} ${ui.formFieldHintGap}`}>
+          {hintAfter}
+        </p>
+      ) : null}
     </div>
   );
 }

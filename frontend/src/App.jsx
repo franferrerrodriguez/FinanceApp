@@ -13,6 +13,7 @@ import { useIneInflationSync } from './hooks/useIneInflationSync';
 import { BalancePage } from './modules/balance/BalancePage';
 import { DashboardPage } from './modules/dashboard/DashboardPage';
 import { OnboardingGate } from './modules/onboarding/OnboardingGate';
+import { DiagnosticoPage } from './modules/diagnostics/DiagnosticoPage';
 import { ProjectionPage } from './modules/projection/ProjectionPage';
 import { getOnboardingEntryPath } from './lib/onboardingAccess';
 import { useOnboardingState, useProfile, useSettings } from './store/hooks';
@@ -55,6 +56,14 @@ function AppRoutes() {
           element={
             <RequireOnboarding>
               <BalancePage />
+            </RequireOnboarding>
+          }
+        />
+        <Route
+          path="diagnostico"
+          element={
+            <RequireOnboarding>
+              <DiagnosticoPage />
             </RequireOnboarding>
           }
         />

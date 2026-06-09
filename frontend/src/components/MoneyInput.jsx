@@ -1,11 +1,7 @@
 import { useCallback, useState } from 'react';
-import { parseMoneyEuros } from '../lib/money';
+import { useTranslation } from 'react-i18next';
+import { formatMoneyInputValue, parseMoneyEuros } from '../lib/money';
 import { ui } from '../lib/uiClasses';
-
-function formatMoneyDisplay(value) {
-  if (value == null || value === 0) return '';
-  return String(value);
-}
 
 /** Bare € input for lists and embedded rows (no label frame). */
 export function MoneyInput({
@@ -20,8 +16,14 @@ export function MoneyInput({
   className = '',
   'aria-label': ariaLabel,
 }) {
+  const { i18n } = useTranslation();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
+
+  const formatDisplay = useCallback(
+    (amount) => formatMoneyInputValue(amount, i18n.language),
+    [i18n.language],
+  );
 
   const commitDraft = useCallback(
     (raw) => {
@@ -30,7 +32,7 @@ export function MoneyInput({
     [onChange],
   );
 
-  const displayValue = editing ? draft : formatMoneyDisplay(value);
+  const displayValue = editing ? draft : formatDisplay(value);
   const widthClass = fullWidth ? 'w-full max-w-none' : `w-full ${ui.inputAmount}`;
   const inputClass = prefilled
     ? `${ui.input} ${ui.inputMoney} w-full max-w-none border-slate-300 bg-slate-50 text-slate-600 dark:border-slate-600 dark:bg-slate-800/80 dark:text-slate-300`
@@ -53,7 +55,7 @@ export function MoneyInput({
         onFocus={() => {
           if (disabled) return;
           setEditing(true);
-          setDraft(formatMoneyDisplay(value));
+          setDraft(formatDisplay(value));
         }}
         onBlur={() => {
           setEditing(false);

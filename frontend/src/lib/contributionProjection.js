@@ -1,4 +1,4 @@
-import { sumEuros } from './money.js';
+import { roundMoney, sumEuros } from './money.js';
 import {
   getAverageContributionsByAsset,
   getLastMonthContributionsByAsset,
@@ -21,10 +21,6 @@ export const PROJECTION_CONTRIBUTION_ASSUMPTION = {
   LAST_MONTH: 'last_month',
   LEGACY_PLANS: 'legacy_plans',
 };
-
-function roundMoney(value) {
-  return Math.round((value ?? 0) * 100) / 100;
-}
 
 function getLatestSnapshotMonthKey(snapshots = []) {
   const keys = Object.keys(groupSnapshotsByMonth(snapshots))

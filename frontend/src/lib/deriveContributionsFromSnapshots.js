@@ -4,11 +4,8 @@ import { isContributionEligibleAsset } from './contributionPlans.js';
 import { getSnapshotValueForItem } from './patrimony.js';
 import { getAssetAnnualReturn } from './projectionReturns.js';
 import { SNAPSHOT_ITEM_TYPE } from './snapshotItemTypes.js';
+import { roundMoney } from './money.js';
 import { groupSnapshotsByMonth } from './snapshotUtils.js';
-
-function roundMoney(value) {
-  return Math.round((value ?? 0) * 100) / 100;
-}
 
 export function getPreviousMonthKeyWithData(snapshots, monthKey) {
   const keys = Object.keys(groupSnapshotsByMonth(snapshots))

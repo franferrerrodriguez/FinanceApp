@@ -49,8 +49,14 @@ import { useRecordBalances } from './RecordBalancesProvider';
 import { BALANCE_SETUP_STEP } from '../../../lib/balanceSetupProgress';
 import {
   getLiabilityMonthlyPaymentDisplay,
+  getMortgageBalanceShareInfo,
+  getMortgageFullMonthlyPayment,
+  getMortgageYourShareOutstandingBalance,
+  getMortgageYourSharePayment,
   HOUSING_TYPE,
   isLinkedHousingMortgage,
+  isLinkedMortgageLiability,
+  mortgageOutstandingShareToTotal,
 } from '../../../lib/housingLiability';
 import { getLiabilityOutstandingFromSnapshots } from '../../../lib/liabilitySnapshots';
 import { PatrimonyCatalogTable } from './PatrimonyCatalogTable';
@@ -111,11 +117,12 @@ export function PatrimonyPanel() {
 
   const getLiabilityBalance = useCallback(
     (liability) => {
-      const raw = getSnapshotValueForItem(snapshots, currentMonthKey, {
-        type: SNAPSHOT_ITEM_TYPE.LIABILITY,
-        id: liability.id,
-      });
-      return raw != null && Number.isFinite(raw) ? Math.abs(Number(raw) || 0) : null;
+      const share = getMortgageYourShareOutstandingBalance(
+        snapshots,
+        liability,
+        currentMonthKey,
+      );
+      return share != null && Number.isFinite(share) ? share : null;
     },
     [snapshots, currentMonthKey],
   );
@@ -509,14 +516,13 @@ function PatrimonyLiabilitiesSection({
   );
   const [modal, setModal] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
-
   const openCreate = () =>
     setModal({
       mode: 'create',
       draft: { ...createLiability({ name: '' }), outstandingBalance: '' },
     });
   const openEdit = (liability) => {
-    const outstanding = getLiabilityOutstandingFromSnapshots(
+    const share = getLiabilityOutstandingFromSnapshots(
       snapshots,
       liability.id,
       monthKey,
@@ -526,22 +532,29 @@ function PatrimonyLiabilitiesSection({
       id: liability.id,
       draft: {
         ...liability,
-        outstandingBalance: outstanding ?? '',
+        outstandingBalance:
+          mortgageOutstandingShareToTotal(settings, liability, share) ??
+          share ??
+          '',
       },
     });
   };
   const closeModal = () => setModal(null);
 
   const handleModalSave = async (draft) => {
-    const { outstandingBalance, ...fields } = draft;
+    const { outstandingBalance, enteredOutstandingTotal, ...fields } = draft;
+    const liabilityPatch = {
+      ...fields,
+      ...(enteredOutstandingTotal != null ? { enteredOutstandingTotal } : {}),
+    };
     if (modal?.mode === 'create') {
-      const created = createLiability(fields);
+      const created = createLiability(liabilityPatch);
       addLiability(created);
       if (outstandingBalance != null) {
         setLiabilityOutstandingBalance(created.id, outstandingBalance, monthKey);
       }
     } else if (modal?.mode === 'edit') {
-      updateLiability(modal.id, fields);
+      updateLiability(modal.id, liabilityPatch);
       if (outstandingBalance != null) {
         setLiabilityOutstandingBalance(modal.id, outstandingBalance, monthKey);
       }
@@ -581,6 +594,25 @@ function PatrimonyLiabilitiesSection({
     if (liability) setDeleteTarget(liability);
   };
 
+  const getPaymentSubtext = (item) => {
+    if (!isLinkedMortgageLiability(item, settings)) return null;
+    const paymentShare = getMortgageYourSharePayment(settings, item);
+    if (!paymentShare) return null;
+    return t('balance.patrimony.tablePaymentFull', {
+      amount: formatMoney(getMortgageFullMonthlyPayment(settings, item)),
+    });
+  };
+
+  const getBalanceSubtext = (item) => {
+    const share = getBalance(item);
+    if (share == null) return null;
+    const balanceShare = getMortgageBalanceShareInfo(settings, item, share);
+    if (!balanceShare) return null;
+    return t('balance.patrimony.tableBalanceTotal', {
+      total: formatMoney(balanceShare.fullTotal),
+    });
+  };
+
   return (
     <section className={`${ui.chartCard} ${ui.stackSection}`}>
       <SectionHeader
@@ -601,7 +633,9 @@ function PatrimonyLiabilitiesSection({
           providerLabel={(item) =>
             formatMoney(getLiabilityMonthlyPaymentDisplay(settings, item))
           }
+          getPaymentSubtext={getPaymentSubtext}
           getBalance={getBalance}
+          getBalanceSubtext={getBalanceSubtext}
           onEdit={openEdit}
           onDelete={setDeleteTarget}
         />

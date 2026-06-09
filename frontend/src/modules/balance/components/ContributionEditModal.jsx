@@ -13,7 +13,7 @@ import {
 } from '../../../lib/contributionEntries';
 import { getAssetAnnualReturn } from '../../../lib/projectionReturns';
 import { ui } from '../../../lib/uiClasses';
-import { formatPercent } from '../../../utils/formatters';
+import { formatRatePercent } from '../../../utils/formatters';
 
 export function ContributionEditModal({
   open,
@@ -52,7 +52,7 @@ export function ContributionEditModal({
   const canSave = isSavableContributionEntry(draft, assets);
 
   const assetHint = linkedAsset
-    ? `${t(`categories.asset.${linkedAsset.category}`)} · ${t('balance.contributions.returnFromAsset', { rate: formatPercent(assetReturn) })}`
+    ? `${t(`categories.asset.${linkedAsset.category}`)} · ${t('balance.contributions.returnFromAsset', { rate: formatRatePercent(assetReturn) })}`
     : t('balance.contributions.assetModalHint');
 
   return (

@@ -1,4 +1,4 @@
-import { sumEuros } from './money.js';
+import { roundMoney, sumEuros } from './money.js';
 import { getAssetAnnualReturn } from './projectionReturns.js';
 import { getProjectionAnnualRate } from './projectionRates.js';
 import {
@@ -59,7 +59,7 @@ function buildBreakdownFromAmountsByAsset(amountsByAsset, assets = []) {
       providerId: asset?.provider ?? 'other',
       category: asset?.category ?? 'other',
       label: asset?.name ?? '',
-      amount: Math.round(amount * 100) / 100,
+      amount: roundMoney(amount),
     });
   }
   breakdown.sort((a, b) => a.label.localeCompare(b.label));
@@ -122,7 +122,7 @@ export function getAverageContributionsByAsset(
   const averaged = Object.fromEntries(
     Object.entries(amountsByAsset).map(([assetId, sum]) => [
       assetId,
-      Math.round((sum / divisor) * 100) / 100,
+      roundMoney(sum / divisor),
     ]),
   );
 

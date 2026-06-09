@@ -15,9 +15,14 @@ import {
   RecordBalancesProvider,
 } from './components/RecordBalancesProvider';
 
+import { StatementAnalysisPanel } from './components/StatementAnalysisPanel';
+import { MortgageAmortizationPanel } from './components/MortgageAmortizationPanel';
+
 const TAB_PANELS = {
   [BALANCE_TAB.CASHFLOW]: CashflowPanel,
   [BALANCE_TAB.PATRIMONY]: PatrimonyPanel,
+  [BALANCE_TAB.MORTGAGE]: MortgageAmortizationPanel,
+  [BALANCE_TAB.ANALYSIS]: StatementAnalysisPanel,
 };
 
 export function BalancePage() {

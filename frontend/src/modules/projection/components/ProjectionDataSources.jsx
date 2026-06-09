@@ -19,7 +19,7 @@ import {
 } from '../../../lib/projectionBuckets';
 import { ui } from '../../../lib/uiClasses';
 import { useFinanceData } from '../../../store/hooks';
-import { formatMoney, formatPercent } from '../../../utils/formatters';
+import { formatMoney, formatRatePercent } from '../../../utils/formatters';
 
 export function ProjectionDataSources() {
   const { t } = useTranslation();
@@ -189,7 +189,7 @@ export function ProjectionDataSources() {
                 <span className={`shrink-0 font-medium ${ui.heading}`}>
                   {formatMoney(initialState.buckets[bucket])}{' '}
                   <span className={`text-xs font-normal ${ui.textMuted}`}>
-                    @ {formatPercent(initialState.bucketRates[bucket] ?? 0)}
+                    @ {formatRatePercent(initialState.bucketRates[bucket] ?? 0)}
                   </span>
                 </span>
               </li>
