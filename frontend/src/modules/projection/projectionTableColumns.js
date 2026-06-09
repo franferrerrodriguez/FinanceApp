@@ -36,7 +36,7 @@ const FIXED_WIDTH_COLUMNS = new Set([
 /** px — mobile headers use full phrases (see *Short in locales) */
 const COLUMN_WIDTH_PX = {
   year: { narrow: 28, wide: 32 },
-  date: { narrow: 68, wide: 80 },
+  date: { narrow: 44, wide: 48 },
   salary: { narrow: 112, wide: 120 },
   fixed: { narrow: 120, wide: 128 },
   groceries: { narrow: 108, wide: 112 },
@@ -74,7 +74,25 @@ export function isFixedWidthColumn(key) {
   return FIXED_WIDTH_COLUMNS.has(key);
 }
 
-/** Fixed columns (year, date) stay content-width; others grow to fill the row. */
+export function columnGridTemplate(columnKeys, narrow) {
+  return columnKeys
+    .map((key) => {
+      const w = getColumnWidthPx(key, narrow);
+      if (isFixedWidthColumn(key)) return `${w}px`;
+      return `minmax(${w}px, 1fr)`;
+    })
+    .join(' ');
+}
+
+export function tableGridStyle(columnKeys, narrow) {
+  return {
+    display: 'grid',
+    gridTemplateColumns: columnGridTemplate(columnKeys, narrow),
+    width: '100%',
+  };
+}
+
+/** @deprecated use tableGridStyle — kept for tests if any */
 export function columnFlexStyle(key, narrow) {
   const w = getColumnWidthPx(key, narrow);
   if (isFixedWidthColumn(key)) {

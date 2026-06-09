@@ -8,7 +8,7 @@ function assignRef(ref, el) {
 
 /**
  * Virtual list with a single overflow-auto container (vertical + horizontal).
- * Evita scroll anidado que obliga a “hacer scroll dos veces”.
+ * minTableWidth enables horizontal scroll only when the table is wider than the viewport.
  */
 export function VirtualList({
   itemCount,
@@ -16,7 +16,7 @@ export function VirtualList({
   maxHeight,
   headerHeight = 0,
   header = null,
-  minWidth,
+  minTableWidth,
   overscan = 6,
   className = '',
   scrollClassName = '',
@@ -56,7 +56,7 @@ export function VirtualList({
   return (
     <div
       ref={setScrollRef}
-      className={`w-full max-w-full overflow-auto overscroll-contain ${scrollClassName} ${className}`}
+      className={`w-full overflow-x-auto overflow-y-auto overscroll-contain ${scrollClassName} ${className}`}
       style={{
         maxHeight,
         WebkitOverflowScrolling: 'touch',
@@ -64,29 +64,17 @@ export function VirtualList({
       onScroll={onScroll}
     >
       <div
-        className={minWidth ? 'w-full' : undefined}
-        style={{
-          minWidth: minWidth ?? undefined,
-          width: '100%',
-        }}
+        className="w-full min-w-full"
+        style={minTableWidth != null ? { minWidth: minTableWidth } : undefined}
       >
         {header ? (
-          <div
-            className="sticky top-0 z-20 w-full min-w-full"
-            style={{ height: headerHeight }}
-          >
+          <div className="sticky top-0 z-20 w-full" style={{ height: headerHeight }}>
             {header}
           </div>
         ) : null}
 
-        <div
-          className="w-full min-w-full"
-          style={{ height: rowsTotalHeight, position: 'relative' }}
-        >
-          <div
-            className="w-full min-w-full"
-            style={{ transform: `translateY(${offsetY}px)` }}
-          >
+        <div className="w-full" style={{ height: rowsTotalHeight, position: 'relative' }}>
+          <div className="w-full" style={{ transform: `translateY(${offsetY}px)` }}>
             {Array.from({ length: end - start }, (_, i) => {
               const index = start + i;
               return (

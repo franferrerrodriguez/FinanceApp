@@ -1,50 +1,32 @@
-import { Keyboard } from '@capacitor/keyboard';
 import { useEffect, useState } from 'react';
-import { isNativeApp } from '../lib/platform';
 
-/** Lifts modals above the software keyboard on iOS/Android (Capacitor). */
+/** Lifts modals above the software keyboard on mobile browsers. */
 export function useModalKeyboardInset(open) {
   const [inset, setInset] = useState(0);
 
   useEffect(() => {
-    if (!open || !isNativeApp()) {
+    const viewport = window.visualViewport;
+    if (!open || !viewport) {
       setInset(0);
       return undefined;
     }
 
-    const handles = [];
-    let cancelled = false;
+    const update = () => {
+      const keyboard = Math.max(
+        0,
+        window.innerHeight - viewport.height - viewport.offsetTop,
+      );
+      setInset(keyboard > 50 ? keyboard : 0);
+    };
 
-    (async () => {
-      try {
-        handles.push(
-          await Keyboard.addListener('keyboardWillShow', (e) => {
-            if (!cancelled) setInset(e.keyboardHeight ?? 0);
-          }),
-        );
-        handles.push(
-          await Keyboard.addListener('keyboardWillHide', () => {
-            if (!cancelled) setInset(0);
-          }),
-        );
-        handles.push(
-          await Keyboard.addListener('keyboardDidShow', (e) => {
-            if (!cancelled) setInset(e.keyboardHeight ?? 0);
-          }),
-        );
-        handles.push(
-          await Keyboard.addListener('keyboardDidHide', () => {
-            if (!cancelled) setInset(0);
-          }),
-        );
-      } catch {
-        // Keyboard plugin unavailable
-      }
-    })();
+    viewport.addEventListener('resize', update);
+    viewport.addEventListener('scroll', update);
+    update();
 
     return () => {
-      cancelled = true;
-      handles.forEach((h) => h.remove());
+      viewport.removeEventListener('resize', update);
+      viewport.removeEventListener('scroll', update);
+      setInset(0);
     };
   }, [open]);
 

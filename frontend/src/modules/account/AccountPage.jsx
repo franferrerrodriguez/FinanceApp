@@ -10,6 +10,7 @@ import {
   PROFILE_MIN_AGE,
   validateProfileForm,
 } from '../../lib/profileValidation';
+import { NotificationPermissionBanner } from '../../components/NotificationPermissionBanner';
 import { TextField } from '../../components/TextField';
 import { ui } from '../../lib/uiClasses';
 import { getDisplayName } from '../../lib/userDisplay';
@@ -83,6 +84,8 @@ export function AccountPage() {
       </header>
 
       <div className="space-y-6">
+        <NotificationPermissionBanner />
+
         <section className={ui.chartCard}>
           <h2 className={`text-base font-semibold ${ui.heading}`}>
             {t('account.profile.title')}

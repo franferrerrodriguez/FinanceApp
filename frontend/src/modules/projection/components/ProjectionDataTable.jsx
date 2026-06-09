@@ -24,15 +24,13 @@ import { HelpTooltip } from '../../../components/HelpTooltip';
 import {
   PROJECTION_COLUMN,
   buildProjectionColumnKeys,
-  columnFlexStyle,
   columnPaddingClass,
   getTableMinWidth,
   headerLabelKey,
-  isFixedWidthColumn,
   headerTooltipKey,
   showColumnSeparator,
   stickyColumnLeftOffset,
-  tableRowLayoutStyle,
+  tableGridStyle,
 } from '../projectionTableColumns';
 import { ProjectionSummary } from './ProjectionSummary';
 
@@ -75,13 +73,8 @@ function ProjectionColumnHeader({ columnKey, columnKeys, narrowViewport, scrolle
 
   return (
     <div
-      style={{
-        ...columnFlexStyle(columnKey, narrowViewport),
-        ...(isSticky ? { left: stickyLeft } : {}),
-      }}
-      className={`flex items-center overflow-visible py-1 ${columnPaddingClass(columnKey)} ${
-        isFixedWidthColumn(columnKey) ? 'shrink-0' : 'min-w-0'
-      } ${
+      style={isSticky ? { left: stickyLeft } : undefined}
+      className={`flex min-w-0 items-center overflow-visible py-1 ${columnPaddingClass(columnKey)} ${
         alignRight
           ? 'justify-end text-right'
           : isYear
@@ -251,8 +244,11 @@ export function ProjectionDataTable() {
 
   const tableHeader = (
     <div
-      className={`flex w-full min-w-full border-b ${ui.divider} ${headBg()}`}
-      style={{ height: headHeight, ...tableRowLayoutStyle(tableMinWidth) }}
+      className={`w-full border-b ${ui.divider} ${headBg()}`}
+      style={{
+        height: headHeight,
+        ...tableGridStyle(columns, narrowViewport),
+      }}
     >
       {columns.map((key) => (
         <ProjectionColumnHeader
@@ -310,7 +306,7 @@ export function ProjectionDataTable() {
             maxHeight={tableMaxHeight}
             headerHeight={headHeight}
             header={tableHeader}
-            minWidth={tableMinWidth}
+            minTableWidth={tableMinWidth}
             scrollClassName="overscroll-x-contain [-webkit-overflow-scrolling:touch]"
           >
             {({ index, style }) => (
@@ -318,7 +314,6 @@ export function ProjectionDataTable() {
                 row={rows[index]}
                 style={style}
                 columns={columns}
-                tableMinWidth={tableMinWidth}
                 narrowViewport={narrowViewport}
                 scrolledX={scrolledX}
                 isEven={index % 2 === 0}
@@ -335,7 +330,9 @@ export function ProjectionDataTable() {
           <p className={`text-xs leading-snug ${ui.textMuted}`}>
             {t('projection.table.monthCount', {
               count: rows.length,
-              years: projectionYears,
+              yearsLabel: t('projection.settings.yearsOption', {
+                count: projectionYears,
+              }),
             })}
           </p>
         </div>
@@ -348,7 +345,6 @@ function ProjectionRow({
   row,
   style,
   columns,
-  tableMinWidth,
   narrowViewport,
   scrolledX,
   isEven,
@@ -380,8 +376,11 @@ function ProjectionRow({
 
   return (
     <div
-      style={{ ...style, ...tableRowLayoutStyle(tableMinWidth) }}
-      className={`flex w-full min-w-full items-center border-b ${ui.divider} ${bg} ${january}`}
+      style={{
+        ...style,
+        ...tableGridStyle(columns, narrowViewport),
+      }}
+      className={`w-full items-center border-b ${ui.divider} ${bg} ${january}`}
     >
       {columns.map((key) => {
         const isYear = key === PROJECTION_COLUMN.YEAR;
@@ -395,13 +394,8 @@ function ProjectionRow({
         return (
           <div
             key={key}
-            style={{
-              ...columnFlexStyle(key, narrowViewport),
-              ...(isSticky ? { left: stickyLeft } : {}),
-            }}
-            className={`flex items-center overflow-hidden tabular-nums ${columnPaddingClass(key)} ${textSize} whitespace-nowrap ${
-              isFixedWidthColumn(key) ? 'shrink-0' : 'min-w-0'
-            } ${
+            style={isSticky ? { left: stickyLeft } : undefined}
+            className={`flex min-w-0 items-center overflow-hidden tabular-nums ${columnPaddingClass(key)} ${textSize} whitespace-nowrap ${
               alignRight ? 'justify-end text-right' : isYear ? 'justify-center text-center' : 'justify-start text-left'
             } ${separator ? `border-r ${ui.divider}` : ''} ${
               isSticky

@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useModalKeyboardInset } from '../hooks/useModalKeyboardInset';
-import { isNativeApp } from '../lib/platform';
+import { isStandalonePwa } from '../lib/platform';
 import { ui } from '../lib/uiClasses';
 
-/** Bottom sheet on mobile, centered dialog on desktop. Tuned for Capacitor WebView. */
+/** Bottom sheet on mobile, centered dialog on desktop. */
 export function AppModal({
   open,
   onClose,
@@ -15,7 +15,7 @@ export function AppModal({
   ariaLabelledBy = 'app-modal-title',
 }) {
   const keyboardInset = useModalKeyboardInset(open);
-  const native = isNativeApp();
+  const standalone = isStandalonePwa();
 
   useEffect(() => {
     if (!open) return undefined;
@@ -76,7 +76,7 @@ export function AppModal({
         {footer ? (
           <footer
             className={`shrink-0 flex flex-col-reverse gap-2 border-t px-5 pt-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3 sm:px-6 sm:pb-4 ${ui.divider} ${
-              native
+              standalone
                 ? 'pb-[max(1rem,env(safe-area-inset-bottom))]'
                 : 'pb-4'
             }`}

@@ -1,32 +1,87 @@
-import { useId } from 'react';
-import { ui } from '../lib/uiClasses';
+import { useCallback, useId, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 export function HelpTooltip({ ariaLabel, children, symbol = '?' }) {
   const tooltipId = useId();
+  const triggerRef = useRef(null);
+  const [open, setOpen] = useState(false);
+  const [coords, setCoords] = useState({ top: 0, left: 0 });
+
+  const updateCoords = useCallback(() => {
+    const el = triggerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const width = Math.min(window.innerWidth - 32, 288);
+    let left = rect.left;
+    if (left + width > window.innerWidth - 16) {
+      left = window.innerWidth - 16 - width;
+    }
+    left = Math.max(16, left);
+    setCoords({ top: rect.bottom + 6, left });
+  }, []);
+
+  const show = useCallback(() => {
+    updateCoords();
+    setOpen(true);
+  }, [updateCoords]);
+
+  const hide = useCallback(() => setOpen(false), []);
+
+  useLayoutEffect(() => {
+    if (!open) return undefined;
+    const onReposition = () => updateCoords();
+    window.addEventListener('scroll', onReposition, true);
+    window.addEventListener('resize', onReposition);
+    return () => {
+      window.removeEventListener('scroll', onReposition, true);
+      window.removeEventListener('resize', onReposition);
+    };
+  }, [open, updateCoords]);
 
   return (
-    <span className="group relative inline-flex shrink-0 align-middle">
+    <>
       <span
-        tabIndex={0}
-        role="img"
-        aria-label={ariaLabel}
-        aria-describedby={tooltipId}
-        className={`inline-flex h-4 w-4 cursor-help items-center justify-center rounded-full text-[10px] font-semibold leading-none transition hover:bg-emerald-500/10 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:hover:text-emerald-400 text-slate-400 dark:text-slate-500`}
+        ref={triggerRef}
+        className="relative inline-flex shrink-0 align-middle"
+        onMouseEnter={show}
+        onMouseLeave={hide}
+        onFocus={show}
+        onBlur={hide}
       >
-        {symbol}
+        <span
+          tabIndex={0}
+          role="img"
+          aria-label={ariaLabel}
+          aria-describedby={open ? tooltipId : undefined}
+          className="inline-flex h-4 w-4 cursor-help items-center justify-center rounded-full text-[10px] font-semibold leading-none transition hover:bg-emerald-500/10 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:hover:text-emerald-400 text-slate-400 dark:text-slate-500"
+        >
+          {symbol}
+        </span>
       </span>
 
-      <div
-        id={tooltipId}
-        role="tooltip"
-        className="pointer-events-none invisible absolute left-0 top-full z-50 w-[min(100vw-2rem,18rem)] pt-1.5 opacity-0 transition-opacity duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
-      >
-        <div
-          className={`rounded-xl border p-3 text-left text-xs leading-relaxed shadow-xl ${ui.card} ${ui.textLabel}`}
-        >
-          {children}
-        </div>
-      </div>
-    </span>
+      {open
+        ? createPortal(
+            <div
+              id={tooltipId}
+              role="tooltip"
+              style={{
+                position: 'fixed',
+                top: coords.top,
+                left: coords.left,
+                zIndex: 9999,
+                width: 'min(100vw - 2rem, 18rem)',
+              }}
+              className="pointer-events-none"
+            >
+              <div
+                className="rounded-xl border border-slate-200 bg-white p-3 text-left text-xs leading-relaxed text-slate-800 shadow-2xl ring-1 ring-slate-900/10 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:ring-white/10"
+              >
+                {children}
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
+    </>
   );
 }

@@ -16,9 +16,11 @@ body {
   overflow-x: hidden;
 }
 
-html.native-app body {
-  padding: env(safe-area-inset-top) env(safe-area-inset-right)
-    env(safe-area-inset-bottom) env(safe-area-inset-left);
+@media (display-mode: standalone) {
+  body {
+    padding: env(safe-area-inset-top) env(safe-area-inset-right)
+      env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
 }
 
 .financia-profile-trigger {
@@ -89,7 +91,6 @@ html.dark .financia-bottom-nav__item--active {
 }
 
 .financia-bottom-nav__icon {
-  font-size: 1.35rem;
   width: 1.35rem;
   height: 1.35rem;
 }

@@ -8,8 +8,8 @@ Repository: [github.com/franferrerrodriguez/FinanceApp](https://github.com/franf
 
 | Folder | Description |
 |--------|-------------|
-| `frontend/` | SPA + Ionic/Capacitor (Android & iOS) |
-| `supabase/` | Initial SQL and backend setup notes |
+| `frontend/` | SPA (PWA with Web Push) |
+| `supabase/` | SQL migrations and Edge Functions |
 
 The functional specification is in [`frontend/functional.md`](frontend/functional.md).
 
@@ -27,18 +27,9 @@ Open the URL shown by Vite (default `http://localhost:5173`).
 
 If you see **Outdated Optimize Dep**: stop the dev server, delete `node_modules/.vite`, and run `npm run dev:force`.
 
-## Mobile (Android & iOS)
+## PWA
 
-Same React app wrapped with **Ionic + Capacitor**. Full guide: [`frontend/docs/MOBILE.md`](frontend/docs/MOBILE.md).
-
-```bash
-cd frontend
-npm install
-npm run build:mobile    # build + sync native projects
-npm run cap:open:android   # Android Studio → Run
-```
-
-Requires Android Studio (Android) or Xcode on macOS (iOS).
+Install from Chrome (Android) or Safari (iOS 16.4+). Push notifications for monthly close reminders. Guide: [`frontend/docs/PWA.md`](frontend/docs/PWA.md).
 
 ## Authentication
 
@@ -51,7 +42,7 @@ Cloud-free alternative: `VITE_AUTH_MODE=simple` in `frontend/.env` (account stor
 Project: `ceduxgxizgkyiexkdyqp` — detailed guide in [`supabase/SETUP.md`](supabase/SETUP.md).
 
 1. `cd frontend && cp .env.example .env` — **public** keys only (publishable/anon). **Do not** commit `.env` to GitHub.
-2. In **SQL Editor**, run [`supabase/migrations/001_initial.sql`](supabase/migrations/001_initial.sql) (and `002` if applicable).
+2. In **SQL Editor**, run migrations in [`supabase/migrations/`](supabase/migrations/).
 3. **Authentication → URL Configuration**: `http://localhost:5173`.
 4. CLI (optional): `supabase login` → `supabase link --project-ref ceduxgxizgkyiexkdyqp` → `supabase db push`.
 
@@ -66,9 +57,8 @@ Project: `ceduxgxizgkyiexkdyqp` — detailed guide in [`supabase/SETUP.md`](supa
 | `npm run build` | Production build (`dist/`) |
 | `npm test` | Calculation engine tests |
 | `npm run lint` | ESLint |
-| `npm run build:mobile` | Production build + Capacitor sync |
-| `npm run cap:open:android` | Open Android Studio |
-| `npm run cap:open:ios` | Open Xcode (macOS) |
+| `npm run icons` | Generate PWA PNG icons |
+| `npm run preview` | Preview production build |
 
 ## Deployment
 
@@ -78,7 +68,7 @@ Static build from `frontend/`:
 cd frontend && npm run build
 ```
 
-Upload the contents of `frontend/dist/` to Hostinger, Vercel, Netlify, etc. Set the same `VITE_SUPABASE_*` variables in the hosting panel.
+Upload the contents of `frontend/dist/` to Hostinger, Vercel, Netlify, etc. Set the same `VITE_SUPABASE_*` and `VITE_VAPID_PUBLIC_KEY` variables in the hosting panel.
 
 ## License
 

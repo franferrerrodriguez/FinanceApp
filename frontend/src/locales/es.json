@@ -58,7 +58,15 @@
   "notifications": {
     "setupSection": "Configuración",
     "balanceSetup": "Te faltan {{pending}} pasos para configurar tu patrimonio ({{done}}/{{total}} completados).",
-    "balanceSetupAction": "Ver en Dashboard"
+    "balanceSetupAction": "Ver en Dashboard",
+    "push": {
+      "prompt": "Activa las notificaciones para recordatorios mensuales de cierre",
+      "enable": "Activar",
+      "enabling": "Activando…",
+      "active": "Notificaciones activas ✓",
+      "disable": "Desactivar",
+      "denied": "Notificaciones desactivadas. Actívalas desde los ajustes de tu navegador."
+    }
   },
   "menu": {
     "open": "Abrir menú",
@@ -747,7 +755,7 @@
     },
     "settings": {
       "title": "Parámetros de la proyección",
-      "hint": "Cuántos años simular y cómo extrapolar el reparto inferido desde tus saldos. El patrimonio de partida sale de tus saldos.",
+      "hint": "Cuántos años simular. El patrimonio de partida sale de tus saldos; los meses futuros repiten tu inversión reciente (media de los últimos meses con datos).",
       "initialPatrimony": "Patrimonio inicial de la proyección (€)",
       "initialPatrimonyHint": "Solo si aún no has introducido saldos en €. Se asignará todo al tramo de inversión.",
       "snapshotsPriority": "La proyección parte de {{amount}} según tus saldos actuales por tipo de activo.",
@@ -756,7 +764,8 @@
       "goPatrimony": "Ir a Activos y pasivos",
       "assetReturnsHint": "La rentabilidad de cada producto se define al añadir o editar cuentas en Activos y pasivos.",
       "years": "Años a proyectar",
-      "yearsOption": "{{years}} años",
+      "yearsOption_one": "{{count}} año",
+      "yearsOption_other": "{{count}} años",
       "returnMode": "Tipo de rentabilidad",
       "returnModeTooltip": "Real = ganancia después de inflación (poder adquisitivo). Nominal = dato bruto del mercado.",
       "realReturn": "Real (después de inflación)",
@@ -787,27 +796,27 @@
     "table": {
       "scrollHint": "Desliza horizontalmente para ver todas las columnas",
       "tooltipAria": "Más información sobre {{column}}",
-      "howItWorks": "Cada mes: lo que ingreso − lo que gasto − lo que invierto = me queda libre. A eso se suma lo que gana mi dinero ya invertido → así crece tu patrimonio.",
+      "howItWorks": "Cada mes: ingresos − gastos − inversión = disponible. A eso se suma la rentabilidad de lo ya invertido → así crece tu patrimonio.",
       "year": "Año",
       "yearShort": "Año",
       "date": "Fecha",
-      "salary": "Lo que ingreso",
+      "salary": "Ingresos",
       "fixed": "Vivienda y hogar",
       "groceries": "Alimentación",
       "groceriesShort": "Alimentación",
       "leisure": "Ocio y extras",
       "leisureShort": "Ocio",
-      "netContribution": "Me queda libre",
-      "netContributionShort": "Libre",
+      "netContribution": "Disponible",
+      "netContributionShort": "Disp.",
       "punctual": "Gasto puntual",
       "punctualShort": "Puntual",
-      "investments": "Lo que invierto",
-      "investmentsShort": "Invierto",
-      "monthlyReturn": "Gana mi dinero",
-      "monthlyReturnShort": "Ganancia",
-      "patrimony": "Mi patrimonio total",
+      "investments": "Inversión",
+      "investmentsShort": "Invers.",
+      "monthlyReturn": "Rentabilidad",
+      "monthlyReturnShort": "Rentab.",
+      "patrimony": "Patrimonio total",
       "patrimonyShort": "Patrimonio",
-      "monthCount": "{{count}} meses ({{years}} años).",
+      "monthCount": "{{count}} meses ({{yearsLabel}}).",
       "tooltips": {
         "date": "Primer día del mes proyectado",
         "salary": "Tu salario neto ese mes",
@@ -817,8 +826,8 @@
         "punctual": "Gastos anuales repartidos en el mes que tocan (IBI, seguros anuales…)",
         "investments": "Lo que aportas ese mes a tus productos de inversión (fondos, plan de pensiones…)",
         "netContribution": "Lo que te sobra después de pagar todo y apartar la inversión. Puede ir al colchón o a gastos imprevistos.",
-        "monthlyReturn": "La rentabilidad que genera tu patrimonio acumulado ese mes, gracias al interés compuesto.",
-        "patrimony": "Todo lo que tienes acumulado al cierre de ese mes: saldo inicial + lo que has aportado + lo que ha ganado tu dinero."
+        "monthlyReturn": "Rendimiento que generan tus ahorros e inversiones ese mes, con interés compuesto.",
+        "patrimony": "Todo lo acumulado al cierre del mes: saldo inicial + aportaciones + rentabilidad."
       }
     }
   },

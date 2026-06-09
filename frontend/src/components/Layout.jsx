@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Outlet } from 'react-router-dom';
-import { isNativeApp } from '../lib/platform';
+import { isStandalonePwa } from '../lib/platform';
 import { ui } from '../lib/uiClasses';
 import { useOnboardingState } from '../store/hooks';
 import { AppFooter } from './AppFooter';
@@ -26,7 +26,7 @@ export function Layout() {
     return () => mq.removeEventListener('change', onChange);
   }, []);
 
-  const useBottomNav = isNativeApp() || narrowViewport;
+  const useBottomNav = narrowViewport || isStandalonePwa();
 
   useEffect(() => {
     document.title = t('app.name');

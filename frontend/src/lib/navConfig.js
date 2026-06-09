@@ -1,24 +1,24 @@
-import { gridOutline, trendingUpOutline, walletOutline } from 'ionicons/icons';
+import { LayoutGrid, TrendingUp, Wallet } from 'lucide-react';
 
 /** Main app sections (dashboard, balance, projection). */
 export const MAIN_NAV_ITEMS = [
   {
     to: '/dashboard',
     key: 'dashboard',
-    icon: gridOutline,
+    icon: LayoutGrid,
     isActive: (pathname) =>
       pathname === '/dashboard' || pathname === '/',
   },
   {
     to: '/balance',
     key: 'balance',
-    icon: walletOutline,
+    icon: Wallet,
     isActive: (pathname) => pathname.startsWith('/balance'),
   },
   {
     to: '/projection',
     key: 'projection',
-    icon: trendingUpOutline,
+    icon: TrendingUp,
     isActive: (pathname) => pathname.startsWith('/projection'),
   },
 ];

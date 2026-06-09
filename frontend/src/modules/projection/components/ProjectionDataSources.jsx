@@ -90,6 +90,10 @@ export function ProjectionDataSources() {
   const monthlyExpenses =
     totals.coreFixed + totals.groceries + totals.leisure;
 
+  const sourcesGridClass = hasInvestments
+    ? 'grid gap-3 sm:grid-cols-2 xl:grid-cols-4'
+    : 'grid gap-3 sm:grid-cols-2 lg:grid-cols-3';
+
   return (
     <section className={`${ui.chartCard} space-y-4`}>
       <div>
@@ -101,7 +105,7 @@ export function ProjectionDataSources() {
         </p>
       </div>
 
-      <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <dl className={sourcesGridClass}>
         <CashflowSummaryBlock
           income={totals.income}
           coreFixed={totals.coreFixed}

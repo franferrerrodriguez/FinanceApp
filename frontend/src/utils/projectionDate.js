@@ -1,15 +1,6 @@
-import { LOCALE_BCP47 } from '../i18n/config';
-import i18n from '../i18n';
-
-function getIntlLocale() {
-  return LOCALE_BCP47[i18n.language] ?? LOCALE_BCP47.es;
-}
-
-/** Projection date in table (e.g. 01/05/2026). */
+/** Projection date in table (e.g. 06/26). */
 export function formatProjectionDate(date) {
-  return new Intl.DateTimeFormat(getIntlLocale(), {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  }).format(date);
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = String(date.getFullYear() % 100).padStart(2, '0');
+  return `${month}/${year}`;
 }

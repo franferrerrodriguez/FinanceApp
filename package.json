@@ -8,10 +8,7 @@
     "db:migrate": "node scripts/apply-supabase-migrations.mjs",
     "db:verify": "node scripts/verify-supabase-client.mjs",
     "db:delete-user": "node scripts/delete-supabase-user.mjs",
-    "auth:no-email-confirm": "node scripts/disable-email-confirmation.mjs",
-    "mobile:build": "npm run build:mobile --prefix frontend",
-    "mobile:android": "npm run cap:open:android --prefix frontend",
-    "mobile:ios": "npm run cap:open:ios --prefix frontend"
+    "auth:no-email-confirm": "node scripts/disable-email-confirmation.mjs"
   },
   "repository": {
     "type": "git",

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { NotificationPermissionBanner } from '../../components/NotificationPermissionBanner';
 import { SaveProgressBanner } from '../../components/SaveProgressBanner';
 import { hasEstimatedFixedExpenses } from '../../lib/expenseEstimates';
 import { ui } from '../../lib/uiClasses';
@@ -26,6 +27,7 @@ export function DashboardPage() {
   return (
     <div className={ui.stackPage}>
       <SaveProgressBanner />
+      <NotificationPermissionBanner />
 
       {showAlerts ? <DashboardAlerts /> : null}
 
