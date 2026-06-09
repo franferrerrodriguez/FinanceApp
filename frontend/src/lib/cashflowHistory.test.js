@@ -74,6 +74,7 @@ assert.equal(rows[5].variableExpenses, 400);
 const totals = getCashflowTotalsForDate(settings, history, new Date(2026, 6, 1));
 assert.equal(totals.income, 2800);
 assert.equal(totals.leisure, 400);
+assert.equal(totals.groceries, 100);
 assert.equal(totals.investment, 0);
 assert.equal(totals.savings, 2800 - 500 - 200 - 100 - 400);
 

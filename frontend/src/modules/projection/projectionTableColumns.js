@@ -1,4 +1,5 @@
 export const PROJECTION_COLUMN = {
+  YEAR: 'year',
   DATE: 'date',
   SALARY: 'salary',
   FIXED: 'fixed',
@@ -11,6 +12,7 @@ export const PROJECTION_COLUMN = {
 };
 
 export const BASE_COLUMN_KEYS = [
+  PROJECTION_COLUMN.YEAR,
   PROJECTION_COLUMN.DATE,
   PROJECTION_COLUMN.SALARY,
   PROJECTION_COLUMN.FIXED,
@@ -25,6 +27,7 @@ export const PUNCTUAL_COLUMN_KEY = PROJECTION_COLUMN.PUNCTUAL;
 
 /** px — mobile headers use full phrases (see *Short in locales) */
 const COLUMN_WIDTH_PX = {
+  year: { narrow: 36, wide: 44 },
   date: { narrow: 84, wide: 116 },
   salary: { narrow: 104, wide: 108 },
   fixed: { narrow: 112, wide: 104 },
@@ -73,7 +76,16 @@ export const tableRowLayoutStyle = (tableMinWidth) => ({
 });
 
 export function headerLabelKey(key, narrow) {
+  if (key === PROJECTION_COLUMN.YEAR) {
+    return narrow ? 'projection.table.yearShort' : 'projection.table.year';
+  }
   return narrow && key !== PROJECTION_COLUMN.DATE
     ? `projection.table.${key}Short`
     : `projection.table.${key}`;
+}
+
+export function stickyColumnLeftOffset(key, narrow) {
+  if (key === PROJECTION_COLUMN.YEAR) return 0;
+  if (key === PROJECTION_COLUMN.DATE) return getColumnWidthPx(PROJECTION_COLUMN.YEAR, narrow);
+  return null;
 }

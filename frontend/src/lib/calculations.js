@@ -18,7 +18,9 @@ import {
   netWorthFromState,
   splitContributionBreakdownToBuckets,
 } from './projectionBuckets.js';
-import { resolveInvestmentFromBreakdown } from './contributionEntries.js';
+import {
+  resolveInvestmentFromBreakdown,
+} from './contributionEntries.js';
 import { resolveContributionsForProjectionMonth } from './contributionProjection.js';
 
 export const applyYourShare = applyShareEuros;
@@ -181,6 +183,13 @@ export const calcTotalFixedExpenses = (settings) => {
   );
 };
 
+/** Housing + household only (excludes groceries). */
+export const calcCoreFixedExpenses = (settings) =>
+  sumEuros(
+    getEffectiveMortgageRent(settings),
+    getEffectiveHouseholdExpenses(settings),
+  );
+
 export const calcTotalMonthlyOutflow = (settings, monthlyInvestment) => {
   const fixed = calcTotalFixedExpenses(settings);
   const variable = calcTotalVariableExpenses(settings);
@@ -255,6 +264,62 @@ function monthKeyFromDate(date) {
   return `${y}-${m}`;
 }
 
+function createSyntheticInvestmentBreakdown(amount) {
+  const value = roundMoney(amount);
+  if (value <= 0) return [];
+  return [
+    {
+      assetId: null,
+      providerId: 'budget',
+      category: 'investment',
+      label: '',
+      amount: value,
+    },
+  ];
+}
+
+/** Salary from active tramo, scaled by full years since projection start. */
+export function projectSalaryForMonth({ settings, history, date, monthIndex }) {
+  const salarioBase = resolveMonthlySalaryForDate(settings, history, date);
+  return roundMoney(
+    scaleByAnnualSteps(salarioBase, monthIndex, settings?.annualSalaryIncrease ?? 0),
+  );
+}
+
+const REAL_CONTRIBUTION_SOURCES = new Set([
+  'actual',
+  'derived',
+  'derived_history',
+  'history',
+  'legacy_plans',
+]);
+
+function resolveAdditionalInvestmentsForMonth({
+  monthSettings,
+  contributionResult,
+  getInvestmentContributions,
+  contributionPlans,
+  monthIndex,
+  monthKey,
+}) {
+  if (getInvestmentContributions) {
+    const legacy = roundMoney(
+      getInvestmentContributions(contributionPlans, monthIndex, monthKey),
+    );
+    if (legacy > 0) return legacy;
+  }
+  const fromBreakdown = roundMoney(
+    resolveInvestmentFromBreakdown(contributionResult.breakdown),
+  );
+  if (
+    fromBreakdown > 0 &&
+    REAL_CONTRIBUTION_SOURCES.has(contributionResult.source)
+  ) {
+    return fromBreakdown;
+  }
+  return roundMoney(getEffectiveBudgetInvestment(monthSettings));
+}
+
 /**
  * Monthly projection table (pure calculation).
  * @param {object} params
@@ -317,9 +382,12 @@ export function buildMonthlyProjectionRows({
     const yearsElapsed = Math.floor(monthIndex / 12);
     const date = addMonths(start, monthIndex);
     const monthSettings = resolveSettingsForDate(settings, history, date);
-    const salary = roundMoney(
-      resolveMonthlySalaryForDate(settings, history, date),
-    );
+    const salary = projectSalaryForMonth({
+      settings,
+      history,
+      date,
+      monthIndex,
+    });
     const baseFixed = calcTotalFixedExpenses(monthSettings);
     const baseVariable = calcTotalVariableExpenses(monthSettings);
     const otherIncome = monthSettings?.otherMonthlyIncome ?? 0;
@@ -333,7 +401,7 @@ export function buildMonthlyProjectionRows({
     const punctualExpenses = roundMoney(
       getPunctualExpensesForDate(annualExpenses, date),
     );
-    const netContribution = roundMoney(
+    const grossCashflow = roundMoney(
       salary +
         otherIncome -
         fixedExpenses -
@@ -349,13 +417,17 @@ export function buildMonthlyProjectionRows({
       snapshots,
       monthKey,
       monthIndex,
-      netContribution,
+      netContribution: grossCashflow,
     });
-    const additionalInvestments = roundMoney(
-      getInvestmentContributions
-        ? getInvestmentContributions(contributionPlans, monthIndex, monthKey)
-        : resolveInvestmentFromBreakdown(contributionResult.breakdown),
-    );
+    const additionalInvestments = resolveAdditionalInvestmentsForMonth({
+      monthSettings,
+      contributionResult,
+      getInvestmentContributions,
+      contributionPlans,
+      monthIndex,
+      monthKey,
+    });
+    const netContribution = roundMoney(grossCashflow - additionalInvestments);
 
     const patrimonioInicio = roundMoney(netWorthFromState(buckets, debtBalance));
     bucketRates = computeBucketAnnualRates({
@@ -369,9 +441,14 @@ export function buildMonthlyProjectionRows({
       bucketRates,
     );
 
+    const breakdownForBuckets =
+      contributionResult.breakdown.length > 0
+        ? contributionResult.breakdown
+        : createSyntheticInvestmentBreakdown(additionalInvestments);
+
     const bucketContributions = splitContributionBreakdownToBuckets(
-      contributionResult.breakdown,
-      netContribution,
+      breakdownForBuckets,
+      grossCashflow,
     );
 
     const monthResult = applyMonthToBucketState({
@@ -428,7 +505,10 @@ export function summarizeProjectionRows(rows, initialPatrimony = 0) {
   }
 
   const totalNetContributed = roundMoney(
-    rows.reduce((s, r) => s + r.netContribution, 0),
+    rows.reduce(
+      (s, r) => s + r.netContribution + (r.additionalInvestments ?? 0),
+      0,
+    ),
   );
   const totalReturnGenerated = roundMoney(
     rows.reduce((s, r) => s + r.monthlyReturn, 0),

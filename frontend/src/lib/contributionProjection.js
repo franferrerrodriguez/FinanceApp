@@ -147,7 +147,9 @@ export function hasProjectionContributionData({
   contributionPlans = [],
   assets = [],
   snapshots = [],
+  settings = {},
 } = {}) {
+  if (Math.max(0, Number(settings?.monthlyBudgetInvestment) || 0) > 0) return true;
   if ((entries ?? []).some((e) => (e.amount ?? 0) > 0 && e.assetId)) return true;
   if (
     (contributionPlans ?? []).some(

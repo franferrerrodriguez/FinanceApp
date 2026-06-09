@@ -26,6 +26,7 @@ import {
   columnFlexStyle,
   getTableMinWidth,
   headerLabelKey,
+  stickyColumnLeftOffset,
   tableRowLayoutStyle,
 } from '../projectionTableColumns';
 import { ProjectionSummary } from './ProjectionSummary';
@@ -157,6 +158,9 @@ export function ProjectionDataTable() {
   const hasInvestmentData = hasProjectionContributionData({
     entries: contributionEntries,
     contributionPlans,
+    assets,
+    snapshots,
+    settings,
   });
 
   const { overflow: canScrollX, right: canScrollRight, updateEdges } =
@@ -181,19 +185,31 @@ export function ProjectionDataTable() {
       style={{ height: headHeight, ...tableRowLayoutStyle(tableMinWidth) }}
     >
       {columns.map((key) => {
+        const isYear = key === PROJECTION_COLUMN.YEAR;
         const isDate = key === PROJECTION_COLUMN.DATE;
         const isPatrimony = key === PROJECTION_COLUMN.PATRIMONY;
-        const alignRight = key !== PROJECTION_COLUMN.DATE;
+        const stickyLeft = stickyColumnLeftOffset(key, narrowViewport);
+        const isSticky = stickyLeft != null;
+        const alignRight = !isYear && !isDate;
 
         return (
           <div
             key={key}
-            style={columnFlexStyle(key, narrowViewport)}
+            style={{
+              ...columnFlexStyle(key, narrowViewport),
+              ...(isSticky ? { left: stickyLeft } : {}),
+            }}
             className={`flex shrink-0 items-center overflow-hidden px-2 py-1 sm:px-3 ${
-              alignRight ? 'justify-end text-right' : 'justify-start text-left'
+              alignRight
+                ? 'justify-end text-right'
+                : isYear
+                  ? 'justify-center text-center'
+                  : 'justify-start text-left'
             } ${
-              isDate
-                ? `sticky left-0 z-30 rounded-tl-2xl border-r ${ui.divider} ${headBg()} ${stickyDateShadow(scrolledX)}`
+              isSticky
+                ? `sticky z-30 border-r ${ui.divider} ${headBg()} ${stickyDateShadow(scrolledX)} ${
+                    isYear ? 'rounded-tl-2xl' : ''
+                  }`
                 : ''
             }`}
           >
@@ -302,6 +318,7 @@ function ProjectionRow({
     : '';
 
   const cells = {
+    year: String(row.yearsElapsed + 1),
     date: formatProjectionDate(row.date),
     salary: formatMoney(row.salary),
     fixed: formatMoney(row.fixedExpenses),
@@ -324,23 +341,31 @@ function ProjectionRow({
       className={`flex w-full items-center border-b ${ui.divider} ${bg} ${january}`}
     >
       {columns.map((key) => {
+        const isYear = key === PROJECTION_COLUMN.YEAR;
         const isDate = key === PROJECTION_COLUMN.DATE;
         const isPatrimony = key === PROJECTION_COLUMN.PATRIMONY;
-        const alignRight = !isDate;
+        const stickyLeft = stickyColumnLeftOffset(key, narrowViewport);
+        const isSticky = stickyLeft != null;
+        const alignRight = !isYear && !isDate;
 
         return (
           <div
             key={key}
-            style={columnFlexStyle(key, narrowViewport)}
+            style={{
+              ...columnFlexStyle(key, narrowViewport),
+              ...(isSticky ? { left: stickyLeft } : {}),
+            }}
             className={`flex shrink-0 items-center overflow-hidden px-2 tabular-nums sm:px-3 ${textSize} whitespace-nowrap ${
-              alignRight ? 'justify-end text-right' : 'justify-start text-left'
+              alignRight ? 'justify-end text-right' : isYear ? 'justify-center text-center' : 'justify-start text-left'
             } ${
-              isDate
-                ? `sticky left-0 z-10 border-r ${ui.divider} ${bg} ${january} ${ui.textLabel} ${stickyDateShadow(scrolledX)} ${isLastRow ? 'rounded-bl-2xl' : ''}`
+              isSticky
+                ? `sticky z-10 border-r ${ui.divider} ${bg} ${january} ${ui.textLabel} ${stickyDateShadow(scrolledX)} ${
+                    isYear && isLastRow ? 'rounded-bl-2xl' : ''
+                  }`
                 : isPatrimony
                   ? 'font-semibold text-emerald-700 dark:text-emerald-400'
                   : ui.textLabel
-            }`}
+            } ${isYear ? 'font-medium text-slate-500 dark:text-slate-400' : ''}`}
           >
             {cells[key]}
           </div>

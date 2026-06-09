@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { IneInflationBlock } from './IneInflationBlock';
 import { Link } from 'react-router-dom';
 import { BALANCE_TAB, balancePath } from '../../../lib/balanceTabs';
+import { getEffectiveBudgetInvestment } from '../../../lib/calculations';
 import { getCashflowTotalsForDate } from '../../../lib/cashflowHistory';
 import { getCurrentMonthKey } from '../../../lib/cashflowHistory';
 import {
@@ -44,16 +45,19 @@ export function ProjectionDataSources() {
     assets,
     { lookbackMonths: 3 },
   );
+  const budgetInvestment = getEffectiveBudgetInvestment(settings);
   const investments =
     actualMonth.total > 0
       ? resolveInvestmentFromBreakdown(actualMonth.breakdown)
-      : resolveInvestmentFromBreakdown(projectedFromHistory.breakdown);
+      : resolveInvestmentFromBreakdown(projectedFromHistory.breakdown) ||
+        budgetInvestment;
 
   const hasInvestments = hasProjectionContributionData({
     entries: contributionEntries,
     contributionPlans,
     assets,
     snapshots,
+    settings,
   });
 
   const initialState = useMemo(
@@ -83,7 +87,7 @@ export function ProjectionDataSources() {
     (bucket) => (initialState.buckets[bucket] ?? 0) > 0,
   );
 
-  const monthlyExpenses = totals.fixed + totals.leisure;
+  const monthlyExpenses = totals.fixed + totals.variable;
 
   return (
     <section className={`${ui.chartCard} space-y-4`}>
@@ -129,10 +133,20 @@ export function ProjectionDataSources() {
             hint={
               actualMonth.total > 0
                 ? t('projection.sources.investmentsFromActual')
-                : t('projection.sources.investmentsFromHistory')
+                : projectedFromHistory.total > 0
+                  ? t('projection.sources.investmentsFromHistory')
+                  : t('projection.sources.investmentsFromBudget')
             }
-            editLabel={t('projection.sources.editInPatrimony')}
-            editTo={balancePath(BALANCE_TAB.PATRIMONY)}
+            editLabel={
+              budgetInvestment > 0 && projectedFromHistory.total <= 0
+                ? t('projection.sources.editInCashflow')
+                : t('projection.sources.editInPatrimony')
+            }
+            editTo={
+              budgetInvestment > 0 && projectedFromHistory.total <= 0
+                ? balancePath(BALANCE_TAB.CASHFLOW)
+                : balancePath(BALANCE_TAB.PATRIMONY)
+            }
           />
         ) : null}
       </dl>

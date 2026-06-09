@@ -1,9 +1,12 @@
 import { getLastNMonthKeys } from './dashboardMetrics.js';
 import {
+  calcCoreFixedExpenses,
   calcTotalFixedExpenses,
   calcTotalIncome,
   calcTotalVariableExpenses,
   getEffectiveBudgetInvestment,
+  getEffectiveGroceries,
+  getEffectiveLeisureExpenses,
 } from './calculations.js';
 import {
   computeMonthlyNetSalaryEffective,
@@ -213,12 +216,32 @@ export function resolveMonthlySalaryForDate(settings, cashflowHistory, date) {
 export function getCashflowTotalsForDate(settings, cashflowHistory, date = new Date()) {
   const resolved = resolveSettingsForDate(settings, cashflowHistory, date);
   const income = calcTotalIncome(resolved);
+  const coreFixed = calcCoreFixedExpenses(resolved);
+  const groceries = getEffectiveGroceries(resolved);
+  const leisure = getEffectiveLeisureExpenses(resolved);
   const fixed = calcTotalFixedExpenses(resolved);
-  const leisure = calcTotalVariableExpenses(resolved);
+  const variable = calcTotalVariableExpenses(resolved);
   const investment = getEffectiveBudgetInvestment(resolved);
-  const savings = income - fixed - leisure - investment;
+  const grossSavings = income - coreFixed - groceries - leisure;
+  const savings = grossSavings - investment;
+  const grossSavingsRate = income > 0 ? Math.max(0, grossSavings / income) : 0;
+  const investmentRate = income > 0 ? Math.max(0, investment / income) : 0;
   const savingsRate = income > 0 ? Math.max(0, savings / income) : 0;
-  return { income, fixed, leisure, investment, savings, savingsRate, resolved };
+  return {
+    income,
+    coreFixed,
+    groceries,
+    leisure,
+    fixed,
+    variable,
+    investment,
+    grossSavings,
+    grossSavingsRate,
+    investmentRate,
+    savings,
+    savingsRate,
+    resolved,
+  };
 }
 
 /** Mirror the current tramo into settings (including zero salary / empty history). */

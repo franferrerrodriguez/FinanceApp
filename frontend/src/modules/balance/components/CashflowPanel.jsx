@@ -4,10 +4,9 @@ import { CashflowTramosSection } from '../../../components/CashflowTramosSection
 import { getCashflowTotalsForDate } from '../../../lib/cashflowHistory';
 import { ui } from '../../../lib/uiClasses';
 import { useFinanceData } from '../../../store/hooks';
-import { formatMoney, formatPercent } from '../../../utils/formatters';
 import { AnnualExpensesSection } from '../../../components/AnnualExpensesSection';
 import { EmergencyFundSection } from '../../../components/EmergencyFundSection';
-import { getSavingsTone, KpiCard } from '../../../components/KpiCard';
+import { CashflowSummaryBreakdown } from '../../../components/CashflowSummaryBreakdown';
 import { FinanceAlerts } from '../../../components/FinanceAlerts';
 import { useFinanceAlerts } from '../../../hooks/useFinanceAlerts';
 import { ExpenseSubtotals } from '../../onboarding/components/ExpenseSubtotals';
@@ -73,37 +72,7 @@ export function CashflowPanel() {
 
       <div className={`${ui.chartCard} ${ui.stackSection}`}>
         <p className={`text-sm ${ui.textMuted}`}>{t('balance.cashflow.summaryHint')}</p>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <KpiCard
-            label={t('balance.cashflow.income')}
-            value={formatMoney(totals.income)}
-            valueTone="income"
-            accent
-            hideFooter
-          />
-          <KpiCard
-            label={t('balance.cashflow.fixed')}
-            value={formatMoney(totals.fixed)}
-            valueTone="expense"
-            accent
-            hideFooter
-          />
-          <KpiCard
-            label={t('balance.cashflow.leisure')}
-            value={formatMoney(totals.leisure)}
-            valueTone="leisure"
-            accent
-            hideFooter
-          />
-          <KpiCard
-            label={t('balance.cashflow.savings')}
-            value={formatMoney(totals.savings)}
-            valueTone={getSavingsTone(totals.savingsRate)}
-            subValue={formatPercent(totals.savingsRate)}
-            subTone={getSavingsTone(totals.savingsRate)}
-            accent
-          />
-        </div>
+        <CashflowSummaryBreakdown totals={totals} />
       </div>
 
       <section className={`${ui.chartCard} ${ui.stackSection}`}>
