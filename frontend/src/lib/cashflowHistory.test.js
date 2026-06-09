@@ -68,8 +68,9 @@ const rows = buildMonthlyProjectionTable({
 
 assert.equal(rows[0].salary, 2500);
 assert.equal(rows[5].salary, 2800);
-assert.equal(rows[0].variableExpenses, 300);
-assert.equal(rows[5].variableExpenses, 400);
+assert.equal(rows[0].leisureExpenses, 300);
+assert.equal(rows[5].leisureExpenses, 400);
+assert.equal(rows[0].groceriesExpenses, 100);
 
 const totals = getCashflowTotalsForDate(settings, history, new Date(2026, 6, 1));
 assert.equal(totals.income, 2800);

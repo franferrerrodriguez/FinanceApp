@@ -130,6 +130,9 @@ const coherentRows = buildMonthlyProjectionTable({
   startDate: new Date(2026, 5, 1),
   years: 20,
 });
+assert.equal(coherentRows[0].fixedExpenses, 758.5);
+assert.equal(coherentRows[0].groceriesExpenses, 400);
+assert.equal(coherentRows[0].leisureExpenses, 300);
 assert.equal(coherentRows[0].netContribution, 571.5);
 assert.equal(coherentRows[0].additionalInvestments, 500);
 assert.equal(

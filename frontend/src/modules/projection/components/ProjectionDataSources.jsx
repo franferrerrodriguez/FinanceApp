@@ -87,7 +87,8 @@ export function ProjectionDataSources() {
     (bucket) => (initialState.buckets[bucket] ?? 0) > 0,
   );
 
-  const monthlyExpenses = totals.fixed + totals.variable;
+  const monthlyExpenses =
+    totals.coreFixed + totals.groceries + totals.leisure;
 
   return (
     <section className={`${ui.chartCard} space-y-4`}>
@@ -103,7 +104,10 @@ export function ProjectionDataSources() {
       <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <CashflowSummaryBlock
           income={totals.income}
-          expenses={monthlyExpenses}
+          coreFixed={totals.coreFixed}
+          groceries={totals.groceries}
+          leisure={totals.leisure}
+          expensesTotal={monthlyExpenses}
           savings={totals.savings}
         />
         <SourceItem
@@ -201,7 +205,14 @@ export function ProjectionDataSources() {
   );
 }
 
-function CashflowSummaryBlock({ income, expenses, savings }) {
+function CashflowSummaryBlock({
+  income,
+  coreFixed,
+  groceries,
+  leisure,
+  expensesTotal,
+  savings,
+}) {
   const { t } = useTranslation();
 
   return (
@@ -216,10 +227,28 @@ function CashflowSummaryBlock({ income, expenses, savings }) {
             {formatMoney(income)}
           </dd>
         </div>
+        <div className="flex items-baseline justify-between gap-3 pl-2">
+          <dt className={ui.textMuted}>{t('projection.sources.expensesCoreFixed')}</dt>
+          <dd className={`font-medium tabular-nums ${ui.heading}`}>
+            {formatMoney(coreFixed)}
+          </dd>
+        </div>
+        <div className="flex items-baseline justify-between gap-3 pl-2">
+          <dt className={ui.textMuted}>{t('projection.sources.expensesGroceries')}</dt>
+          <dd className={`font-medium tabular-nums ${ui.heading}`}>
+            {formatMoney(groceries)}
+          </dd>
+        </div>
+        <div className="flex items-baseline justify-between gap-3 pl-2">
+          <dt className={ui.textMuted}>{t('projection.sources.expensesLeisure')}</dt>
+          <dd className={`font-medium tabular-nums ${ui.heading}`}>
+            {formatMoney(leisure)}
+          </dd>
+        </div>
         <div className="flex items-baseline justify-between gap-3">
           <dt className={ui.textMuted}>{t('projection.sources.expenses')}</dt>
           <dd className={`font-medium tabular-nums ${ui.heading}`}>
-            {formatMoney(expenses)}
+            {formatMoney(expensesTotal)}
           </dd>
         </div>
         <div

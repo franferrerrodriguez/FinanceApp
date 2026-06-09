@@ -3,7 +3,8 @@ export const PROJECTION_COLUMN = {
   DATE: 'date',
   SALARY: 'salary',
   FIXED: 'fixed',
-  VARIABLE: 'variable',
+  GROCERIES: 'groceries',
+  LEISURE: 'leisure',
   NET_CONTRIBUTION: 'netContribution',
   INVESTMENTS: 'investments',
   MONTHLY_RETURN: 'monthlyReturn',
@@ -16,32 +17,40 @@ export const BASE_COLUMN_KEYS = [
   PROJECTION_COLUMN.DATE,
   PROJECTION_COLUMN.SALARY,
   PROJECTION_COLUMN.FIXED,
-  PROJECTION_COLUMN.VARIABLE,
-  PROJECTION_COLUMN.NET_CONTRIBUTION,
+  PROJECTION_COLUMN.GROCERIES,
+  PROJECTION_COLUMN.LEISURE,
   PROJECTION_COLUMN.INVESTMENTS,
+  PROJECTION_COLUMN.NET_CONTRIBUTION,
   PROJECTION_COLUMN.MONTHLY_RETURN,
   PROJECTION_COLUMN.PATRIMONY,
 ];
 
 export const PUNCTUAL_COLUMN_KEY = PROJECTION_COLUMN.PUNCTUAL;
 
+/** Fixed-width columns (year, date) use exact px; others use minWidth + flex grow. */
+const FIXED_WIDTH_COLUMNS = new Set([
+  PROJECTION_COLUMN.YEAR,
+  PROJECTION_COLUMN.DATE,
+]);
+
 /** px — mobile headers use full phrases (see *Short in locales) */
 const COLUMN_WIDTH_PX = {
-  year: { narrow: 36, wide: 44 },
-  date: { narrow: 84, wide: 116 },
-  salary: { narrow: 104, wide: 108 },
-  fixed: { narrow: 112, wide: 104 },
-  variable: { narrow: 124, wide: 108 },
+  year: { narrow: 28, wide: 32 },
+  date: { narrow: 68, wide: 80 },
+  salary: { narrow: 112, wide: 120 },
+  fixed: { narrow: 120, wide: 128 },
+  groceries: { narrow: 108, wide: 112 },
+  leisure: { narrow: 108, wide: 112 },
   punctual: { narrow: 124, wide: 104 },
-  netContribution: { narrow: 120, wide: 120 },
-  investments: { narrow: 124, wide: 116 },
-  monthlyReturn: { narrow: 116, wide: 116 },
-  patrimony: { narrow: 116, wide: 128 },
+  netContribution: { narrow: 112, wide: 120 },
+  investments: { narrow: 112, wide: 120 },
+  monthlyReturn: { narrow: 112, wide: 128 },
+  patrimony: { narrow: 128, wide: 140 },
 };
 
 export function buildProjectionColumnKeys(showPunctual) {
   if (!showPunctual) return [...BASE_COLUMN_KEYS];
-  const idx = BASE_COLUMN_KEYS.indexOf(PROJECTION_COLUMN.NET_CONTRIBUTION);
+  const idx = BASE_COLUMN_KEYS.indexOf(PROJECTION_COLUMN.INVESTMENTS);
   return [
     ...BASE_COLUMN_KEYS.slice(0, idx),
     PUNCTUAL_COLUMN_KEY,
@@ -61,13 +70,31 @@ export function getTableMinWidth(columnKeys, narrow) {
   );
 }
 
-/** Columns grow to fill the table width; minWidth keeps horizontal scroll when needed. */
+export function isFixedWidthColumn(key) {
+  return FIXED_WIDTH_COLUMNS.has(key);
+}
+
+/** Fixed columns (year, date) stay content-width; others grow to fill the row. */
 export function columnFlexStyle(key, narrow) {
   const w = getColumnWidthPx(key, narrow);
+  if (isFixedWidthColumn(key)) {
+    return {
+      flex: '0 0 auto',
+      width: w,
+    };
+  }
   return {
+    flex: '1 1 0',
     minWidth: w,
-    flex: `1 1 ${w}px`,
   };
+}
+
+export function columnPaddingClass(key) {
+  return isFixedWidthColumn(key) ? 'px-1 sm:px-1.5' : 'px-2 sm:px-3';
+}
+
+export function showColumnSeparator(columnKey, columnKeys) {
+  return columnKeys[columnKeys.length - 1] !== columnKey;
 }
 
 export const tableRowLayoutStyle = (tableMinWidth) => ({
@@ -79,9 +106,20 @@ export function headerLabelKey(key, narrow) {
   if (key === PROJECTION_COLUMN.YEAR) {
     return narrow ? 'projection.table.yearShort' : 'projection.table.year';
   }
-  return narrow && key !== PROJECTION_COLUMN.DATE
-    ? `projection.table.${key}Short`
-    : `projection.table.${key}`;
+  if (key === PROJECTION_COLUMN.GROCERIES && narrow) {
+    return 'projection.table.groceriesShort';
+  }
+  if (key === PROJECTION_COLUMN.PATRIMONY && narrow) {
+    return 'projection.table.patrimonyShort';
+  }
+  return `projection.table.${key}`;
+}
+
+export function headerTooltipKey(key) {
+  if (key === PROJECTION_COLUMN.YEAR || key === PROJECTION_COLUMN.PUNCTUAL) {
+    return null;
+  }
+  return `projection.table.tooltips.${key}`;
 }
 
 export function stickyColumnLeftOffset(key, narrow) {

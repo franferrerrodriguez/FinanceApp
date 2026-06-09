@@ -388,14 +388,18 @@ export function buildMonthlyProjectionRows({
       date,
       monthIndex,
     });
-    const baseFixed = calcTotalFixedExpenses(monthSettings);
-    const baseVariable = calcTotalVariableExpenses(monthSettings);
+    const baseCoreFixed = calcCoreFixedExpenses(monthSettings);
+    const baseGroceries = getEffectiveGroceries(monthSettings);
+    const baseLeisure = calcTotalVariableExpenses(monthSettings);
     const otherIncome = monthSettings?.otherMonthlyIncome ?? 0;
     const fixedExpenses = roundMoney(
-      scaleByAnnualSteps(baseFixed, monthIndex, expenseIncrease),
+      scaleByAnnualSteps(baseCoreFixed, monthIndex, expenseIncrease),
     );
-    const variableExpenses = roundMoney(
-      scaleByAnnualSteps(baseVariable, monthIndex, expenseIncrease),
+    const groceriesExpenses = roundMoney(
+      scaleByAnnualSteps(baseGroceries, monthIndex, expenseIncrease),
+    );
+    const leisureExpenses = roundMoney(
+      scaleByAnnualSteps(baseLeisure, monthIndex, expenseIncrease),
     );
     const monthKey = monthKeyFromDate(date);
     const punctualExpenses = roundMoney(
@@ -405,7 +409,8 @@ export function buildMonthlyProjectionRows({
       salary +
         otherIncome -
         fixedExpenses -
-        variableExpenses -
+        groceriesExpenses -
+        leisureExpenses -
         punctualExpenses,
     );
 
@@ -473,7 +478,8 @@ export function buildMonthlyProjectionRows({
       salary,
       otherIncome: roundMoney(otherIncome),
       fixedExpenses,
-      variableExpenses,
+      groceriesExpenses,
+      leisureExpenses,
       additionalInvestments,
       punctualExpenses,
       netContribution,

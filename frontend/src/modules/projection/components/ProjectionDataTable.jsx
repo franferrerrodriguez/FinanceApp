@@ -20,12 +20,17 @@ import { ui } from '../../../lib/uiClasses';
 import { useFinanceData } from '../../../store/hooks';
 import { formatProjectionDate } from '../../../utils/projectionDate';
 import { formatMoney } from '../../../utils/formatters';
+import { HelpTooltip } from '../../../components/HelpTooltip';
 import {
   PROJECTION_COLUMN,
   buildProjectionColumnKeys,
   columnFlexStyle,
+  columnPaddingClass,
   getTableMinWidth,
   headerLabelKey,
+  isFixedWidthColumn,
+  headerTooltipKey,
+  showColumnSeparator,
   stickyColumnLeftOffset,
   tableRowLayoutStyle,
 } from '../projectionTableColumns';
@@ -34,8 +39,8 @@ import { ProjectionSummary } from './ProjectionSummary';
 const MOBILE_MEDIA = '(max-width: 767px)';
 const ROW_HEIGHT_NARROW = 42;
 const ROW_HEIGHT_WIDE = 44;
-const HEAD_HEIGHT_NARROW = 64;
-const HEAD_HEIGHT_WIDE = 48;
+const HEAD_HEIGHT_NARROW = 72;
+const HEAD_HEIGHT_WIDE = 52;
 const LIST_MAX_HEIGHT = 480;
 
 function rowBg(isEven) {
@@ -50,6 +55,71 @@ function stickyDateShadow(scrolledX) {
   return scrolledX
     ? 'shadow-[4px_0_10px_-2px_rgba(15,23,42,0.12)] dark:shadow-[4px_0_10px_-2px_rgba(0,0,0,0.45)]'
     : '';
+}
+
+function patrimonyCellClass(isHeader = false) {
+  return isHeader
+    ? 'bg-emerald-50 font-bold text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300'
+    : 'bg-emerald-50/70 font-bold text-emerald-800 dark:bg-emerald-950/35 dark:text-emerald-300';
+}
+
+function ProjectionColumnHeader({ columnKey, columnKeys, narrowViewport, scrolledX, t }) {
+  const isYear = columnKey === PROJECTION_COLUMN.YEAR;
+  const isDate = columnKey === PROJECTION_COLUMN.DATE;
+  const isPatrimony = columnKey === PROJECTION_COLUMN.PATRIMONY;
+  const stickyLeft = stickyColumnLeftOffset(columnKey, narrowViewport);
+  const isSticky = stickyLeft != null;
+  const alignRight = !isYear && !isDate;
+  const tooltipKey = headerTooltipKey(columnKey);
+  const separator = showColumnSeparator(columnKey, columnKeys);
+
+  return (
+    <div
+      style={{
+        ...columnFlexStyle(columnKey, narrowViewport),
+        ...(isSticky ? { left: stickyLeft } : {}),
+      }}
+      className={`flex items-center overflow-visible py-1 ${columnPaddingClass(columnKey)} ${
+        isFixedWidthColumn(columnKey) ? 'shrink-0' : 'min-w-0'
+      } ${
+        alignRight
+          ? 'justify-end text-right'
+          : isYear
+            ? 'justify-center text-center'
+            : 'justify-start text-left'
+      } ${separator ? `border-r ${ui.divider}` : ''} ${
+        isSticky
+          ? `sticky z-30 ${headBg()} ${stickyDateShadow(scrolledX)} ${
+              isYear ? 'rounded-tl-2xl' : ''
+            } ${isPatrimony ? patrimonyCellClass(true) : ''}`
+          : isPatrimony
+            ? patrimonyCellClass(true)
+            : ''
+      }`}
+    >
+      <span className="inline-flex max-w-full items-center gap-1">
+        <span
+          className={`font-semibold text-slate-700 dark:text-slate-300 ${
+            narrowViewport
+              ? 'text-[10px] leading-snug whitespace-normal'
+              : 'text-xs leading-snug whitespace-normal'
+          } ${isPatrimony ? 'font-bold' : ''}`}
+        >
+          {t(headerLabelKey(columnKey, narrowViewport))}
+        </span>
+        {tooltipKey ? (
+          <HelpTooltip
+            symbol="ⓘ"
+            ariaLabel={t('projection.table.tooltipAria', {
+              column: t(headerLabelKey(columnKey, narrowViewport)),
+            })}
+          >
+            {t(tooltipKey)}
+          </HelpTooltip>
+        ) : null}
+      </span>
+    </div>
+  );
 }
 
 export function ProjectionDataTable() {
@@ -181,50 +251,19 @@ export function ProjectionDataTable() {
 
   const tableHeader = (
     <div
-      className={`flex w-full border-b ${ui.divider} ${headBg()}`}
+      className={`flex w-full min-w-full border-b ${ui.divider} ${headBg()}`}
       style={{ height: headHeight, ...tableRowLayoutStyle(tableMinWidth) }}
     >
-      {columns.map((key) => {
-        const isYear = key === PROJECTION_COLUMN.YEAR;
-        const isDate = key === PROJECTION_COLUMN.DATE;
-        const isPatrimony = key === PROJECTION_COLUMN.PATRIMONY;
-        const stickyLeft = stickyColumnLeftOffset(key, narrowViewport);
-        const isSticky = stickyLeft != null;
-        const alignRight = !isYear && !isDate;
-
-        return (
-          <div
-            key={key}
-            style={{
-              ...columnFlexStyle(key, narrowViewport),
-              ...(isSticky ? { left: stickyLeft } : {}),
-            }}
-            className={`flex shrink-0 items-center overflow-hidden px-2 py-1 sm:px-3 ${
-              alignRight
-                ? 'justify-end text-right'
-                : isYear
-                  ? 'justify-center text-center'
-                  : 'justify-start text-left'
-            } ${
-              isSticky
-                ? `sticky z-30 border-r ${ui.divider} ${headBg()} ${stickyDateShadow(scrolledX)} ${
-                    isYear ? 'rounded-tl-2xl' : ''
-                  }`
-                : ''
-            }`}
-          >
-            <span
-              className={`block w-full font-semibold text-slate-600 dark:text-slate-400 ${
-                narrowViewport
-                  ? 'text-[10px] leading-snug tracking-normal whitespace-normal'
-                  : 'text-xs uppercase leading-tight tracking-wide whitespace-nowrap'
-              } ${isPatrimony ? ui.heading : ''}`}
-            >
-              {t(headerLabelKey(key, narrowViewport))}
-            </span>
-          </div>
-        );
-      })}
+      {columns.map((key) => (
+        <ProjectionColumnHeader
+          key={key}
+          columnKey={key}
+          columnKeys={columns}
+          narrowViewport={narrowViewport}
+          scrolledX={scrolledX}
+          t={t}
+        />
+      ))}
     </div>
   );
 
@@ -289,14 +328,17 @@ export function ProjectionDataTable() {
           </VirtualList>
         </div>
 
-        <p
-          className={`border-t px-4 py-3 text-xs leading-snug sm:px-5 ${ui.divider} ${ui.textMuted}`}
-        >
-          {t('projection.table.monthCount', {
-            count: rows.length,
-            years: projectionYears,
-          })}
-        </p>
+        <div className={`space-y-2 border-t px-4 py-3 sm:px-5 ${ui.divider}`}>
+          <p className={`text-xs leading-relaxed ${ui.textMuted}`}>
+            {t('projection.table.howItWorks')}
+          </p>
+          <p className={`text-xs leading-snug ${ui.textMuted}`}>
+            {t('projection.table.monthCount', {
+              count: rows.length,
+              years: projectionYears,
+            })}
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -322,7 +364,8 @@ function ProjectionRow({
     date: formatProjectionDate(row.date),
     salary: formatMoney(row.salary),
     fixed: formatMoney(row.fixedExpenses),
-    variable: formatMoney(row.variableExpenses),
+    groceries: formatMoney(row.groceriesExpenses),
+    leisure: formatMoney(row.leisureExpenses),
     punctual:
       row.punctualExpenses > 0
         ? formatMoney(-row.punctualExpenses)
@@ -338,7 +381,7 @@ function ProjectionRow({
   return (
     <div
       style={{ ...style, ...tableRowLayoutStyle(tableMinWidth) }}
-      className={`flex w-full items-center border-b ${ui.divider} ${bg} ${january}`}
+      className={`flex w-full min-w-full items-center border-b ${ui.divider} ${bg} ${january}`}
     >
       {columns.map((key) => {
         const isYear = key === PROJECTION_COLUMN.YEAR;
@@ -347,6 +390,7 @@ function ProjectionRow({
         const stickyLeft = stickyColumnLeftOffset(key, narrowViewport);
         const isSticky = stickyLeft != null;
         const alignRight = !isYear && !isDate;
+        const separator = showColumnSeparator(key, columns);
 
         return (
           <div
@@ -355,15 +399,17 @@ function ProjectionRow({
               ...columnFlexStyle(key, narrowViewport),
               ...(isSticky ? { left: stickyLeft } : {}),
             }}
-            className={`flex shrink-0 items-center overflow-hidden px-2 tabular-nums sm:px-3 ${textSize} whitespace-nowrap ${
-              alignRight ? 'justify-end text-right' : isYear ? 'justify-center text-center' : 'justify-start text-left'
+            className={`flex items-center overflow-hidden tabular-nums ${columnPaddingClass(key)} ${textSize} whitespace-nowrap ${
+              isFixedWidthColumn(key) ? 'shrink-0' : 'min-w-0'
             } ${
+              alignRight ? 'justify-end text-right' : isYear ? 'justify-center text-center' : 'justify-start text-left'
+            } ${separator ? `border-r ${ui.divider}` : ''} ${
               isSticky
-                ? `sticky z-10 border-r ${ui.divider} ${bg} ${january} ${ui.textLabel} ${stickyDateShadow(scrolledX)} ${
+                ? `sticky z-10 ${bg} ${january} ${ui.textLabel} ${stickyDateShadow(scrolledX)} ${
                     isYear && isLastRow ? 'rounded-bl-2xl' : ''
                   }`
                 : isPatrimony
-                  ? 'font-semibold text-emerald-700 dark:text-emerald-400'
+                  ? patrimonyCellClass(false)
                   : ui.textLabel
             } ${isYear ? 'font-medium text-slate-500 dark:text-slate-400' : ''}`}
           >

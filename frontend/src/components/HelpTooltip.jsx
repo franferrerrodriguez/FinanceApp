@@ -1,19 +1,19 @@
 import { useId } from 'react';
 import { ui } from '../lib/uiClasses';
 
-export function HelpTooltip({ ariaLabel, children }) {
+export function HelpTooltip({ ariaLabel, children, symbol = '?' }) {
   const tooltipId = useId();
 
   return (
-    <span className="group relative inline-flex align-middle">
+    <span className="group relative inline-flex shrink-0 align-middle">
       <span
         tabIndex={0}
         role="img"
         aria-label={ariaLabel}
         aria-describedby={tooltipId}
-        className={`inline-flex h-5 w-5 cursor-help items-center justify-center rounded-full border text-xs font-semibold transition hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:hover:text-emerald-400 border-slate-400 text-slate-500 dark:border-slate-600 dark:text-slate-400`}
+        className={`inline-flex h-4 w-4 cursor-help items-center justify-center rounded-full text-[10px] font-semibold leading-none transition hover:bg-emerald-500/10 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:hover:text-emerald-400 text-slate-400 dark:text-slate-500`}
       >
-        ?
+        {symbol}
       </span>
 
       <div

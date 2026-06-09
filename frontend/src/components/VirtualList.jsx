@@ -72,15 +72,21 @@ export function VirtualList({
       >
         {header ? (
           <div
-            className="sticky top-0 z-20"
+            className="sticky top-0 z-20 w-full min-w-full"
             style={{ height: headerHeight }}
           >
             {header}
           </div>
         ) : null}
 
-        <div style={{ height: rowsTotalHeight, position: 'relative' }}>
-          <div style={{ transform: `translateY(${offsetY}px)` }}>
+        <div
+          className="w-full min-w-full"
+          style={{ height: rowsTotalHeight, position: 'relative' }}
+        >
+          <div
+            className="w-full min-w-full"
+            style={{ transform: `translateY(${offsetY}px)` }}
+          >
             {Array.from({ length: end - start }, (_, i) => {
               const index = start + i;
               return (
