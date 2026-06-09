@@ -6,6 +6,7 @@ import { getEffectiveMortgageRent } from '../../../lib/calculations';
 import { getCurrentMonthKey } from '../../../lib/dashboardMetrics';
 import { isLinkedHousingMortgage } from '../../../lib/housingLiability';
 import { getMonthlyCloseMonthOptions } from '../../../lib/monthlyClose';
+import { deriveContributionPreviewForAsset } from '../../../lib/deriveContributionsFromSnapshots';
 import {
   buildCloseMonthSnapshots,
   buildMonthlyCloseDrafts,
@@ -232,6 +233,14 @@ export function MonthlyCloseModal({
                   <ul className="space-y-2">
                     {activeAssets.map((asset) => {
                       const row = assetRows.find((r) => r.assetId === asset.id);
+                      const preview = deriveContributionPreviewForAsset({
+                        snapshots,
+                        assets,
+                        settings,
+                        monthKey: resolvedMonthKey,
+                        assetId: asset.id,
+                        newBalance: row?.value ?? 0,
+                      });
                       return (
                         <li key={asset.id} className={`p-3 ${ui.cardInset}`}>
                           <p className={`text-sm font-medium ${ui.textLabel}`}>
@@ -270,6 +279,15 @@ export function MonthlyCloseModal({
                               className={`${ui.input} ${ui.inputAmount} mt-1 w-full max-w-none`}
                             />
                           </label>
+                          {preview ? (
+                            <p className={`mt-2 text-xs leading-relaxed ${ui.textMuted}`}>
+                              {t('balance.patrimony.derivedContributionHint', {
+                                delta: formatMoney(preview.delta),
+                                contribution: formatMoney(preview.amount),
+                                returnAmount: formatMoney(preview.estimatedReturn),
+                              })}
+                            </p>
+                          ) : null}
                         </li>
                       );
                     })}

@@ -71,5 +71,15 @@ assert.equal(rows[5].variableExpenses, 400);
 const totals = getCashflowTotalsForDate(settings, history, new Date(2026, 6, 1));
 assert.equal(totals.income, 2800);
 assert.equal(totals.leisure, 400);
+assert.equal(totals.investment, 0);
+assert.equal(totals.savings, 2800 - 500 - 200 - 100 - 400);
+
+const withInvestment = getCashflowTotalsForDate(
+  { ...settings, monthlyBudgetInvestment: 150 },
+  history,
+  new Date(2026, 6, 1),
+);
+assert.equal(withInvestment.investment, 150);
+assert.equal(withInvestment.savings, 2800 - 500 - 200 - 100 - 400 - 150);
 
 console.log('cashflowHistory.test.js: ok');

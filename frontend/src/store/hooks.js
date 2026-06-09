@@ -52,9 +52,6 @@ export function useFinanceData() {
       addContributionPlan: s.addContributionPlan,
       updateContributionPlan: s.updateContributionPlan,
       removeContributionPlan: s.removeContributionPlan,
-      addContributionEntry: s.addContributionEntry,
-      updateContributionEntry: s.updateContributionEntry,
-      removeContributionEntry: s.removeContributionEntry,
       addAsset: s.addAsset,
       updateAsset: s.updateAsset,
       setAssetActive: s.setAssetActive,
@@ -65,6 +62,7 @@ export function useFinanceData() {
       removeLiability: s.removeLiability,
       addSnapshot: s.addSnapshot,
       closeMonthSnapshots: s.closeMonthSnapshots,
+      setLiabilityOutstandingBalance: s.setLiabilityOutstandingBalance,
     })),
   );
 }

@@ -17,6 +17,7 @@ import { FinanceAlerts } from '../../../components/FinanceAlerts';
 import { useFinanceAlerts } from '../../../hooks/useFinanceAlerts';
 import { ExpenseSubtotals } from '../../onboarding/components/ExpenseSubtotals';
 import { HousingExpenseBlock } from '../../../components/HousingExpenseBlock';
+import { PayYourselfFirstBlock } from '../../../components/PayYourselfFirstBlock';
 import { SharedExpenseBlock } from '../../onboarding/components/SharedExpenseBlock';
 import {
   getEffectiveGroceries,
@@ -129,6 +130,8 @@ export function CashflowPanel() {
         </div>
 
         <div className={ui.stackBlocks}>
+        <PayYourselfFirstBlock settings={settings} setSettings={setSettings} />
+
         <HousingExpenseBlock
           settings={settings}
           setSettings={setSettings}

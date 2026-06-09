@@ -22,6 +22,7 @@ export function createContributionEntry(partial = {}) {
     date: partial.date ?? today,
     amount: partial.amount ?? 0,
     note: partial.note ?? '',
+    derived: partial.derived === true,
   };
 }
 

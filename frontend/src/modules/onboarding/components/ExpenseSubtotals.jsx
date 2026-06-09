@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import {
+  getEffectiveBudgetInvestment,
   getEffectiveGroceries,
   getEffectiveHouseholdExpenses,
   getEffectiveLeisureExpenses,
@@ -13,6 +14,7 @@ import { LiveTotal } from './LiveTotal';
 export function ExpenseSubtotals({ settings }) {
   const { t } = useTranslation();
 
+  const investment = getEffectiveBudgetInvestment(settings);
   const mortgage = getEffectiveMortgageRent(settings);
   const household = sumEuros(
     getEffectiveHouseholdExpenses(settings),
@@ -22,6 +24,13 @@ export function ExpenseSubtotals({ settings }) {
 
   return (
     <div className={`overflow-hidden ${ui.block} ${ui.expenseSummary}`}>
+      {investment > 0 ? (
+        <LiveTotal
+          inList
+          label={t('onboarding.expenses.subtotalInvestments')}
+          amount={investment}
+        />
+      ) : null}
       <LiveTotal
         inList
         label={t('onboarding.expenses.subtotalMortgage')}

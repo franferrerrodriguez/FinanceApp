@@ -343,7 +343,8 @@ export function computeDashboardKpis({
 }) {
   const income = calcTotalIncome(settings);
   const fixedExpenses = calcTotalFixedExpenses(settings);
-  const monthlyInvestment = settings?.monthlyInvestmentAmount ?? 0;
+  const monthlyInvestment =
+    settings?.monthlyBudgetInvestment ?? settings?.monthlyInvestmentAmount ?? 0;
   const fallbackPatrimony = settings?.initialPatrimony ?? 0;
 
   const history = buildNetWorthHistory(snapshots, fallbackPatrimony);
@@ -351,7 +352,11 @@ export function computeDashboardKpis({
   const monthlyVariationPct = calcMonthlyVariationPct(history);
   const monthDeltas = getMonthOverMonthDeltas(history);
   const variableExpenses = calcTotalVariableExpenses(settings);
-  const savingsRate = calcSavingsRate(income, fixedExpenses, variableExpenses);
+  const savingsRate = calcSavingsRate(
+    income,
+    fixedExpenses,
+    variableExpenses + monthlyInvestment,
+  );
   const monthlySavingsAmount = income * savingsRate;
   const cashflow = calcFreeCashflow(
     income,

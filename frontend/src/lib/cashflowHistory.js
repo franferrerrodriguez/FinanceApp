@@ -3,6 +3,7 @@ import {
   calcTotalFixedExpenses,
   calcTotalIncome,
   calcTotalVariableExpenses,
+  getEffectiveBudgetInvestment,
 } from './calculations.js';
 import {
   computeMonthlyNetSalaryEffective,
@@ -47,6 +48,8 @@ export const CASHFLOW_EXPENSE_SNAPSHOT_KEYS = [
   'leisureIsEstimate',
   'leisureShared',
   'leisureYourSharePercent',
+  'monthlyBudgetInvestment',
+  'emergencyFundCountsInvestment',
 ];
 
 export function pickExpenseSnapshot(settings = {}) {
@@ -84,10 +87,13 @@ export function applyCashflowEntryToSettings(settings, entry) {
     },
     base,
   );
+  const expenseOverlay = Object.fromEntries(
+    Object.entries(entry.expenses ?? {}).filter(([, value]) => value !== undefined),
+  );
   return {
     ...withSalary,
     otherMonthlyIncome: entry.otherMonthlyIncome ?? 0,
-    ...(entry.expenses ?? {}),
+    ...expenseOverlay,
   };
 }
 
@@ -186,9 +192,10 @@ export function getCashflowTotalsForDate(settings, cashflowHistory, date = new D
   const income = calcTotalIncome(resolved);
   const fixed = calcTotalFixedExpenses(resolved);
   const leisure = calcTotalVariableExpenses(resolved);
-  const savings = income - fixed - leisure;
+  const investment = getEffectiveBudgetInvestment(resolved);
+  const savings = income - fixed - leisure - investment;
   const savingsRate = income > 0 ? Math.max(0, savings / income) : 0;
-  return { income, fixed, leisure, savings, savingsRate, resolved };
+  return { income, fixed, leisure, investment, savings, savingsRate, resolved };
 }
 
 /** Mirror the tramo in effect today into settings. */

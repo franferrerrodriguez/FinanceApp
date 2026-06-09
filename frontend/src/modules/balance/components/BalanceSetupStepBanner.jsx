@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 import {
   BALANCE_SETUP_STEP,
   needsAccountBalancesSetup,
-  needsContributionsSetup,
   needsLiquidAccountsSetup,
 } from '../../../lib/balanceSetupProgress';
 import { hasPatrimonyAccounts } from '../../../lib/monthlyClose';
@@ -11,20 +10,18 @@ import { useFinanceData } from '../../../store/hooks';
 
 export function BalanceSetupStepBanner({ stepId, onAction }) {
   const { t } = useTranslation();
-  const { assets, liabilities, snapshots, contributionEntries } = useFinanceData();
+  const { assets, liabilities, snapshots } = useFinanceData();
 
   const show =
     stepId === BALANCE_SETUP_STEP.ACCOUNTS
       ? needsAccountBalancesSetup(assets, liabilities, snapshots)
       : stepId === BALANCE_SETUP_STEP.LIQUID
         ? needsLiquidAccountsSetup(assets, liabilities, snapshots)
-        : stepId === BALANCE_SETUP_STEP.INVEST
-          ? needsContributionsSetup(assets, contributionEntries)
-          : false;
+        : false;
 
   if (!show) return null;
 
-  const optional = stepId === BALANCE_SETUP_STEP.INVEST;
+  const optional = false;
   const hasAccounts = hasPatrimonyAccounts(assets, liabilities);
   const hintKey =
     stepId === BALANCE_SETUP_STEP.ACCOUNTS && hasAccounts

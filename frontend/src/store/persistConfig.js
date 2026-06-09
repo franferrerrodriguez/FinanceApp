@@ -23,12 +23,13 @@ import {
   filterDraftAssets,
   filterDraftLiabilities,
 } from '../lib/patrimonyDrafts';
+import { rebuildDerivedContributionEntries } from '../lib/deriveContributionsFromSnapshots';
 import { getDefaultReturnForAssetCategory } from '../lib/projectionReturns';
 import { syncHousingSettings } from '../lib/housingLiability';
 import { ONBOARDING_STEP_IDS } from '../modules/onboarding/constants';
 
 export const PERSIST_STORAGE_KEY = 'financia_app_data';
-export const PERSIST_VERSION = 16;
+export const PERSIST_VERSION = 17;
 
 const MAX_ONBOARDING_STEP = ONBOARDING_STEP_IDS.length - 1;
 
@@ -58,23 +59,29 @@ export function mergePersistedState(persisted, current) {
     mergeFinanceLists(persisted.liabilities, current.liabilities),
   );
 
+  const settings = syncHousingSettings(
+    {
+      ...DEFAULT_SETTINGS,
+      ...current.settings,
+      ...persisted.settings,
+      projectionYears: resolveProjectionYearsFromPersist(
+        persisted.settings?.projectionYears ??
+          current.settings?.projectionYears,
+      ),
+    },
+    liabilities,
+  );
+  const assets = filterDraftAssets(
+    mergeFinanceLists(persisted.assets, current.assets),
+  );
+  const snapshots = mergeFinanceLists(persisted.snapshots, current.snapshots);
+
   return {
     ...current,
     ...persisted,
     locale: persisted.locale ?? current.locale,
     theme: persisted.theme ?? current.theme,
-    settings: syncHousingSettings(
-      {
-        ...DEFAULT_SETTINGS,
-        ...current.settings,
-        ...persisted.settings,
-        projectionYears: resolveProjectionYearsFromPersist(
-          persisted.settings?.projectionYears ??
-            current.settings?.projectionYears,
-        ),
-      },
-      liabilities,
-    ),
+    settings,
     annualExpenses: persisted.annualExpenses ?? current.annualExpenses ?? [],
     cashflowHistory:
       persisted.cashflowHistory ??
@@ -82,13 +89,14 @@ export function mergePersistedState(persisted, current) {
       [],
     contributionPlans:
       persisted.contributionPlans ?? current.contributionPlans ?? [],
-    contributionEntries:
-      persisted.contributionEntries ?? current.contributionEntries ?? [],
-    assets: filterDraftAssets(
-      mergeFinanceLists(persisted.assets, current.assets),
-    ),
+    contributionEntries: rebuildDerivedContributionEntries({
+      snapshots,
+      assets,
+      settings,
+    }),
+    assets,
     liabilities,
-    snapshots: mergeFinanceLists(persisted.snapshots, current.snapshots),
+    snapshots,
     profile: persisted.profile ?? current.profile,
     onboardingStep: Math.min(
       persisted.onboardingStep ?? 0,
@@ -284,6 +292,14 @@ export function migratePersistedState(persisted, version) {
 
   if (version < 16) {
     next.contributionEntries = next.contributionEntries ?? [];
+  }
+
+  if (version < 17) {
+    next.contributionEntries = rebuildDerivedContributionEntries({
+      snapshots: next.snapshots ?? [],
+      assets: next.assets ?? [],
+      settings: { ...DEFAULT_SETTINGS, ...next.settings },
+    });
   }
 
   return next;

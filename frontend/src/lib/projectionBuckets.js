@@ -249,13 +249,8 @@ export function applyMonthToBucketState({
     nextBuckets[bucket] = round(balance + ret);
   }
 
-  const { interest, payments } = computeDebtMonthDelta(
-    debtBalance,
-    liabilities,
-    settings,
-  );
-  monthlyReturn = round(monthlyReturn - interest);
-  let nextDebt = round(Math.max(0, debtBalance + interest - payments));
+  // Debt balance comes from real snapshots only; cuota ≠ amortización en proyección.
+  const nextDebt = debtBalance;
 
   for (const bucket of GROWTH_BUCKETS) {
     nextBuckets[bucket] = round(

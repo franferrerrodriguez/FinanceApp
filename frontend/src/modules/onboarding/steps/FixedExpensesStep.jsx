@@ -11,15 +11,18 @@ import { patchExpenseViewMode } from '../../../lib/expenseViewMode';
 import { DetailedHouseholdBreakdown } from '../components/DetailedHouseholdBreakdown';
 import { ExpenseViewToggle } from '../components/ExpenseViewToggle';
 import { ui } from '../../../lib/uiClasses';
-import { useSettings } from '../../../store/hooks';
+import { useFinanceData, useSettings } from '../../../store/hooks';
 import { ExpenseSubtotals } from '../components/ExpenseSubtotals';
 import { OnboardingActions } from '../components/OnboardingActions';
 import { HousingExpenseBlock } from '../../../components/HousingExpenseBlock';
+import { PayYourselfFirstBlock } from '../../../components/PayYourselfFirstBlock';
+import { OnboardingLiabilitiesSection } from '../components/OnboardingLiabilitiesSection';
 import { SharedExpenseBlock } from '../components/SharedExpenseBlock';
 
 export function FixedExpensesStep({ onBack, onNext }) {
   const { t } = useTranslation();
   const { settings, setSettings } = useSettings();
+  const { snapshots } = useFinanceData();
 
   const detailed = settings.useDetailedExpenses ?? false;
 
@@ -35,11 +38,16 @@ export function FixedExpensesStep({ onBack, onNext }) {
       <p className={`mb-6 ${ui.text}`}>{t('onboarding.expenses.subtitle')}</p>
 
       <div className="space-y-4">
+        <PayYourselfFirstBlock settings={settings} setSettings={setSettings} />
+
         <HousingExpenseBlock
           settings={settings}
           setSettings={setSettings}
-          snapshots={[]}
+          snapshots={snapshots}
+          inOnboarding
         />
+
+        <OnboardingLiabilitiesSection />
 
         {!detailed && (
           <SharedExpenseBlock

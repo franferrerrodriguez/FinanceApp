@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { getEmergencyFundAlert } from './emergencyFund.js';
+import { calcMonthlyExpenseBaseline, getEmergencyFundAlert } from './emergencyFund.js';
 
 const belowTarget = {
   hasLiquidData: true,
@@ -46,5 +46,29 @@ const noBalances = {
   monthlyExpenses: 1000,
 };
 assert.equal(getEmergencyFundAlert(noBalances).id, 'emergency_fund_no_balances');
+
+const baseSettings = {
+  mortgageRentTotal: 500,
+  householdFixedEstimate: 200,
+  groceriesEstimate: 100,
+  leisureEstimate: 300,
+};
+assert.equal(calcMonthlyExpenseBaseline(baseSettings), 1100);
+assert.equal(
+  calcMonthlyExpenseBaseline({
+    ...baseSettings,
+    monthlyBudgetInvestment: 200,
+    emergencyFundCountsInvestment: false,
+  }),
+  1100,
+);
+assert.equal(
+  calcMonthlyExpenseBaseline({
+    ...baseSettings,
+    monthlyBudgetInvestment: 200,
+    emergencyFundCountsInvestment: true,
+  }),
+  1300,
+);
 
 console.log('emergencyFund.test.js: ok');

@@ -2,14 +2,9 @@
 export const BALANCE_TAB = {
   CASHFLOW: 'cashflow',
   PATRIMONY: 'patrimony',
-  CONTRIBUTIONS: 'contributions',
 };
 
-export const BALANCE_TABS = [
-  BALANCE_TAB.CASHFLOW,
-  BALANCE_TAB.PATRIMONY,
-  BALANCE_TAB.CONTRIBUTIONS,
-];
+export const BALANCE_TABS = [BALANCE_TAB.CASHFLOW, BALANCE_TAB.PATRIMONY];
 
 export const DEFAULT_BALANCE_TAB = BALANCE_TAB.CASHFLOW;
 
@@ -18,6 +13,7 @@ export function isBalanceTab(value) {
 }
 
 export function resolveBalanceTab(value) {
+  if (value === 'contributions') return BALANCE_TAB.PATRIMONY;
   return isBalanceTab(value) ? value : DEFAULT_BALANCE_TAB;
 }
 

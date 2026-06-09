@@ -18,6 +18,7 @@ export function PatrimonyCatalogTable({
   settings,
   onEdit,
   onDelete,
+  canDeleteItem,
 }) {
   const { t } = useTranslation();
   const scrollRef = useRef(null);
@@ -133,7 +134,7 @@ export function PatrimonyCatalogTable({
                       >
                         {t('balance.patrimony.editRow')}
                       </button>
-                      {onDelete ? (
+                      {onDelete && (canDeleteItem?.(item) ?? true) ? (
                         <button
                           type="button"
                           onClick={() => onDelete(item)}

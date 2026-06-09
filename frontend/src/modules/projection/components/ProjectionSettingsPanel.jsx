@@ -126,10 +126,10 @@ export function ProjectionSettingsPanel() {
           </option>
         </SelectField>
         <Link
-          to={balancePath(BALANCE_TAB.CONTRIBUTIONS)}
+          to={balancePath(BALANCE_TAB.PATRIMONY)}
           className="mt-2 inline-block text-xs font-medium text-emerald-600 hover:underline dark:text-emerald-400"
         >
-          {t('projection.settings.goContributions')}
+          {t('projection.settings.goPatrimony')}
         </Link>
       </label>
 

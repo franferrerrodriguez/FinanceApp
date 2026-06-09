@@ -9,12 +9,10 @@ import {
 import { UnderlineTabNav } from '../../components/UnderlineTabNav';
 import { ui } from '../../lib/uiClasses';
 import { CashflowPanel } from './components/CashflowPanel';
-import { ContributionsPanel } from './components/ContributionsPanel';
 import { PatrimonyPanel } from './components/PatrimonyPanel';
 
 const TAB_PANELS = {
   [BALANCE_TAB.CASHFLOW]: CashflowPanel,
-  [BALANCE_TAB.CONTRIBUTIONS]: ContributionsPanel,
   [BALANCE_TAB.PATRIMONY]: PatrimonyPanel,
 };
 

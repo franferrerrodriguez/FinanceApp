@@ -4,8 +4,6 @@ import {
   calcTotalIncome,
   calcTotalVariableExpenses,
 } from './calculations.js';
-import { hasInvestmentDestinationAssets } from './contributionPlans.js';
-import { hasContributionEntries } from './contributionEntries.js';
 import { hasActiveLiquidAssets } from './emergencyFund.js';
 import { hasPatrimonyAccounts } from './monthlyClose.js';
 import { getCurrentPatrimonySummary } from './patrimony.js';
@@ -13,7 +11,6 @@ import { getCurrentPatrimonySummary } from './patrimony.js';
 export const BALANCE_SETUP_STEP = {
   ACCOUNTS: 'accounts',
   LIQUID: 'liquid',
-  INVEST: 'invest',
 };
 
 /** User has saved at least one balance for the current month. */
@@ -32,23 +29,10 @@ export function needsLiquidAccountsSetup(assets, liabilities, snapshots) {
   return !hasActiveLiquidAssets(assets);
 }
 
-/** Optional: funds/ETF/pension exist but no real contribution logged yet. */
-export function needsContributionsSetup(assets, contributionEntries) {
-  if (!hasInvestmentDestinationAssets(assets)) return false;
-  return !hasContributionEntries(contributionEntries);
-}
-
-const SETUP_STEP_ORDER = [
-  BALANCE_SETUP_STEP.ACCOUNTS,
-  BALANCE_SETUP_STEP.LIQUID,
-  BALANCE_SETUP_STEP.INVEST,
-];
-
 export function getBalanceSetupSteps({
   assets = [],
   liabilities = [],
   snapshots = [],
-  contributionEntries = [],
 }) {
   const accountsComplete = !needsAccountBalancesSetup(
     assets,
@@ -70,14 +54,6 @@ export function getBalanceSetupSteps({
       complete: liquidComplete,
     },
   ];
-
-  if (hasInvestmentDestinationAssets(assets)) {
-    steps.push({
-      id: BALANCE_SETUP_STEP.INVEST,
-      optional: true,
-      complete: hasContributionEntries(contributionEntries),
-    });
-  }
 
   const completeCount = steps.filter((step) => step.complete).length;
   const pendingSteps = steps.filter((step) => !step.complete);

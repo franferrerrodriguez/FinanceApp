@@ -7,6 +7,7 @@ import {
 import {
   calcTotalFixedExpenses,
   calcTotalVariableExpenses,
+  getEffectiveBudgetInvestment,
 } from './calculations.js';
 import { getAnnualExpensesMonthlyAverage } from './annualExpenses.js';
 import { sumEuros } from './money.js';
@@ -46,10 +47,15 @@ export function hasLiquidBalanceData(snapshots = [], assets = []) {
 }
 
 export function calcMonthlyExpenseBaseline(settings, annualExpenses = []) {
+  const investment =
+    settings?.emergencyFundCountsInvestment === true
+      ? getEffectiveBudgetInvestment(settings)
+      : 0;
   return sumEuros(
     calcTotalFixedExpenses(settings),
     calcTotalVariableExpenses(settings),
     getAnnualExpensesMonthlyAverage(annualExpenses),
+    investment,
   );
 }
 

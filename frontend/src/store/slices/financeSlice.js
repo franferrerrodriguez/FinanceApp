@@ -10,8 +10,10 @@ import {
 import {
   createContributionPlan,
 } from '../../lib/contributionPlans';
-import { createContributionEntry } from '../../lib/contributionEntries';
 import { getEffectiveMonthlyInvestmentAmount } from '../../lib/contributionProjection';
+import { rebuildDerivedContributionEntries } from '../../lib/deriveContributionsFromSnapshots';
+import { mergeLiabilityOutstandingSnapshot } from '../../lib/liabilitySnapshots';
+import { getCurrentMonthKey as getPatrimonyMonthKey } from '../../lib/dashboardMetrics';
 import { getCurrentMonthKey } from '../../lib/cashflowHistory';
 import { dedupeFinanceList } from '../../lib/mergeFinanceLists';
 import { dedupeSnapshots } from '../../lib/snapshotPersist.js';
@@ -235,35 +237,6 @@ export const createFinanceSlice = (set, get) => ({
     });
   },
 
-  addContributionEntry: (entry) => {
-    const state = get();
-    const next = [...state.contributionEntries, createContributionEntry(entry)];
-    set({
-      contributionEntries: next,
-      settings: { ...state.settings, ...syncInvestmentAmount({ ...state, contributionEntries: next }) },
-    });
-  },
-
-  updateContributionEntry: (id, patch) => {
-    const state = get();
-    const next = state.contributionEntries.map((e) =>
-      e.id === id ? { ...e, ...patch } : e,
-    );
-    set({
-      contributionEntries: next,
-      settings: { ...state.settings, ...syncInvestmentAmount({ ...state, contributionEntries: next }) },
-    });
-  },
-
-  removeContributionEntry: (id) => {
-    const state = get();
-    const next = state.contributionEntries.filter((e) => e.id !== id);
-    set({
-      contributionEntries: next,
-      settings: { ...state.settings, ...syncInvestmentAmount({ ...state, contributionEntries: next }) },
-    });
-  },
-
   addAsset: (asset) =>
     set((state) => {
       const id = asset.id ?? createId();
@@ -358,11 +331,52 @@ export const createFinanceSlice = (set, get) => ({
     if (userId) void deleteLiabilityFromCloud(userId, id);
   },
 
+  setLiabilityOutstandingBalance: (liabilityId, amount, monthKey) =>
+    set((state) => {
+      const key = monthKey ?? getPatrimonyMonthKey();
+      const snapshots = dedupeSnapshots(
+        mergeLiabilityOutstandingSnapshot({
+          snapshots: state.snapshots,
+          liabilityId,
+          amount,
+          monthKey: key,
+        }),
+      );
+      const contributionEntries = rebuildDerivedContributionEntries({
+        snapshots,
+        assets: state.assets,
+        settings: state.settings,
+      });
+      const nextState = { ...state, snapshots, contributionEntries };
+      return {
+        snapshots,
+        contributionEntries,
+        settings: {
+          ...state.settings,
+          ...syncInvestmentAmount(nextState),
+        },
+      };
+    }),
+
   closeMonthSnapshots: (monthKey, newSnapshots) =>
-    set((state) => ({
-      snapshots: dedupeSnapshots([
+    set((state) => {
+      const snapshots = dedupeSnapshots([
         ...state.snapshots.filter((s) => getSnapshotMonthKey(s) !== monthKey),
         ...newSnapshots,
-      ]),
-    })),
+      ]);
+      const contributionEntries = rebuildDerivedContributionEntries({
+        snapshots,
+        assets: state.assets,
+        settings: state.settings,
+      });
+      const nextState = { ...state, snapshots, contributionEntries };
+      return {
+        snapshots,
+        contributionEntries,
+        settings: {
+          ...state.settings,
+          ...syncInvestmentAmount(nextState),
+        },
+      };
+    }),
 });

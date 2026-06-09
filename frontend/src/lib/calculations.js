@@ -169,6 +169,9 @@ export const getEffectiveMortgageRent = (settings) =>
     settings?.mortgageRentYourSharePercent,
   );
 
+export const getEffectiveBudgetInvestment = (settings) =>
+  Math.max(0, Number(settings?.monthlyBudgetInvestment) || 0);
+
 export const calcTotalFixedExpenses = (settings) => {
   if (!settings) return 0;
   return sumEuros(
@@ -178,10 +181,13 @@ export const calcTotalFixedExpenses = (settings) => {
   );
 };
 
-export const calcTotalMonthlyOutflow = (settings, monthlyInvestment = 0) => {
+export const calcTotalMonthlyOutflow = (settings, monthlyInvestment) => {
   const fixed = calcTotalFixedExpenses(settings);
   const variable = calcTotalVariableExpenses(settings);
-  const investment = monthlyInvestment ?? settings?.monthlyInvestmentAmount ?? 0;
+  const investment =
+    monthlyInvestment !== undefined
+      ? monthlyInvestment
+      : getEffectiveBudgetInvestment(settings);
   return sumEuros(fixed, variable, investment);
 };
 
@@ -324,29 +330,31 @@ export function buildMonthlyProjectionRows({
       scaleByAnnualSteps(baseVariable, monthIndex, expenseIncrease),
     );
     const monthKey = monthKeyFromDate(date);
-    const contributionResult = resolveContributionsForProjectionMonth({
-      entries: contributionEntries,
-      contributionPlans,
-      assets,
-      settings: monthSettings,
-      monthKey,
-      monthIndex,
-    });
-    const additionalInvestments = roundMoney(
-      getInvestmentContributions
-        ? getInvestmentContributions(contributionPlans, monthIndex, monthKey)
-        : resolveInvestmentFromBreakdown(contributionResult.breakdown),
-    );
     const punctualExpenses = roundMoney(
       getPunctualExpensesForDate(annualExpenses, date),
     );
-
     const netContribution = roundMoney(
       salary +
         otherIncome -
         fixedExpenses -
         variableExpenses -
         punctualExpenses,
+    );
+
+    const contributionResult = resolveContributionsForProjectionMonth({
+      entries: contributionEntries,
+      contributionPlans,
+      assets,
+      settings: monthSettings,
+      snapshots,
+      monthKey,
+      monthIndex,
+      netContribution,
+    });
+    const additionalInvestments = roundMoney(
+      getInvestmentContributions
+        ? getInvestmentContributions(contributionPlans, monthIndex, monthKey)
+        : resolveInvestmentFromBreakdown(contributionResult.breakdown),
     );
 
     const patrimonioInicio = roundMoney(netWorthFromState(buckets, debtBalance));

@@ -34,6 +34,8 @@ export const DEFAULT_SETTINGS = {
   otherFixedExpenses: 0,
   otherFixedExpensesIsEstimate: false,
   monthlyInvestmentAmount: 0,
+  monthlyBudgetInvestment: 0,
+  emergencyFundCountsInvestment: false,
   initialPatrimony: 0,
 
   indexFundNominalReturn: 0.06,

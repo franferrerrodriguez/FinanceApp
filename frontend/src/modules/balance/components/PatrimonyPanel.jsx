@@ -50,6 +50,12 @@ import { PatrimonyDeleteConfirmModal } from './PatrimonyDeleteConfirmModal';
 import { MonthlyCloseModal } from './MonthlyCloseModal';
 import { BalanceSetupStepBanner } from './BalanceSetupStepBanner';
 import { BALANCE_SETUP_STEP } from '../../../lib/balanceSetupProgress';
+import {
+  getLiabilityMonthlyPaymentDisplay,
+  HOUSING_TYPE,
+  isLinkedHousingMortgage,
+} from '../../../lib/housingLiability';
+import { getLiabilityOutstandingFromSnapshots } from '../../../lib/liabilitySnapshots';
 import { PatrimonyCatalogTable } from './PatrimonyCatalogTable';
 import { PatrimonyEvolutionSection } from './PatrimonyEvolutionSection';
 import { PatrimonyHistoryTable } from './PatrimonyHistoryTable';
@@ -74,7 +80,9 @@ export function PatrimonyPanel() {
     addLiability,
     updateLiability,
     removeLiability,
+    applyHousingType,
     closeMonthSnapshots,
+    setLiabilityOutstandingBalance,
   } = useFinanceData();
 
   usePrunePatrimonyDrafts(assets, liabilities);
@@ -253,10 +261,13 @@ export function PatrimonyPanel() {
         settings={settings}
         liabilities={liabilities}
         snapshots={snapshots}
+        monthKey={currentMonthKey}
         getBalance={getLiabilityBalance}
         addLiability={addLiability}
         updateLiability={updateLiability}
         removeLiability={removeLiability}
+        applyHousingType={applyHousingType}
+        setLiabilityOutstandingBalance={setLiabilityOutstandingBalance}
         saveToCloud={saveToCloud}
         asOfLabel={asOfLabel}
         hasAnyBalance={hasAnyBalance}
@@ -591,10 +602,13 @@ function PatrimonyLiabilitiesSection({
   settings,
   liabilities,
   snapshots,
+  monthKey,
   getBalance,
   addLiability,
   updateLiability,
   removeLiability,
+  applyHousingType,
+  setLiabilityOutstandingBalance,
   saveToCloud,
   asOfLabel,
   hasAnyBalance,
@@ -605,24 +619,47 @@ function PatrimonyLiabilitiesSection({
   const categoryLabel = (cat) =>
     categories.find((c) => c.value === cat)?.label ?? cat;
   const catalogLiabilities = useMemo(
-    () =>
-      liabilities.filter((l) => l.id !== settings?.linkedMortgageLiabilityId),
-    [liabilities, settings?.linkedMortgageLiabilityId],
+    () => getActiveLiabilities(liabilities),
+    [liabilities],
   );
   const [modal, setModal] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const openCreate = () =>
-    setModal({ mode: 'create', draft: createLiability({ name: '' }) });
-  const openEdit = (liability) =>
-    setModal({ mode: 'edit', id: liability.id, draft: { ...liability } });
+    setModal({
+      mode: 'create',
+      draft: { ...createLiability({ name: '' }), outstandingBalance: '' },
+    });
+  const openEdit = (liability) => {
+    const outstanding = getLiabilityOutstandingFromSnapshots(
+      snapshots,
+      liability.id,
+      monthKey,
+    );
+    setModal({
+      mode: 'edit',
+      id: liability.id,
+      draft: {
+        ...liability,
+        outstandingBalance: outstanding ?? '',
+      },
+    });
+  };
   const closeModal = () => setModal(null);
 
   const handleModalSave = async (draft) => {
+    const { outstandingBalance, ...fields } = draft;
     if (modal?.mode === 'create') {
-      addLiability(createLiability(draft));
+      const created = createLiability(fields);
+      addLiability(created);
+      if (outstandingBalance != null) {
+        setLiabilityOutstandingBalance(created.id, outstandingBalance, monthKey);
+      }
     } else if (modal?.mode === 'edit') {
-      updateLiability(modal.id, draft);
+      updateLiability(modal.id, fields);
+      if (outstandingBalance != null) {
+        setLiabilityOutstandingBalance(modal.id, outstandingBalance, monthKey);
+      }
     }
     closeModal();
     await notifyAfterSave({
@@ -639,7 +676,11 @@ function PatrimonyLiabilitiesSection({
   const confirmDelete = async () => {
     if (!deleteTarget) return;
     if (modal?.mode === 'edit' && modal.id === deleteTarget.id) closeModal();
-    removeLiability(deleteTarget.id);
+    if (isLinkedHousingMortgage(deleteTarget, settings, liabilities)) {
+      applyHousingType(HOUSING_TYPE.RENT);
+    } else {
+      removeLiability(deleteTarget.id);
+    }
     setDeleteTarget(null);
     await notifyAfterSave({
       toast,
@@ -672,19 +713,15 @@ function PatrimonyLiabilitiesSection({
           kind="liability"
           items={catalogLiabilities}
           categoryLabel={categoryLabel}
-          providerLabel={(item) => formatMoney(item.monthlyPayment ?? 0)}
+          providerLabel={(item) =>
+            formatMoney(getLiabilityMonthlyPaymentDisplay(settings, item))
+          }
           getBalance={getBalance}
           onEdit={openEdit}
           onDelete={setDeleteTarget}
         />
       ) : (
-        <EmptyBlock
-          message={
-            settings?.linkedMortgageLiabilityId
-              ? t('balance.patrimony.liabilitiesHousingOnly')
-              : t('balance.patrimony.liabilitiesEmpty')
-          }
-        />
+        <EmptyBlock message={t('balance.patrimony.liabilitiesEmpty')} />
       )}
 
       <CatalogSectionToolbar
@@ -712,6 +749,8 @@ function PatrimonyLiabilitiesSection({
         open={modal != null}
         mode={modal?.mode ?? 'create'}
         initialDraft={modal?.draft ?? createLiability({ name: '' })}
+        settings={settings}
+        linkedMortgageId={settings.linkedMortgageLiabilityId}
         onClose={closeModal}
         onSave={handleModalSave}
         onDelete={handleModalDelete}

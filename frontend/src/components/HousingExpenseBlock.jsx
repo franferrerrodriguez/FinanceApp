@@ -11,7 +11,12 @@ import { SharedExpenseBlock } from '../modules/onboarding/components/SharedExpen
 import { ui } from '../lib/uiClasses';
 import { formatMoney } from '../utils/formatters';
 
-export function HousingExpenseBlock({ settings, setSettings, snapshots }) {
+export function HousingExpenseBlock({
+  settings,
+  setSettings,
+  snapshots,
+  inOnboarding = false,
+}) {
   const { t } = useTranslation();
   const {
     linkedLiability,
@@ -41,7 +46,7 @@ export function HousingExpenseBlock({ settings, setSettings, snapshots }) {
         }
       />
 
-      {tracksMortgageCapital ? (
+      {!inOnboarding && tracksMortgageCapital ? (
         <div className={`rounded-xl border px-3 py-3 text-sm ${ui.cardMuted}`}>
           <p className={`font-medium ${ui.textLabel}`}>
             {t('balance.cashflow.housingDebtTitle')}
@@ -51,13 +56,10 @@ export function HousingExpenseBlock({ settings, setSettings, snapshots }) {
               {formatMoney(outstanding)}
             </p>
           ) : (
-            <p className={`mt-1 ${ui.text}`}>
+            <p className={`mt-1 text-sm ${ui.textMuted}`}>
               {t('balance.cashflow.housingDebtMissing')}
             </p>
           )}
-          <p className={`mt-2 text-xs ${ui.textMuted}`}>
-            {t('balance.cashflow.housingDebtNote')}
-          </p>
           <Link
             to={balancePath(BALANCE_TAB.PATRIMONY)}
             className="mt-2 inline-block text-sm font-semibold text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400"
@@ -72,7 +74,7 @@ export function HousingExpenseBlock({ settings, setSettings, snapshots }) {
             {t('balance.cashflow.housingDisableTracking')}
           </button>
         </div>
-      ) : (
+      ) : !inOnboarding ? (
         <button
           type="button"
           className={`text-left text-sm font-medium text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400`}
@@ -80,7 +82,7 @@ export function HousingExpenseBlock({ settings, setSettings, snapshots }) {
         >
           {t('balance.cashflow.housingEnableTracking')}
         </button>
-      )}
+      ) : null}
     </div>
   );
 }

@@ -6,6 +6,7 @@ import {
   calcTotalFixedExpenses,
   calcTotalIncome,
   calcTotalVariableExpenses,
+  getEffectiveBudgetInvestment,
   getEffectiveGroceries,
   getEffectiveHouseholdExpenses,
   getEffectiveLeisureExpenses,
@@ -23,7 +24,6 @@ export function SummaryStep({ onBack, onFinish }) {
   const { openRegister } = useAuthModal();
   const { settings } = useSettings();
   const { profile } = useProfile();
-
   const income = calcTotalIncome(settings);
   const fixed = calcTotalFixedExpenses(settings);
   const leisure = calcTotalVariableExpenses(settings);
@@ -32,8 +32,9 @@ export function SummaryStep({ onBack, onFinish }) {
     getEffectiveHouseholdExpenses(settings),
     getEffectiveGroceries(settings),
   );
-  const cashflow = calcFreeCashflow(income, fixed, 0, leisure);
-  const savingsRate = calcSavingsRate(income, fixed, leisure);
+  const investment = getEffectiveBudgetInvestment(settings);
+  const cashflow = calcFreeCashflow(income, fixed, investment, leisure);
+  const savingsRate = calcSavingsRate(income, fixed, leisure + investment);
   const savingsColor = getSavingsColor(savingsRate);
 
   return (

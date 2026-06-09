@@ -58,15 +58,24 @@ export function getMortgageOutstandingBalance(
   return Math.abs(Number(raw) || 0);
 }
 
-export function liabilityMonthlyPaymentForProjection(settings, liability) {
-  if (
-    liability?.id &&
+export function isLinkedMortgageLiability(liability, settings = {}) {
+  return (
+    liability?.id != null &&
     liability.id === settings?.linkedMortgageLiabilityId &&
     liability.category === 'mortgage'
-  ) {
+  );
+}
+
+/** Monthly payment shown in catalogs: linked mortgage uses Budget → Housing. */
+export function getLiabilityMonthlyPaymentDisplay(settings, liability) {
+  if (isLinkedMortgageLiability(liability, settings)) {
     return getEffectiveMortgageRent(settings);
   }
   return liability?.monthlyPayment ?? 0;
+}
+
+export function liabilityMonthlyPaymentForProjection(settings, liability) {
+  return getLiabilityMonthlyPaymentDisplay(settings, liability);
 }
 
 export function createLinkedMortgageLiability(name = 'Hipoteca') {

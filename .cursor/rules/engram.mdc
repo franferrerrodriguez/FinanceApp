@@ -1,0 +1,21 @@
+---
+description: Memoria persistente con Engram MCP en este proyecto
+alwaysApply: true
+---
+
+# Engram (financeapp)
+
+Usa el MCP **engram** en este proyecto (`financeapp`).
+
+## Al inicio de sesión
+- `mem_current_project` — confirmar proyecto
+- `mem_context` — contexto de sesiones anteriores
+
+## Durante el trabajo
+- `mem_save` — tras decisiones de arquitectura, convenciones, bugs resueltos o descubrimientos relevantes
+- `mem_search` — antes de cambios grandes, para no repetir trabajo
+
+## Al cerrar tarea importante
+- `mem_session_summary` — resumen breve de lo hecho
+
+No guardes secretos (.env, tokens, credenciales).

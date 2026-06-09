@@ -52,6 +52,8 @@ export function ProjectionDataSources() {
   const hasInvestments = hasProjectionContributionData({
     entries: contributionEntries,
     contributionPlans,
+    assets,
+    snapshots,
   });
 
   const initialState = useMemo(
@@ -129,8 +131,8 @@ export function ProjectionDataSources() {
                 ? t('projection.sources.investmentsFromActual')
                 : t('projection.sources.investmentsFromHistory')
             }
-            editLabel={t('projection.sources.editInContributions')}
-            editTo={balancePath(BALANCE_TAB.CONTRIBUTIONS)}
+            editLabel={t('projection.sources.editInPatrimony')}
+            editTo={balancePath(BALANCE_TAB.PATRIMONY)}
           />
         ) : null}
       </dl>
