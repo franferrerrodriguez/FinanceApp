@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppModal } from '../../../components/AppModal';
+import { FormCheckboxField } from '../../../components/FormCheckboxField';
 import { FormFieldFrame } from '../../../components/FormFieldFrame';
+import { FormSection } from '../../../components/FormSection';
 import { InstitutionSelect } from '../../../components/InstitutionSelect';
-import { displayToPct, pctToDisplay } from '../../../components/PercentRow';
-import { SelectField } from '../../../components/SelectField';
+import { ModalFormFooter } from '../../../components/ModalFormFooter';
+import { PercentField } from '../../../components/PercentField';
+import { SelectFormField } from '../../../components/SelectFormField';
+import { TextField } from '../../../components/TextField';
 import { getAssetCategories } from '../../../lib/categoryLabels';
 import { isSavableAssetCatalog } from '../../../lib/patrimonyNames';
 import { getDefaultReturnForAssetCategory } from '../../../lib/projectionReturns';
@@ -12,7 +16,6 @@ import {
   SPANISH_BANK_IDS,
   SPANISH_BANK_LEGACY_LABELS,
 } from '../../../lib/spanishBanks';
-import { ui } from '../../../lib/uiClasses';
 import { useSettings } from '../../../store/hooks';
 
 const ZERO_RETURN_CATEGORIES = new Set(['cash', 'real_estate']);
@@ -57,28 +60,13 @@ export function AssetEditModal({
           : t('balance.patrimony.editAsset')
       }
       footer={
-        <>
-          {mode === 'edit' ? (
-            <button
-              type="button"
-              className={`mr-auto ${ui.actionLinkDanger}`}
-              onClick={onDelete}
-            >
-              {t('balance.patrimony.removeAsset')}
-            </button>
-          ) : null}
-          <button type="button" className={ui.btnSecondary} onClick={onClose}>
-            {t('common.cancel')}
-          </button>
-          <button
-            type="button"
-            className={ui.btnPrimary}
-            disabled={!canSave}
-            onClick={() => onSave(draft)}
-          >
-            {t('common.save')}
-          </button>
-        </>
+        <ModalFormFooter
+          onCancel={onClose}
+          onSave={() => onSave(draft)}
+          canSave={canSave}
+          onDelete={mode === 'edit' ? onDelete : undefined}
+          deleteLabel={t('balance.patrimony.removeAsset')}
+        />
       }
     >
       <div className="space-y-4">
@@ -101,89 +89,55 @@ export function AssetEditModal({
           />
         </FormFieldFrame>
 
-        <FormFieldFrame label={t('balance.patrimony.category')} reserveHintSpace={false}>
-          <SelectField
-            variant="input"
-            className="w-full py-2.5"
-            value={draft.category}
-            onChange={(e) => handleCategoryChange(e.target.value)}
-          >
-            {categories.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
-            ))}
-          </SelectField>
-        </FormFieldFrame>
-
-        {showReturn ? (
-          <FormFieldFrame
-            label={t('balance.patrimony.assetReturnLabel')}
-            hint={t('balance.patrimony.assetReturnHint')}
-            reserveHintSpace={false}
-          >
-            <div className="relative inline-block shrink-0">
-              <input
-                type="number"
-                step="0.1"
-                min={0}
-                max={30}
-                value={pctToDisplay(
-                  draft.customAnnualReturn ??
-                    getDefaultReturnForAssetCategory(draft.category, settings),
-                )}
-                onChange={(e) => {
-                  const raw = e.target.value;
-                  if (raw === '') {
-                    patch({ customAnnualReturn: null });
-                    return;
-                  }
-                  patch({ customAnnualReturn: displayToPct(raw) ?? 0 });
-                }}
-                className={`${ui.inputPercent} pr-7`}
-              />
-              <span
-                className={`pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs ${ui.textMuted}`}
-              >
-                %
-              </span>
-            </div>
-          </FormFieldFrame>
-        ) : null}
-
-        <FormFieldFrame
-          label={t('balance.patrimony.notes')}
-          hint={t('balance.patrimony.notesHint')}
+        <SelectFormField
+          id="asset-category"
+          label={t('balance.patrimony.category')}
+          value={draft.category}
+          onChange={handleCategoryChange}
           reserveHintSpace={false}
         >
-          <input
-            type="text"
-            value={draft.notes ?? ''}
-            placeholder={t('common.optional')}
-            onChange={(e) => patch({ notes: e.target.value })}
-            className={`${ui.input} w-full`}
+          {categories.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
+          ))}
+        </SelectFormField>
+
+        {showReturn ? (
+          <PercentField
+            id="asset-return"
+            label={t('balance.patrimony.assetReturnLabel')}
+            hint={t('balance.patrimony.assetReturnHint')}
+            value={
+              draft.customAnnualReturn ??
+              getDefaultReturnForAssetCategory(draft.category, settings)
+            }
+            onChange={(customAnnualReturn) => patch({ customAnnualReturn })}
+            nullable
+            reserveHintSpace={false}
           />
-        </FormFieldFrame>
+        ) : null}
+
+        <TextField
+          id="asset-notes"
+          label={t('balance.patrimony.notes')}
+          hint={t('balance.patrimony.notesHint')}
+          value={draft.notes ?? ''}
+          onChange={(notes) => patch({ notes })}
+          placeholder={t('common.optional')}
+          reserveHintSpace={false}
+        />
 
         {mode === 'edit' ? (
-          <div className={`rounded-xl border px-3 py-3 ${ui.cardMuted}`}>
-            <label className="flex cursor-pointer items-start gap-3">
-              <input
-                type="checkbox"
-                checked={draft.isActive !== false}
-                onChange={(e) => patch({ isActive: e.target.checked })}
-                className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-400 text-emerald-500 focus:ring-emerald-500/40 dark:border-slate-600 dark:bg-slate-900"
-              />
-              <span>
-                <span className={`block text-sm font-medium ${ui.textLabel}`}>
-                  {t('balance.patrimony.activeInClose')}
-                </span>
-                <span className={`mt-1 block text-xs leading-relaxed ${ui.textMuted}`}>
-                  {t('balance.patrimony.activeInCloseHint')}
-                </span>
-              </span>
-            </label>
-          </div>
+          <FormSection>
+            <FormCheckboxField
+              id="asset-active-in-close"
+              checked={draft.isActive !== false}
+              onChange={(isActive) => patch({ isActive })}
+              label={t('balance.patrimony.activeInClose')}
+              hint={t('balance.patrimony.activeInCloseHint')}
+            />
+          </FormSection>
         ) : null}
       </div>
     </AppModal>

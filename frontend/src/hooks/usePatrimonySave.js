@@ -1,10 +1,10 @@
 import { useCallback, useState } from 'react';
 import { isAuthAvailable } from '../lib/auth';
 import { isSimpleAuthMode } from '../lib/authConfig';
-import { persistUserToSupabase } from '../lib/persistUserToSupabase';
+import { flushCloudAutoSync } from '../lib/cloudSync';
 import { useAppStore } from '../store/appStore';
 
-/** Manual patrimony save to cloud (no automatic sync). */
+/** Immediate cloud flush after patrimony edits (budget syncs debounced elsewhere). */
 export function usePatrimonySave() {
   const userId = useAppStore((s) => s.user?.id);
   const [status, setStatus] = useState('idle');
@@ -18,7 +18,7 @@ export function usePatrimonySave() {
     }
 
     setStatus('saving');
-    const result = await persistUserToSupabase(userId);
+    const result = await flushCloudAutoSync();
     setStatus(result.ok ? 'saved' : 'error');
     window.setTimeout(() => setStatus('idle'), 2500);
     return result;

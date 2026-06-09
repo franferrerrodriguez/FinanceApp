@@ -7,6 +7,7 @@ import {
 } from '../lib/calculations';
 import { BALANCE_TAB, balancePath } from '../lib/balanceTabs';
 import { getMortgageOutstandingBalance } from '../lib/housingLiability';
+import { FormSection } from './FormSection';
 import { SharedExpenseBlock } from '../modules/onboarding/components/SharedExpenseBlock';
 import { ui } from '../lib/uiClasses';
 import { formatMoney } from '../utils/formatters';
@@ -28,8 +29,9 @@ export function HousingExpenseBlock({
   const outstanding = getMortgageOutstandingBalance(snapshots, linkedLiability);
 
   return (
-    <div className={`${ui.block} space-y-4 p-4`}>
+    <FormSection className="space-y-4">
       <SharedExpenseBlock
+        embedded
         id="balance-housing-payment"
         label={t('balance.cashflow.housingPayment')}
         hint={t('balance.cashflow.housingPaymentHint')}
@@ -77,12 +79,12 @@ export function HousingExpenseBlock({
       ) : !inOnboarding ? (
         <button
           type="button"
-          className={`text-left text-sm font-medium text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400`}
+          className="text-left text-sm font-medium text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400"
           onClick={enableMortgageTracking}
         >
           {t('balance.cashflow.housingEnableTracking')}
         </button>
       ) : null}
-    </div>
+    </FormSection>
   );
 }

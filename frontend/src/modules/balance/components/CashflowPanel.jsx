@@ -1,12 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PercentRow } from '../../../components/PercentRow';
 import { CashflowTramosSection } from '../../../components/CashflowTramosSection';
-import {
-  createCashflowEntryFromSettings,
-  getCashflowTotalsForDate,
-  getCurrentMonthKey,
-} from '../../../lib/cashflowHistory';
+import { getCashflowTotalsForDate } from '../../../lib/cashflowHistory';
 import { ui } from '../../../lib/uiClasses';
 import { useFinanceData } from '../../../store/hooks';
 import { formatMoney, formatPercent } from '../../../utils/formatters';
@@ -47,6 +42,7 @@ export function CashflowPanel() {
     addAnnualExpense,
     updateAnnualExpense,
     removeAnnualExpense,
+    ensureCurrentCashflowTramo,
     addCashflowHistoryEntry,
     updateCashflowHistoryEntry,
     removeCashflowHistoryEntry,
@@ -55,11 +51,9 @@ export function CashflowPanel() {
 
   useEffect(() => {
     if (cashflowHistory.length > 0) return;
-    addCashflowHistoryEntry(
-      createCashflowEntryFromSettings(settings, getCurrentMonthKey()),
-    );
+    ensureCurrentCashflowTramo();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- bootstrap once
-  }, [cashflowHistory.length, addCashflowHistoryEntry]);
+  }, [cashflowHistory.length, ensureCurrentCashflowTramo]);
 
   const totals = useMemo(
     () => getCashflowTotalsForDate(settings, cashflowHistory, new Date()),

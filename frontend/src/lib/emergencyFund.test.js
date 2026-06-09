@@ -66,6 +66,13 @@ assert.equal(
   calcMonthlyExpenseBaseline({
     ...baseSettings,
     monthlyBudgetInvestment: 200,
+  }),
+  1300,
+);
+assert.equal(
+  calcMonthlyExpenseBaseline({
+    ...baseSettings,
+    monthlyBudgetInvestment: 200,
     emergencyFundCountsInvestment: true,
   }),
   1300,

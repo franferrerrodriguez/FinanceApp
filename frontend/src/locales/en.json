@@ -78,11 +78,14 @@
     "login": "Sign in",
     "account": "Account",
     "accountSettings": "My account",
-    "logout": "Log out"
+    "logout": "Log out",
+    "cloudSynced": "Data synced to the cloud",
+    "cloudSyncing": "Syncing to the cloud…",
+    "cloudSyncError": "Sync failed. Will retry when you save."
   },
   "account": {
     "title": "My account",
-    "subtitle": "Profile, session, and parameters used by the dashboard and projection.",
+    "subtitle": "Profile and session. Changes sync to the cloud automatically when signed in.",
     "back": "Back to dashboard",
     "save": "Save changes",
     "saving": "Saving…",

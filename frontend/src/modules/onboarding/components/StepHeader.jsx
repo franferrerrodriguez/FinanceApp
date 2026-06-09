@@ -23,14 +23,16 @@ export function StepHeader({ stepIndex }) {
           style={{ width: `${progress}%` }}
         />
       </div>
-      <div className="mt-3 hidden gap-1 sm:flex">
+      <div className="mt-3 flex gap-1">
         {ONBOARDING_STEP_IDS.map((id, i) => (
           <span
             key={id}
-            className={`flex-1 truncate text-center text-xs ${
-              i <= stepIndex
-                ? 'text-emerald-600 dark:text-emerald-400'
-                : 'text-slate-400 dark:text-slate-600'
+            className={`flex-1 truncate text-center text-[0.65rem] sm:text-xs ${
+              i === stepIndex
+                ? 'font-semibold text-emerald-600 dark:text-emerald-400'
+                : i < stepIndex
+                  ? 'text-emerald-600/70 dark:text-emerald-400/70'
+                  : 'text-slate-400 dark:text-slate-600'
             }`}
           >
             {t(`onboarding.steps.${id}.short`)}

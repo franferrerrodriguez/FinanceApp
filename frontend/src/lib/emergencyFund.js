@@ -48,7 +48,7 @@ export function hasLiquidBalanceData(snapshots = [], assets = []) {
 
 export function calcMonthlyExpenseBaseline(settings, annualExpenses = []) {
   const investment =
-    settings?.emergencyFundCountsInvestment === true
+    (settings?.emergencyFundCountsInvestment ?? true)
       ? getEffectiveBudgetInvestment(settings)
       : 0;
   return sumEuros(

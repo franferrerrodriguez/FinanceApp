@@ -75,7 +75,7 @@ export function AppModal({
 
         {footer ? (
           <footer
-            className={`shrink-0 flex flex-wrap gap-3 border-t px-5 pt-4 sm:px-6 sm:pb-4 ${ui.divider} ${
+            className={`shrink-0 flex flex-col-reverse gap-2 border-t px-5 pt-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3 sm:px-6 sm:pb-4 ${ui.divider} ${
               native
                 ? 'pb-[max(1rem,env(safe-area-inset-bottom))]'
                 : 'pb-4'

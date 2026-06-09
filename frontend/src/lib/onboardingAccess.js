@@ -1,5 +1,22 @@
 import { calcTotalIncome } from './calculations.js';
 
+const ONBOARDING_STEP_SLUGS = [null, 'income', 'expenses', 'summary'];
+
+function calcHasAnyExpense(settings = {}) {
+  return (
+    (settings.mortgageRent ?? 0) > 0 ||
+    (settings.mortgageRentTotal ?? 0) > 0 ||
+    (settings.householdFixedEstimate ?? 0) > 0 ||
+    (settings.leisureEstimate ?? 0) > 0 ||
+    (settings.groceriesEstimate ?? 0) > 0
+  );
+}
+
+function onboardingPathForStepIndex(stepIndex) {
+  const slug = ONBOARDING_STEP_SLUGS[stepIndex];
+  return slug ? `/onboarding/${slug}` : '/onboarding';
+}
+
 const MIN_PROFILE_AGE = 18;
 
 /** Step 0 (welcome) complete: valid name and age. */
@@ -19,9 +36,27 @@ export function getMaxAccessibleOnboardingStep(settings, profile) {
   return 3;
 }
 
+/** Continue-from step based on saved profile/income/expenses — not stored onboardingStep. */
+export function deriveOnboardingResumeStep(settings, profile) {
+  if (!hasCompletedWelcome(profile)) return 0;
+  if (calcTotalIncome(settings) <= 0) return 1;
+  if (!calcHasAnyExpense(settings)) return 2;
+  return 3;
+}
+
 export function clampOnboardingStep(requestedStep, settings, profile) {
   const max = getMaxAccessibleOnboardingStep(settings, profile);
   const step = Number(requestedStep);
   if (!Number.isFinite(step) || step < 0) return 0;
   return Math.min(step, max);
+}
+
+/** Resume step from profile/income/expenses — ignores stale stored onboardingStep. */
+export function resolveOnboardingResumeStep(_storedStep, settings, profile) {
+  return deriveOnboardingResumeStep(settings, profile);
+}
+
+export function getOnboardingEntryPath(settings, profile, storedStep = 0) {
+  const step = resolveOnboardingResumeStep(storedStep, settings, profile);
+  return onboardingPathForStepIndex(step);
 }

@@ -14,6 +14,7 @@ import {
   createCashflowEntry,
   createCashflowEntryFromSettings,
   getCurrentMonthKey,
+  mergeBudgetSettingsFields,
   migrateSalaryHistoryToCashflow,
   syncSettingsFromCashflowHistory,
   upsertCurrentMonthCashflowTramo,
@@ -26,10 +27,11 @@ import {
 import { rebuildDerivedContributionEntries } from '../lib/deriveContributionsFromSnapshots';
 import { getDefaultReturnForAssetCategory } from '../lib/projectionReturns';
 import { syncHousingSettings } from '../lib/housingLiability';
+import { deriveOnboardingResumeStep } from '../lib/onboardingAccess';
 import { ONBOARDING_STEP_IDS } from '../modules/onboarding/constants';
 
 export const PERSIST_STORAGE_KEY = 'financia_app_data';
-export const PERSIST_VERSION = 17;
+export const PERSIST_VERSION = 18;
 
 const MAX_ONBOARDING_STEP = ONBOARDING_STEP_IDS.length - 1;
 
@@ -52,29 +54,46 @@ export function partializePersistedState(state) {
   };
 }
 
-export function mergePersistedState(persisted, current) {
+export function mergePersistedState(persisted, current, options = {}) {
   if (!persisted) return current;
 
+  const preferLocal = options.preferLocal === true;
   const liabilities = filterDraftLiabilities(
     mergeFinanceLists(persisted.liabilities, current.liabilities),
   );
 
   const settings = syncHousingSettings(
-    {
-      ...DEFAULT_SETTINGS,
-      ...current.settings,
-      ...persisted.settings,
-      projectionYears: resolveProjectionYearsFromPersist(
-        persisted.settings?.projectionYears ??
-          current.settings?.projectionYears,
-      ),
-    },
+    preferLocal
+      ? {
+          ...DEFAULT_SETTINGS,
+          ...persisted.settings,
+          ...current.settings,
+          ...mergeBudgetSettingsFields(current.settings, persisted.settings),
+          projectionYears: resolveProjectionYearsFromPersist(
+            persisted.settings?.projectionYears ??
+              current.settings?.projectionYears,
+          ),
+        }
+      : {
+          ...DEFAULT_SETTINGS,
+          ...current.settings,
+          ...persisted.settings,
+          ...mergeBudgetSettingsFields(current.settings, persisted.settings),
+          projectionYears: resolveProjectionYearsFromPersist(
+            persisted.settings?.projectionYears ??
+              current.settings?.projectionYears,
+          ),
+        },
     liabilities,
   );
   const assets = filterDraftAssets(
     mergeFinanceLists(persisted.assets, current.assets),
   );
   const snapshots = mergeFinanceLists(persisted.snapshots, current.snapshots);
+  const cashflowHistory = upsertCurrentMonthCashflowTramo(
+    settings,
+    persisted.cashflowHistory ?? current.cashflowHistory ?? [],
+  );
 
   return {
     ...current,
@@ -83,10 +102,7 @@ export function mergePersistedState(persisted, current) {
     theme: persisted.theme ?? current.theme,
     settings,
     annualExpenses: persisted.annualExpenses ?? current.annualExpenses ?? [],
-    cashflowHistory:
-      persisted.cashflowHistory ??
-      current.cashflowHistory ??
-      [],
+    cashflowHistory,
     contributionPlans:
       persisted.contributionPlans ?? current.contributionPlans ?? [],
     contributionEntries: rebuildDerivedContributionEntries({
@@ -98,9 +114,9 @@ export function mergePersistedState(persisted, current) {
     liabilities,
     snapshots,
     profile: persisted.profile ?? current.profile,
-    onboardingStep: Math.min(
-      persisted.onboardingStep ?? 0,
-      MAX_ONBOARDING_STEP,
+    onboardingStep: deriveOnboardingResumeStep(
+      settings,
+      persisted.profile ?? current.profile,
     ),
   };
 }
@@ -302,6 +318,18 @@ export function migratePersistedState(persisted, version) {
     });
   }
 
+  if (version < 18) {
+    const settings = syncHousingSettings(
+      { ...DEFAULT_SETTINGS, ...next.settings },
+      next.liabilities ?? [],
+    );
+    next.settings = settings;
+    next.cashflowHistory = upsertCurrentMonthCashflowTramo(
+      settings,
+      next.cashflowHistory ?? [],
+    );
+  }
+
   return next;
 }
 
@@ -313,6 +341,14 @@ function calcHasAnyExpense(settings) {
     (settings.leisureEstimate ?? 0) > 0 ||
     (settings.groceriesEstimate ?? 0) > 0
   );
+}
+
+/** After rehydrate, drop stored step if profile/income do not allow it. */
+export function onRehydrateOnboardingState(state) {
+  if (!state) return state;
+  const step = deriveOnboardingResumeStep(state.settings, state.profile);
+  if (step === state.onboardingStep) return state;
+  return { ...state, onboardingStep: step };
 }
 
 /** After rehydrate, ensure horizon ≥ 20 if a legacy value remained in memory. */

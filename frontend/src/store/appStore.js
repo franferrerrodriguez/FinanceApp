@@ -3,6 +3,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { appStorage } from '../lib/appStorage';
 import { DEFAULT_SETTINGS } from '../lib/constants';
 import {
+  onRehydrateOnboardingState,
   onRehydrateProjectionYears,
   persistOptions,
 } from './persistConfig';
@@ -49,9 +50,17 @@ export const useAppStore = create(
       ...persistOptions,
       storage: createJSONStorage(() => appStorage),
       onRehydrateStorage: () => (state) => {
-        const next = onRehydrateProjectionYears(state);
-        if (next && next !== state) {
-          useAppStore.setState({ settings: next.settings });
+        let next = onRehydrateOnboardingState(state);
+        next = onRehydrateProjectionYears(next ?? state);
+        if (!next || next === state) return;
+
+        const patch = {};
+        if (next.settings !== state?.settings) patch.settings = next.settings;
+        if (next.onboardingStep !== state?.onboardingStep) {
+          patch.onboardingStep = next.onboardingStep;
+        }
+        if (Object.keys(patch).length > 0) {
+          useAppStore.setState(patch);
         }
       },
     },

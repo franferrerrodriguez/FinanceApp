@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppModal } from '../../../components/AppModal';
-import { FormFieldFrame } from '../../../components/FormFieldFrame';
-import { SelectField } from '../../../components/SelectField';
+import { ModalFormFooter } from '../../../components/ModalFormFooter';
+import { MoneyField } from '../../../components/MoneyField';
+import { SelectFormField } from '../../../components/SelectFormField';
+import { TextField } from '../../../components/TextField';
 import { getLiabilityCategories, getManualLiabilityCategories } from '../../../lib/categoryLabels';
 import { isLinkedMortgageLiability } from '../../../lib/housingLiability';
 import { isSavableLiability } from '../../../lib/patrimonyDrafts';
-import { ui } from '../../../lib/uiClasses';
 
 export function LiabilityEditModal({
   open,
@@ -59,100 +60,62 @@ export function LiabilityEditModal({
           : t('balance.patrimony.editLiability')
       }
       footer={
-        <>
-          {mode === 'edit' ? (
-            <button
-              type="button"
-              className={`mr-auto ${ui.actionLinkDanger}`}
-              onClick={onDelete}
-            >
-              {t('balance.patrimony.removeLiability')}
-            </button>
-          ) : null}
-          <button type="button" className={ui.btnSecondary} onClick={onClose}>
-            {t('common.cancel')}
-          </button>
-          <button
-            type="button"
-            className={ui.btnPrimary}
-            disabled={!canSave}
-            onClick={handleSave}
-          >
-            {t('common.save')}
-          </button>
-        </>
+        <ModalFormFooter
+          onCancel={onClose}
+          onSave={handleSave}
+          canSave={canSave}
+          onDelete={mode === 'edit' ? onDelete : undefined}
+          deleteLabel={t('balance.patrimony.removeLiability')}
+        />
       }
     >
       <div className="space-y-4">
-        <FormFieldFrame label={t('balance.patrimony.name')} required reserveHintSpace={false}>
-          <input
-            type="text"
-            value={draft.name}
-            onChange={(e) => patch({ name: e.target.value })}
-            className={`${ui.input} w-full`}
-            autoFocus
-          />
-        </FormFieldFrame>
+        <TextField
+          id="liability-name"
+          label={t('balance.patrimony.name')}
+          value={draft.name}
+          onChange={(name) => patch({ name })}
+          required
+          reserveHintSpace={false}
+          autoFocus
+        />
 
-        <FormFieldFrame label={t('balance.patrimony.category')} reserveHintSpace={false}>
-          <SelectField
-            variant="input"
-            className="w-full py-2.5"
-            value={draft.category}
-            onChange={(e) => patch({ category: e.target.value })}
-          >
-            {categories.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
-            ))}
-          </SelectField>
-        </FormFieldFrame>
+        <SelectFormField
+          id="liability-category"
+          label={t('balance.patrimony.category')}
+          value={draft.category}
+          onChange={(category) => patch({ category })}
+          reserveHintSpace={false}
+        >
+          {categories.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
+          ))}
+        </SelectFormField>
 
-        <FormFieldFrame
+        <MoneyField
+          id="liability-monthly-payment"
           label={t('balance.patrimony.monthlyPayment')}
           hint={
             isLinkedMortgage
               ? t('balance.patrimony.monthlyPaymentMortgageHint')
               : t('balance.patrimony.monthlyPaymentHint')
           }
+          value={draft.monthlyPayment ?? 0}
+          onChange={(monthlyPayment) => patch({ monthlyPayment })}
+          disabled={isLinkedMortgage}
           reserveHintSpace={false}
-        >
-          <input
-            type="number"
-            min={0}
-            step="1"
-            disabled={isLinkedMortgage}
-            value={draft.monthlyPayment ?? 0}
-            onChange={(e) =>
-              patch({
-                monthlyPayment: Math.max(0, parseFloat(e.target.value) || 0),
-              })
-            }
-            className={`${ui.input} ${ui.inputAmount}${isLinkedMortgage ? ' opacity-60' : ''}`}
-          />
-        </FormFieldFrame>
+        />
 
-        <FormFieldFrame
+        <MoneyField
+          id="liability-outstanding-balance"
           label={t('balance.patrimony.outstandingBalance')}
           hint={t('balance.patrimony.outstandingBalanceHint')}
+          value={draft.outstandingBalance ?? 0}
+          onChange={(outstandingBalance) => patch({ outstandingBalance })}
           reserveHintSpace={false}
-        >
-          <input
-            type="number"
-            min={0}
-            step="1"
-            value={draft.outstandingBalance ?? ''}
-            placeholder="0"
-            onChange={(e) => {
-              const raw = e.target.value;
-              patch({
-                outstandingBalance: raw === '' ? '' : Math.max(0, parseFloat(raw) || 0),
-              });
-            }}
-            className={`${ui.input} ${ui.inputAmount}`}
-          />
-        </FormFieldFrame>
+        />
       </div>
     </AppModal>
   );

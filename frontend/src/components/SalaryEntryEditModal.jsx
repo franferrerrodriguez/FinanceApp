@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { enrichCashflowEntry } from '../lib/cashflowHistory';
 import { ui } from '../lib/uiClasses';
 import { formatMoney } from '../utils/formatters';
-import { MoneyField } from '../modules/onboarding/components/MoneyField';
+import { MoneyField } from './MoneyField';
 import { AppModal } from './AppModal';
 import { EffectiveMonthSelect } from './EffectiveMonthSelect';
 import { FormFieldFrame } from './FormFieldFrame';
@@ -112,10 +112,8 @@ export function SalaryEntryEditModal({
             {PAY_PRESETS.map((value) => (
               <label
                 key={value}
-                className={`inline-flex h-11 shrink-0 cursor-pointer items-center rounded-lg border px-3 text-sm ${
-                  preset === value
-                    ? 'border-emerald-500 bg-emerald-50 dark:border-emerald-500 dark:bg-emerald-950/40'
-                    : ui.cardMuted
+                className={`${ui.choiceChip} shrink-0 ${
+                  preset === value ? ui.choiceChipActive : ui.choiceChipIdle
                 }`}
               >
                 <input

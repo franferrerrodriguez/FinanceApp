@@ -50,9 +50,13 @@ export function useAuthBootstrap() {
 
     supabase.auth
       .getSession()
-      .then(({ data: { session } }) => applySession(session))
+      .then(async ({ data: { session } }) => {
+        await applySession(session);
+      })
       .finally(() => {
-        useAppStore.setState({ authBootstrapped: true });
+        if (!cancelled) {
+          useAppStore.setState({ authBootstrapped: true });
+        }
       });
 
     const {

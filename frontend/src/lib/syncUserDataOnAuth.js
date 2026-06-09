@@ -1,3 +1,4 @@
+import { pauseCloudAutoSync } from './cloudSync';
 import { useAppStore } from '../store/appStore';
 import { loadUserDataFromSupabase } from './loadUserDataFromSupabase';
 import { migrateLocalToSupabase } from './migrateLocalToSupabase';
@@ -51,6 +52,7 @@ export async function syncUserDataOnAuth(userId) {
         const migration = await migrateLocalToSupabase(userId);
         if (migration.success) {
           useAppStore.setState({ cloudSyncStatus: 'ready' });
+          pauseCloudAutoSync();
           return migration;
         }
         const load = await loadUserDataFromSupabase(userId);

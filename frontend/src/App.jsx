@@ -7,6 +7,8 @@ import { AccountPage } from './modules/account/AccountPage';
 import { AuthModalProvider } from './context/AuthModalContext';
 import { ToastProvider } from './context/ToastContext';
 import { useAppPreferencesSync } from './hooks/useAppPreferencesSync';
+import { useCloudAutoSync } from './hooks/useCloudAutoSync';
+import { useOnboardingBootstrap } from './hooks/useOnboardingBootstrap';
 import { useIneInflationSync } from './hooks/useIneInflationSync';
 import { BalancePage } from './modules/balance/BalancePage';
 import { DashboardPage } from './modules/dashboard/DashboardPage';
@@ -23,6 +25,8 @@ function HomeRedirect() {
 
 function AppRoutes() {
   useAppPreferencesSync();
+  useCloudAutoSync();
+  useOnboardingBootstrap();
   useIneInflationSync();
 
   return (

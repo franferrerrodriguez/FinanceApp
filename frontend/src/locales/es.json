@@ -78,11 +78,14 @@
     "login": "Iniciar sesión",
     "account": "Cuenta",
     "accountSettings": "Mi cuenta",
-    "logout": "Cerrar sesión"
+    "logout": "Cerrar sesión",
+    "cloudSynced": "Datos sincronizados con la nube",
+    "cloudSyncing": "Sincronizando con la nube…",
+    "cloudSyncError": "No se pudo sincronizar. Se reintentará al guardar."
   },
   "account": {
     "title": "Mi cuenta",
-    "subtitle": "Perfil, sesión y parámetros que usan el dashboard y la proyección.",
+    "subtitle": "Perfil y sesión. Tus cambios se sincronizan solos con la nube al tener sesión iniciada.",
     "back": "Volver al dashboard",
     "save": "Guardar cambios",
     "saving": "Guardando…",

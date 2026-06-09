@@ -5,7 +5,9 @@ import {
 } from '../lib/salary';
 import { ui } from '../lib/uiClasses';
 import { formatMoney } from '../utils/formatters';
-import { MoneyField } from '../modules/onboarding/components/MoneyField';
+import { FormFieldFrame } from './FormFieldFrame';
+import { TextField } from './TextField';
+import { MoneyField } from './MoneyField';
 
 const PAY_PRESETS = ['12', '14', 'other'];
 
@@ -30,21 +32,21 @@ export function SalaryFields({
           value={settings.monthlyNetSalary}
           onChange={(v) => setSettings({ monthlyNetSalary: v })}
           required
+          fullWidth
         />
       ) : null}
 
-      <fieldset>
-        <legend className={`mb-2 block text-sm font-medium ${ui.textLabel}`}>
-          {t('balance.cashflow.salaryPaysLabel')}
-        </legend>
+      <FormFieldFrame
+        label={t('balance.cashflow.salaryPaysLabel')}
+        reserveHintSpace={false}
+        controlClassName=""
+      >
         <div className="flex flex-wrap gap-2">
           {PAY_PRESETS.map((value) => (
             <label
               key={value}
-              className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm ${
-                preset === value
-                  ? 'border-emerald-500 bg-emerald-50 dark:border-emerald-500 dark:bg-emerald-950/40'
-                  : ui.cardMuted
+              className={`${ui.choiceChip} ${
+                preset === value ? ui.choiceChipActive : ui.choiceChipIdle
               }`}
             >
               <input
@@ -55,7 +57,8 @@ export function SalaryFields({
                 onChange={() =>
                   setSettings({
                     salaryPaysPreset: value,
-                    numPagas: value === '14' ? 14 : value === '12' ? 12 : settings.numPagas ?? 12,
+                    numPagas:
+                      value === '14' ? 14 : value === '12' ? 12 : settings.numPagas ?? 12,
                   })
                 }
               />
@@ -63,42 +66,41 @@ export function SalaryFields({
             </label>
           ))}
         </div>
-        {preset === 'other' ? (
-          <div className="mt-3 max-w-[8rem]">
-            <label className={`mb-1 block text-xs ${ui.textMuted}`}>
-              {t('balance.cashflow.salaryPaysCustom')}
-            </label>
-            <input
-              type="number"
-              min={1}
-              max={24}
-              step={1}
-              value={settings.numPagas ?? 12}
-              onChange={(e) =>
-                setSettings({
-                  numPagas: Math.min(24, Math.max(1, parseInt(e.target.value, 10) || 12)),
-                })
-              }
-              className={`${ui.input} ${ui.inputCompact} w-full`}
-            />
-          </div>
-        ) : null}
-      </fieldset>
+      </FormFieldFrame>
 
-      <p className={`text-xs ${ui.textMuted}`}>
+      {preset === 'other' ? (
+        <TextField
+          id={`${idPrefix}-num-pagas`}
+          label={t('balance.cashflow.salaryPaysCustom')}
+          value={String(settings.numPagas ?? 12)}
+          onChange={(raw) =>
+            setSettings({
+              numPagas: Math.min(24, Math.max(1, parseInt(raw, 10) || 12)),
+            })
+          }
+          type="number"
+          inputMode="numeric"
+          min={1}
+          max={24}
+          narrow
+          compact
+        />
+      ) : null}
+
+      <p className={`text-xs leading-relaxed ${ui.textMuted}`}>
         {t('balance.cashflow.salaryEffectiveHint', {
           amount: formatMoney(effective),
         })}
       </p>
 
       {preset === '14' ? (
-        <p className={`text-xs ${ui.textMuted}`}>
+        <p className={`text-xs leading-relaxed ${ui.textMuted}`}>
           {t('balance.cashflow.salaryFourteenNote')}
         </p>
       ) : null}
 
       {preset === 'other' && numPagas !== 12 ? (
-        <p className={`text-xs ${ui.textMuted}`}>
+        <p className={`text-xs leading-relaxed ${ui.textMuted}`}>
           {t('balance.cashflow.salaryOtherNote', { count: numPagas })}
         </p>
       ) : null}

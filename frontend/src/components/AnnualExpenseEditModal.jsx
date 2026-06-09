@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createAnnualExpense } from '../lib/annualExpenses';
-import { ui } from '../lib/uiClasses';
 import { AppModal } from './AppModal';
-import { FormFieldFrame } from './FormFieldFrame';
-import { SelectField } from './SelectField';
+import { ModalFormFooter } from './ModalFormFooter';
+import { MoneyField } from './MoneyField';
+import { SelectFormField } from './SelectFormField';
+import { TextField } from './TextField';
 
 const MONTH_OPTIONS = Array.from({ length: 12 }, (_, i) => i + 1);
 
@@ -48,89 +49,50 @@ export function AnnualExpenseEditModal({
           : t('balance.cashflow.annualExpenseModalEdit')
       }
       footer={
-        <>
-          {mode === 'edit' ? (
-            <button
-              type="button"
-              className={`mr-auto ${ui.actionLinkDanger}`}
-              onClick={onDelete}
-            >
-              {t('balance.cashflow.annualExpenseRemove')}
-            </button>
-          ) : null}
-          <button type="button" className={ui.btnSecondary} onClick={onClose}>
-            {t('common.cancel')}
-          </button>
-          <button
-            type="button"
-            className={ui.btnPrimary}
-            disabled={!canSave}
-            onClick={handleSave}
-          >
-            {t('common.save')}
-          </button>
-        </>
+        <ModalFormFooter
+          onCancel={onClose}
+          onSave={handleSave}
+          canSave={canSave}
+          onDelete={mode === 'edit' ? onDelete : undefined}
+          deleteLabel={t('balance.cashflow.annualExpenseRemove')}
+        />
       }
     >
       <div className="space-y-4">
-        <FormFieldFrame
+        <TextField
+          id="annual-expense-name"
           label={t('balance.cashflow.annualExpenseName')}
+          value={draft.name ?? ''}
+          onChange={(name) => patch({ name })}
+          placeholder={t('balance.cashflow.annualExpenseNamePlaceholder')}
           required
+          autoFocus
           reserveHintSpace={false}
-        >
-          <input
-            type="text"
-            value={draft.name ?? ''}
-            onChange={(e) => patch({ name: e.target.value })}
-            placeholder={t('balance.cashflow.annualExpenseNamePlaceholder')}
-            className={`${ui.input} w-full`}
-            autoFocus
-          />
-        </FormFieldFrame>
+        />
 
-        <FormFieldFrame
+        <MoneyField
+          id="annual-expense-amount"
           label={t('balance.cashflow.annualExpenseAmount')}
+          value={draft.amount ?? 0}
+          onChange={(amount) => patch({ amount })}
           required
           reserveHintSpace={false}
-        >
-          <div className="relative max-w-[12rem]">
-            <span
-              className={`pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm ${ui.textMuted}`}
-            >
-              €
-            </span>
-            <input
-              type="number"
-              min={0}
-              step="1"
-              value={draft.amount ?? 0}
-              onChange={(e) =>
-                patch({
-                  amount: Math.max(0, parseFloat(e.target.value) || 0),
-                })
-              }
-              className={`${ui.input} ${ui.inputMoney} w-full pl-9`}
-            />
-          </div>
-        </FormFieldFrame>
+        />
 
-        <FormFieldFrame
+        <SelectFormField
+          id="annual-expense-month"
           label={t('balance.cashflow.annualExpenseMonth')}
+          value={draft.month ?? 1}
+          onChange={(month) => patch({ month: parseInt(month, 10) })}
+          selectClassName="max-w-none sm:max-w-[12rem]"
           reserveHintSpace={false}
         >
-          <SelectField
-            variant="input"
-            className="w-full max-w-[12rem] py-2.5"
-            value={draft.month ?? 1}
-            onChange={(e) => patch({ month: parseInt(e.target.value, 10) })}
-          >
-            {MONTH_OPTIONS.map((m) => (
-              <option key={m} value={m}>
-                {t(`common.months.${m}`)}
-              </option>
-            ))}
-          </SelectField>
-        </FormFieldFrame>
+          {MONTH_OPTIONS.map((m) => (
+            <option key={m} value={m}>
+              {t(`common.months.${m}`)}
+            </option>
+          ))}
+        </SelectFormField>
       </div>
     </AppModal>
   );

@@ -3,13 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { isAuthAvailable } from '../../lib/auth';
 import { isSimpleAuthMode } from '../../lib/authConfig';
-import { persistUserToSupabase } from '../../lib/persistUserToSupabase';
+import { flushCloudAutoSync } from '../../lib/cloudSync';
 import {
   PROFILE_AGE_ERROR_KEYS,
   PROFILE_MAX_AGE,
   PROFILE_MIN_AGE,
   validateProfileForm,
 } from '../../lib/profileValidation';
+import { TextField } from '../../components/TextField';
 import { ui } from '../../lib/uiClasses';
 import { getDisplayName } from '../../lib/userDisplay';
 import { useProfile, useSessionMeta } from '../../store/hooks';
@@ -37,8 +38,6 @@ export function AccountPage() {
     (showErrors && validation.ageErrorKey === 'required') ||
     (age.trim().length > 0 && validation.ageErrorKey != null);
 
-  const inputClass = (hasError) => (hasError ? ui.inputError : ui.input);
-
   const handleSave = async () => {
     if (!validation.valid) {
       setShowErrors(true);
@@ -50,7 +49,7 @@ export function AccountPage() {
 
     let cloudOk = true;
     if (cloudEnabled && user?.id) {
-      const result = await persistUserToSupabase(user.id);
+      const result = await flushCloudAutoSync();
       cloudOk = result.ok;
     }
 
@@ -91,52 +90,45 @@ export function AccountPage() {
           <p className={`mt-1 text-sm ${ui.textMuted}`}>{t('account.profile.hint')}</p>
 
           <div className="mt-5 space-y-4">
-            <label className="block">
-              <span className={`mb-1.5 block text-sm font-medium ${ui.textLabel}`}>
-                {t('onboarding.welcome.name')}{' '}
-                <span className="text-emerald-500">{t('common.required')}</span>
-              </span>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder={t('onboarding.welcome.namePlaceholder')}
-                className={inputClass(showNameError)}
-                autoComplete="name"
-                aria-invalid={showNameError}
-              />
-              {showNameError && (
-                <p className="mt-2 text-sm text-red-500" role="alert">
-                  {t('onboarding.welcome.nameErrorRequired')}
-                </p>
-              )}
-            </label>
+            <TextField
+              id="account-name"
+              label={t('onboarding.welcome.name')}
+              value={name}
+              onChange={setName}
+              placeholder={t('onboarding.welcome.namePlaceholder')}
+              autoComplete="name"
+              required
+              compact
+              error={showNameError}
+              errorMessage={
+                showNameError ? t('onboarding.welcome.nameErrorRequired') : undefined
+              }
+            />
 
-            <label className="block">
-              <span className={`mb-1.5 block text-sm font-medium ${ui.textLabel}`}>
-                {t('onboarding.welcome.age')}{' '}
-                <span className="text-emerald-500">{t('common.required')}</span>
-              </span>
-              <input
-                type="number"
-                min={PROFILE_MIN_AGE}
-                max={PROFILE_MAX_AGE}
-                inputMode="numeric"
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
-                placeholder={t('onboarding.welcome.agePlaceholder')}
-                className={`${inputClass(showAgeError)} ${ui.inputNarrow}`}
-                aria-invalid={showAgeError}
-              />
-              {showAgeError && validation.ageErrorKey && (
-                <p className="mt-2 text-sm text-red-500" role="alert">
-                  {t(PROFILE_AGE_ERROR_KEYS[validation.ageErrorKey], {
-                    min: PROFILE_MIN_AGE,
-                    max: PROFILE_MAX_AGE,
-                  })}
-                </p>
-              )}
-            </label>
+            <TextField
+              id="account-age"
+              label={t('onboarding.welcome.age')}
+              hint={t('onboarding.welcome.ageHint')}
+              value={age}
+              onChange={setAge}
+              type="number"
+              inputMode="numeric"
+              min={PROFILE_MIN_AGE}
+              max={PROFILE_MAX_AGE}
+              placeholder={t('onboarding.welcome.agePlaceholder')}
+              narrow
+              required
+              compact
+              error={showAgeError}
+              errorMessage={
+                showAgeError && validation.ageErrorKey
+                  ? t(PROFILE_AGE_ERROR_KEYS[validation.ageErrorKey], {
+                      min: PROFILE_MIN_AGE,
+                      max: PROFILE_MAX_AGE,
+                    })
+                  : undefined
+              }
+            />
           </div>
         </section>
 

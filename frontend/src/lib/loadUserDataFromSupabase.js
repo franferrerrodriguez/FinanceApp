@@ -1,6 +1,7 @@
 import { mergeFinanceLists } from './mergeFinanceLists';
 import { dedupeSnapshots } from './snapshotPersist';
 import { filterDraftAssets, filterDraftLiabilities } from './patrimonyDrafts';
+import { pauseCloudAutoSync } from './cloudSync';
 import { mergePersistedState } from '../store/persistConfig';
 import { useAppStore } from '../store/appStore';
 import {
@@ -114,13 +115,14 @@ export async function loadUserDataFromSupabase(userId) {
       theme: lists.theme,
     };
 
-    const merged = mergePersistedState(persisted, current);
+    const merged = mergePersistedState(persisted, current, { preferLocal: true });
 
     useAppStore.setState({
       ...merged,
       sessionStatus: 'authenticated',
       cloudSyncStatus: 'ready',
     });
+    pauseCloudAutoSync();
 
     return {
       success: true,

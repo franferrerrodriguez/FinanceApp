@@ -14,6 +14,7 @@ import { ui } from '../../../lib/uiClasses';
 import { useFinanceData, useSettings } from '../../../store/hooks';
 import { ExpenseSubtotals } from '../components/ExpenseSubtotals';
 import { OnboardingActions } from '../components/OnboardingActions';
+import { OnboardingStepHeader } from '../components/OnboardingStepHeader';
 import { HousingExpenseBlock } from '../../../components/HousingExpenseBlock';
 import { PayYourselfFirstBlock } from '../../../components/PayYourselfFirstBlock';
 import { OnboardingLiabilitiesSection } from '../components/OnboardingLiabilitiesSection';
@@ -32,10 +33,10 @@ export function FixedExpensesStep({ onBack, onNext }) {
 
   return (
     <>
-      <h2 className={`mb-2 text-2xl font-bold ${ui.heading}`}>
-        {t('onboarding.expenses.title')}
-      </h2>
-      <p className={`mb-6 ${ui.text}`}>{t('onboarding.expenses.subtitle')}</p>
+      <OnboardingStepHeader
+        title={t('onboarding.expenses.title')}
+        subtitle={t('onboarding.expenses.subtitle')}
+      />
 
       <div className="space-y-4">
         <PayYourselfFirstBlock settings={settings} setSettings={setSettings} />

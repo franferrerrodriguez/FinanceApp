@@ -1,6 +1,9 @@
-import { useEffect, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { clampOnboardingStep } from '../../lib/onboardingAccess';
+import { useEffect } from 'react';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import {
+  clampOnboardingStep,
+  deriveOnboardingResumeStep,
+} from '../../lib/onboardingAccess';
 import { useOnboardingState, useProfile, useSettings } from '../../store/hooks';
 import { StepHeader } from './components/StepHeader';
 import { useOnboardingRouteGuard } from './hooks/useOnboardingRouteGuard';
@@ -23,7 +26,6 @@ export function OnboardingStepper() {
   const { step, setStep, complete } = useOnboardingState();
   const { settings } = useSettings();
   const { profile } = useProfile();
-  const resumeChecked = useRef(false);
 
   const stepFromUrl = onboardingStepFromSlug(stepSlug);
   const allowedStep =
@@ -34,33 +36,33 @@ export function OnboardingStepper() {
   useOnboardingRouteGuard(stepFromUrl);
 
   useEffect(() => {
-    if (stepFromUrl === null) {
-      navigate('/onboarding', { replace: true });
-      return;
-    }
-    if (allowedStep !== stepFromUrl) {
-      return;
-    }
+    if (stepFromUrl === null) return;
+    if (allowedStep !== stepFromUrl) return;
     if (step !== allowedStep) {
       setStep(allowedStep);
     }
-  }, [stepFromUrl, allowedStep, step, setStep, navigate]);
+  }, [stepFromUrl, allowedStep, step, setStep]);
 
   useEffect(() => {
-    if (stepFromUrl !== null) {
-      scrollOnboardingToTop();
-    }
+    if (stepFromUrl === null) return;
+    scrollOnboardingToTop();
   }, [stepSlug, stepFromUrl]);
 
   useEffect(() => {
-    if (resumeChecked.current) return;
-    resumeChecked.current = true;
-
-    if (!stepSlug && step > 0) {
-      const resumeStep = clampOnboardingStep(step, settings, profile);
+    if (stepSlug) return;
+    const resumeStep = deriveOnboardingResumeStep(settings, profile);
+    if (resumeStep > 0) {
       navigate(onboardingPathForStep(resumeStep), { replace: true });
     }
-  }, [stepSlug, step, settings, profile, navigate]);
+  }, [stepSlug, settings, profile, navigate]);
+
+  if (stepFromUrl === null) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  if (allowedStep !== stepFromUrl) {
+    return <Navigate to={onboardingPathForStep(allowedStep)} replace />;
+  }
 
   const goForward = (next) => {
     navigate(onboardingPathForStep(next));
@@ -75,27 +77,17 @@ export function OnboardingStepper() {
     navigate('/dashboard', { replace: true });
   };
 
-  const activeStep = allowedStep;
-
-  if (stepFromUrl === null) {
-    return null;
-  }
-
-  if (allowedStep !== stepFromUrl) {
-    return null;
-  }
-
   return (
     <div className="mx-auto max-w-lg">
-      <StepHeader stepIndex={activeStep} />
-      {activeStep === 0 && <WelcomeStep onNext={() => goForward(1)} />}
-      {activeStep === 1 && (
+      <StepHeader stepIndex={allowedStep} />
+      {allowedStep === 0 && <WelcomeStep onNext={() => goForward(1)} />}
+      {allowedStep === 1 && (
         <IncomeStep onBack={goBack} onNext={() => goForward(2)} />
       )}
-      {activeStep === 2 && (
+      {allowedStep === 2 && (
         <FixedExpensesStep onBack={goBack} onNext={() => goForward(3)} />
       )}
-      {activeStep === 3 && (
+      {allowedStep === 3 && (
         <SummaryStep onBack={goBack} onFinish={handleFinish} />
       )}
     </div>

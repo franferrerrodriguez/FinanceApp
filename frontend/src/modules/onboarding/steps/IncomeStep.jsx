@@ -2,10 +2,11 @@ import { Trans, useTranslation } from 'react-i18next';
 import { calcTotalIncome } from '../../../lib/calculations';
 import { ui } from '../../../lib/uiClasses';
 import { useSettings } from '../../../store/hooks';
-import { LiveTotal } from '../components/LiveTotal';
 import { SalaryFields } from '../../../components/SalaryFields';
+import { LiveTotal } from '../components/LiveTotal';
 import { MoneyField } from '../components/MoneyField';
 import { OnboardingActions } from '../components/OnboardingActions';
+import { OnboardingStepHeader } from '../components/OnboardingStepHeader';
 
 export function IncomeStep({ onBack, onNext }) {
   const { t } = useTranslation();
@@ -16,9 +17,7 @@ export function IncomeStep({ onBack, onNext }) {
 
   return (
     <>
-      <h2 className={`mb-2 text-2xl font-bold ${ui.heading}`}>
-        {t('onboarding.income.title')}
-      </h2>
+      <OnboardingStepHeader title={t('onboarding.income.title')} />
       <p className={`mb-6 ${ui.text}`}>
         <Trans
           i18nKey="onboarding.income.intro"
@@ -37,6 +36,7 @@ export function IncomeStep({ onBack, onNext }) {
             value={settings.monthlyNetSalary}
             onChange={(v) => setSettings({ monthlyNetSalary: v })}
             required
+            fullWidth
           />
           <MoneyField
             id="other-monthly-income"
@@ -44,6 +44,7 @@ export function IncomeStep({ onBack, onNext }) {
             hint={t('onboarding.income.otherIncomeHint')}
             value={settings.otherMonthlyIncome}
             onChange={(v) => setSettings({ otherMonthlyIncome: v })}
+            fullWidth
           />
         </div>
         <SalaryFields

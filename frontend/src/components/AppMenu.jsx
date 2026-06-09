@@ -14,7 +14,7 @@ export function AppMenu({ className = '' }) {
   const { t } = useTranslation();
   const { locale, theme, setLocale, setTheme } = usePreferences();
   const { profile } = useProfile();
-  const { user, sessionStatus, logout } = useSessionMeta();
+  const { user, sessionStatus, cloudSyncStatus, logout } = useSessionMeta();
   const { openRegister, openLogin } = useAuthModal();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -157,6 +157,24 @@ export function AppMenu({ className = '' }) {
               </div>
 
               <div className="max-h-[min(70vh,calc(100dvh-6rem))] overflow-y-auto p-2">
+                {isAuthenticated && cloudSyncStatus !== 'idle' && (
+                  <p
+                    className={`mx-3 mb-2 text-xs ${
+                      cloudSyncStatus === 'error'
+                        ? 'text-red-500 dark:text-red-400'
+                        : ui.textMuted
+                    }`}
+                    role="status"
+                    aria-live="polite"
+                  >
+                    {cloudSyncStatus === 'syncing'
+                      ? t('menu.cloudSyncing')
+                      : cloudSyncStatus === 'error'
+                        ? t('menu.cloudSyncError')
+                        : t('menu.cloudSynced')}
+                  </p>
+                )}
+
                 {isAuthenticated && (
                   <MenuSection title={t('menu.account')} first>
                     <MenuButton onClick={handleAccount}>

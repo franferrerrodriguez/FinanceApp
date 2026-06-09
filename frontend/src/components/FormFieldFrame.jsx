@@ -16,7 +16,6 @@ export function FormFieldFrame({
   /** Stacked forms (modals): tight label/hint without grid alignment slots. */
   compact = false,
 }) {
-  const labelIsString = typeof label === 'string';
   const showHintRow = !compact && (reserveHintSpace || hint);
   const showHint = compact ? Boolean(hint) : showHintRow;
 
@@ -32,9 +31,7 @@ export function FormFieldFrame({
         }
       >
         {label}
-        {required && labelIsString ? (
-          <span className="text-emerald-500"> *</span>
-        ) : null}
+        {required ? <span className="text-emerald-500"> *</span> : null}
       </span>
       {showHint ? (
         compact ? (

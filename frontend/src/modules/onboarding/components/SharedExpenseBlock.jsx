@@ -1,4 +1,7 @@
 import { useTranslation } from 'react-i18next';
+import { FormCheckboxField } from '../../../components/FormCheckboxField';
+import { FormFieldFrame } from '../../../components/FormFieldFrame';
+import { FormSection } from '../../../components/FormSection';
 import { formatMoney } from '../../../utils/formatters';
 import { ui } from '../../../lib/uiClasses';
 import { MoneyField } from './MoneyField';
@@ -16,11 +19,12 @@ export function SharedExpenseBlock({
   onPercentChange,
   yourShare,
   shareOnly = false,
+  embedded = false,
 }) {
   const { t } = useTranslation();
 
-  return (
-    <div className={`${ui.block} space-y-3 p-4`}>
+  const body = (
+    <>
       {!shareOnly && (
         <MoneyField
           id={id}
@@ -28,6 +32,7 @@ export function SharedExpenseBlock({
           hint={hint}
           value={total}
           onChange={onTotalChange}
+          fullWidth
         />
       )}
       {shareOnly && (
@@ -41,34 +46,29 @@ export function SharedExpenseBlock({
         </p>
       )}
 
-      <label className="flex cursor-pointer items-center gap-3">
-        <input
-          type="checkbox"
-          checked={shared}
-          onChange={(e) => onSharedChange(e.target.checked)}
-          className="h-4 w-4 shrink-0 rounded border-slate-400 text-emerald-500 focus:ring-emerald-500/40 dark:border-slate-600 dark:bg-slate-900"
-        />
-        <span className={`text-sm leading-snug ${ui.textLabel}`}>
-          {t('onboarding.expenses.expenseShared')}
-        </span>
-      </label>
+      <FormCheckboxField
+        id={`${id}-shared`}
+        checked={shared}
+        onChange={onSharedChange}
+        label={t('onboarding.expenses.expenseShared')}
+      />
 
-      {shared && (
+      {shared ? (
         <div className={`space-y-2 border-t pt-3 ${ui.divider}`}>
-          <label
-            htmlFor={`${id}-share-percent`}
-            className={`block text-sm ${ui.text}`}
+          <FormFieldFrame
+            compact
+            label={t('onboarding.expenses.yourSharePercent')}
+            controlClassName=""
           >
-            {t('onboarding.expenses.yourSharePercent')}
-          </label>
-          <div className="flex items-center gap-3">
-            <SharePercentInput
-              id={`${id}-share-percent`}
-              value={percent}
-              onChange={onPercentChange}
-            />
-            <span className={ui.textMuted}>%</span>
-          </div>
+            <div className="flex items-center gap-3">
+              <SharePercentInput
+                id={`${id}-share-percent`}
+                value={percent}
+                onChange={onPercentChange}
+              />
+              <span className={ui.textMuted}>%</span>
+            </div>
+          </FormFieldFrame>
           <p className={ui.accentSoft}>
             {t('onboarding.expenses.sharePreview', {
               yours: formatMoney(yourShare),
@@ -76,7 +76,13 @@ export function SharedExpenseBlock({
             })}
           </p>
         </div>
-      )}
-    </div>
+      ) : null}
+    </>
   );
+
+  if (embedded) {
+    return <div className="space-y-3">{body}</div>;
+  }
+
+  return <FormSection>{body}</FormSection>;
 }

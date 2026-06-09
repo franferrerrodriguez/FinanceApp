@@ -80,6 +80,15 @@ export const ui = {
   scenarioChipActive:
     'rounded-full border border-emerald-500 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-800 shadow-sm dark:border-emerald-500/60 dark:bg-emerald-500/15 dark:text-emerald-300',
   inputCompact: '!min-h-0 py-2 text-sm',
+  /** Touch-friendly checkbox (min row height via label wrapper). */
+  checkbox:
+    'h-5 w-5 shrink-0 rounded border-slate-400 text-emerald-500 focus:ring-emerald-500/40 dark:border-slate-600 dark:bg-slate-900',
+  choiceChip:
+    'inline-flex h-11 min-h-[2.75rem] cursor-pointer items-center rounded-xl border px-3.5 text-sm transition',
+  choiceChipActive:
+    'border-emerald-500 bg-emerald-50 text-emerald-900 dark:border-emerald-500 dark:bg-emerald-950/40 dark:text-emerald-100',
+  choiceChipIdle:
+    'border-slate-200/90 bg-slate-100/90 text-slate-700 hover:border-slate-300 dark:border-slate-600 dark:bg-slate-800/55 dark:text-slate-300',
   /** Two-line slots so grid columns keep inputs aligned when hints wrap. */
   formFieldLabel:
     'mb-1.5 block min-h-10 text-sm font-medium leading-snug line-clamp-2',

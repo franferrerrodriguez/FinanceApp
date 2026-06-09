@@ -4,6 +4,7 @@ import {
   CASHFLOW_EXPENSE_SNAPSHOT_KEYS,
   createCashflowEntry,
   enrichCashflowEntry,
+  getCurrentCashflowSegment,
   syncSettingsFromCashflowHistory,
   upsertCurrentMonthCashflowTramo,
 } from '../../lib/cashflowHistory';
@@ -121,6 +122,17 @@ export const createFinanceSlice = (set, get) => ({
       };
     }),
 
+  ensureCurrentCashflowTramo: () =>
+    set((state) => {
+      if (state.cashflowHistory.length > 0) return state;
+      return {
+        cashflowHistory: upsertCurrentMonthCashflowTramo(
+          state.settings,
+          state.cashflowHistory,
+        ),
+      };
+    }),
+
   setSettings: (patch) =>
     set((state) => {
       const touchesCashflow = Object.keys(patch).some((k) =>
@@ -175,10 +187,12 @@ export const createFinanceSlice = (set, get) => ({
         ...state.cashflowHistory,
         createCashflowEntry(entry, state.settings),
       ];
-      return {
-        cashflowHistory,
-        settings: syncSettingsFromCashflowHistory(state.settings, cashflowHistory),
-      };
+      const segment = getCurrentCashflowSegment(cashflowHistory);
+      const settings =
+        segment?.id === cashflowHistory[cashflowHistory.length - 1]?.id
+          ? syncSettingsFromCashflowHistory(state.settings, cashflowHistory)
+          : state.settings;
+      return { cashflowHistory, settings };
     }),
 
   updateCashflowHistoryEntry: (id, patch) =>
@@ -186,10 +200,13 @@ export const createFinanceSlice = (set, get) => ({
       const cashflowHistory = state.cashflowHistory.map((e) =>
         e.id === id ? enrichCashflowEntry(patch, e, state.settings) : e,
       );
-      return {
-        cashflowHistory,
-        settings: syncSettingsFromCashflowHistory(state.settings, cashflowHistory),
-      };
+      const updated = cashflowHistory.find((e) => e.id === id);
+      const segment = getCurrentCashflowSegment(cashflowHistory);
+      const settings =
+        updated && segment?.id === updated.id
+          ? syncSettingsFromCashflowHistory(state.settings, cashflowHistory)
+          : state.settings;
+      return { cashflowHistory, settings };
     }),
 
   removeCashflowHistoryEntry: (id) =>

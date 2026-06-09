@@ -46,6 +46,7 @@ export function useFinanceData() {
       addAnnualExpense: s.addAnnualExpense,
       updateAnnualExpense: s.updateAnnualExpense,
       removeAnnualExpense: s.removeAnnualExpense,
+      ensureCurrentCashflowTramo: s.ensureCurrentCashflowTramo,
       addCashflowHistoryEntry: s.addCashflowHistoryEntry,
       updateCashflowHistoryEntry: s.updateCashflowHistoryEntry,
       removeCashflowHistoryEntry: s.removeCashflowHistoryEntry,

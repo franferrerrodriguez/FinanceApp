@@ -54,8 +54,31 @@ export const CASHFLOW_EXPENSE_SNAPSHOT_KEYS = [
 
 export function pickExpenseSnapshot(settings = {}) {
   return Object.fromEntries(
-    CASHFLOW_EXPENSE_SNAPSHOT_KEYS.map((key) => [key, settings[key]]),
+    CASHFLOW_EXPENSE_SNAPSHOT_KEYS.flatMap((key) => {
+      const value = settings[key];
+      if (value === undefined) return [];
+      if (key === 'monthlyBudgetInvestment' && !(Number(value) > 0)) return [];
+      return [[key, value]];
+    }),
   );
+}
+
+/** Merge settings from local + persisted without losing a committed budget investment. */
+export function mergeBudgetSettingsFields(current = {}, persisted = {}) {
+  const monthlyBudgetInvestment = Math.max(
+    getEffectiveBudgetInvestment(current),
+    getEffectiveBudgetInvestment(persisted),
+  );
+  const emergencyFundCountsInvestment =
+    current.emergencyFundCountsInvestment ??
+    persisted.emergencyFundCountsInvestment;
+
+  return {
+    monthlyBudgetInvestment,
+    ...(emergencyFundCountsInvestment !== undefined
+      ? { emergencyFundCountsInvestment }
+      : {}),
+  };
 }
 
 function monthKeyFromDate(date) {
@@ -198,16 +221,44 @@ export function getCashflowTotalsForDate(settings, cashflowHistory, date = new D
   return { income, fixed, leisure, investment, savings, savingsRate, resolved };
 }
 
-/** Mirror the tramo in effect today into settings. */
+/** Mirror the current tramo into settings without zeroing salary or unrelated fields. */
 export function syncSettingsFromCashflowHistory(settings, cashflowHistory) {
   const segment = getCurrentCashflowSegment(cashflowHistory);
   if (!segment) return settings;
-  return applyCashflowEntryToSettings(settings, segment);
+
+  const expenseOverlay = Object.fromEntries(
+    Object.entries(segment.expenses ?? {}).filter(([, value]) => value !== undefined),
+  );
+  let next = { ...settings, ...expenseOverlay };
+
+  if ((segment.monthlyNetSalary ?? 0) > 0) {
+    next = enrichSettingsWithSalary(
+      {
+        monthlyNetSalary: segment.monthlyNetSalary,
+        salaryPaysPreset: segment.salaryPaysPreset ?? '12',
+        numPagas: segment.numPagas ?? 12,
+      },
+      next,
+    );
+  }
+
+  if ((segment.otherMonthlyIncome ?? 0) > 0) {
+    next = { ...next, otherMonthlyIncome: segment.otherMonthlyIncome };
+  }
+
+  return next;
 }
 
 export function upsertCurrentMonthCashflowTramo(settings, cashflowHistory = []) {
   const key = getCurrentMonthKey();
-  const draft = createCashflowEntryFromSettings(settings, key);
+  const draft = createCashflowEntryFromSettings(settings, key, {
+    expenses: {
+      ...pickExpenseSnapshot(settings),
+      monthlyBudgetInvestment: getEffectiveBudgetInvestment(settings),
+      emergencyFundCountsInvestment:
+        settings?.emergencyFundCountsInvestment ?? true,
+    },
+  });
   const idx = cashflowHistory.findIndex((e) => e.effectiveFrom === key);
   if (idx >= 0) {
     return cashflowHistory.map((e, i) =>
