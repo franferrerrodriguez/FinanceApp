@@ -28,7 +28,9 @@ function mapLiabilityFromDb(row) {
     category: row.category,
     monthlyPayment: Number(row.monthly_payment) || 0,
     interestRate:
-      row.interest_rate != null ? Number(row.interest_rate) : undefined,
+      row.interest_rate != null && Number.isFinite(Number(row.interest_rate))
+        ? Number(row.interest_rate)
+        : 0,
     isActive: row.is_active !== false,
   };
 }

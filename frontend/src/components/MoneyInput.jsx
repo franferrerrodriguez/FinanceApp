@@ -12,6 +12,7 @@ export function MoneyInput({
   compact = false,
   fullWidth = false,
   prefilled = false,
+  pending = false,
   hint,
   className = '',
   'aria-label': ariaLabel,
@@ -34,9 +35,11 @@ export function MoneyInput({
 
   const displayValue = editing ? draft : formatDisplay(value);
   const widthClass = fullWidth ? 'w-full max-w-none' : `w-full ${ui.inputAmount}`;
-  const inputClass = prefilled
-    ? `${ui.input} ${ui.inputMoney} w-full max-w-none border-slate-300 bg-slate-50 text-slate-600 dark:border-slate-600 dark:bg-slate-800/80 dark:text-slate-300`
-    : `${ui.input} ${ui.inputMoney} w-full max-w-none`;
+  const inputClass = pending
+    ? `${ui.input} ${ui.inputMoney} w-full max-w-none border-emerald-500/50 bg-emerald-500/[0.04] ring-1 ring-emerald-500/25 focus:border-emerald-500 dark:border-emerald-500/45 dark:bg-emerald-950/20`
+    : prefilled
+      ? `${ui.input} ${ui.inputMoney} w-full max-w-none border-slate-300 bg-slate-50 text-slate-600 dark:border-slate-600 dark:bg-slate-800/80 dark:text-slate-300`
+      : `${ui.input} ${ui.inputMoney} w-full max-w-none`;
 
   return (
     <div className={`relative ${widthClass} ${className}`.trim()}>

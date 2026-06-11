@@ -13,6 +13,7 @@ import { balancePath, BALANCE_TAB } from '../../../lib/balanceTabs';
 import { getActiveLiabilities } from '../../../lib/patrimony';
 import { ui } from '../../../lib/uiClasses';
 import { useFinanceData } from '../../../store/hooks';
+import { formatMoney } from '../../../utils/formatters';
 import { AmortizationCalculator } from './AmortizationCalculator';
 
 export function MortgageAmortizationPanel() {
@@ -80,6 +81,16 @@ export function MortgageAmortizationPanel() {
           <p className={`mt-1 text-sm ${ui.text}`}>
             {t('balance.amortization.subtitle')}
           </p>
+          {yourSharePayment ? (
+            <p className={`mt-2 text-sm ${ui.textMuted}`}>
+              {t('balance.amortization.sharedMortgageNote', {
+                fullPayment: formatMoney(fullMonthlyPayment),
+                totalCapital: formatMoney(fullCapital ?? 0),
+                yourPayment: formatMoney(yourSharePayment.amount),
+                sharePercent: `${yourSharePayment.percent}%`,
+              })}
+            </p>
+          ) : null}
         </div>
 
         {mortgages.length > 1 ? (

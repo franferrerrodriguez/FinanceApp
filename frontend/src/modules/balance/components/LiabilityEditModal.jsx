@@ -3,13 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { AppModal } from '../../../components/AppModal';
 import { ModalFormFooter } from '../../../components/ModalFormFooter';
 import { MoneyField } from '../../../components/MoneyField';
+import { PercentField } from '../../../components/PercentField';
 import { SelectFormField } from '../../../components/SelectFormField';
 import { TextField } from '../../../components/TextField';
 import { getLiabilityCategories, getManualLiabilityCategories } from '../../../lib/categoryLabels';
 import {
   getMortgageBalanceShareInfoFromTotal,
-  getMortgageFullMonthlyPayment,
-  getMortgageYourSharePayment,
+  getMortgagePaymentShareInfoFromTotal,
   isLinkedMortgageLiability,
   isMortgageCapitalShared,
   mortgageEnteredOutstandingTotal,
@@ -17,6 +17,7 @@ import {
 } from '../../../lib/housingLiability';
 import { formatMoney } from '../../../utils/formatters';
 import { ui } from '../../../lib/uiClasses';
+import { normalizeLiabilityInterestRate } from '../../../lib/patrimony';
 import { isSavableLiability } from '../../../lib/patrimonyDrafts';
 
 export function LiabilityEditModal({
@@ -57,11 +58,8 @@ export function LiabilityEditModal({
     isLinkedMortgage && outstandingTotal != null
       ? getMortgageBalanceShareInfoFromTotal(settings, draft, outstandingTotal)
       : null;
-  const fullMonthlyPayment = isLinkedMortgage
-    ? getMortgageFullMonthlyPayment(settings, draft)
-    : draft.monthlyPayment ?? 0;
   const paymentShare = isLinkedMortgage
-    ? getMortgageYourSharePayment(settings, draft)
+    ? getMortgagePaymentShareInfoFromTotal(settings, draft.monthlyPayment)
     : null;
 
   const handleSave = () => {
@@ -72,6 +70,7 @@ export function LiabilityEditModal({
         : Math.max(0, Number(outstandingBalance) || 0);
     onSave({
       ...fields,
+      interestRate: normalizeLiabilityInterestRate(fields.interestRate ?? 0),
       outstandingBalance:
         total == null
           ? null
@@ -125,6 +124,33 @@ export function LiabilityEditModal({
           ))}
         </SelectFormField>
 
+        <PercentField
+          id="liability-interest-rate"
+          label={t('balance.patrimony.interestRate')}
+          hint={t('balance.patrimony.interestRateHint')}
+          value={draft.interestRate}
+          onChange={(interestRate) =>
+            patch({
+              interestRate:
+                interestRate == null
+                  ? null
+                  : normalizeLiabilityInterestRate(interestRate),
+            })
+          }
+          step={0.01}
+          min={0}
+          layout="stacked"
+          required
+          nullable
+          error={draft.interestRate == null}
+          errorMessage={
+            draft.interestRate == null
+              ? t('balance.patrimony.interestRateRequired')
+              : undefined
+          }
+          reserveHintSpace={false}
+        />
+
         <MoneyField
           id="liability-monthly-payment"
           label={
@@ -145,9 +171,8 @@ export function LiabilityEditModal({
                 })
               : undefined
           }
-          value={fullMonthlyPayment}
+          value={draft.monthlyPayment ?? 0}
           onChange={(monthlyPayment) => patch({ monthlyPayment })}
-          disabled={isLinkedMortgage}
           reserveHintSpace={false}
         />
 

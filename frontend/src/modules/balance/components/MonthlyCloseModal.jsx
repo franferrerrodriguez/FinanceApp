@@ -22,6 +22,7 @@ import {
 import {
   getCloseableAssets,
   getCloseableLiabilities,
+  getMissingCloseItemsForMonth,
   getMonthlyCloseMonthOptions,
 } from '../../../lib/monthlyClose';
 import { deriveContributionPreviewForAsset } from '../../../lib/deriveContributionsFromSnapshots';
@@ -37,14 +38,18 @@ import {
   computeDraftNetWorth,
   computeGainLossBreakdown,
   estimateMortgageMonthlyDrop,
+  fillEmptyCloseRows,
   getReferenceMonthNetWorth,
   groupActiveAssetsForClose,
+  hasEmptyCloseRows,
+  isInvestmentAssetCategory,
   sumDraftGroupAssets,
   sumDraftLiabilities,
 } from '../../../lib/monthlyCloseForm';
 import { parseSignedMoneyEuros } from '../../../lib/money';
 import { useFinanceData, usePreferences } from '../../../store/hooks';
 import { formatInstitutionLabel } from '../../../lib/institutions';
+import { formatConjunctionList } from '../../../utils/listLabel';
 import { formatMonthKeyLong, formatMonthKeyLabel, formatSnapshotDateLabel } from '../../../utils/monthLabel';
 import {
   SPANISH_BANK_IDS,
@@ -150,8 +155,11 @@ export function MonthlyCloseModal({
   const { t } = useTranslation();
   const { locale } = usePreferences();
   const { updateLiability } = useFinanceData();
-  const activeAssets = getCloseableAssets(assets);
-  const activeLiabilities = getCloseableLiabilities(liabilities);
+  const activeAssets = useMemo(() => getCloseableAssets(assets), [assets]);
+  const activeLiabilities = useMemo(
+    () => getCloseableLiabilities(liabilities),
+    [liabilities],
+  );
   const currentMonthKey = getCurrentMonthKey();
 
   const monthOptions = useMemo(
@@ -231,9 +239,49 @@ export function MonthlyCloseModal({
     previousNetWorth != null ? newNetWorth - previousNetWorth : null;
 
   const quickSaveAvailable = canQuickSaveAllSame(assetRows, liabilityRows);
+  const emptyRowsRemain = hasEmptyCloseRows(assetRows, liabilityRows);
   const canSubmit = allCloseRowsFilled(assetRows, liabilityRows);
   const isUpdate = selectedOption?.hasClose;
   const snapshotDateLabel = formatSnapshotDateLabel(initial.snapshotDate, locale);
+
+  const missingForMonth = useMemo(
+    () =>
+      getMissingCloseItemsForMonth(
+        snapshots,
+        assets,
+        liabilities,
+        resolvedMonthKey,
+      ),
+    [snapshots, assets, liabilities, resolvedMonthKey],
+  );
+
+  const modalSubtitle = useMemo(() => {
+    if (missingForMonth.length > 0) {
+      return t('balance.patrimony.recordBalancesPendingSubtitle', {
+        count: missingForMonth.length,
+        names: formatConjunctionList(
+          missingForMonth.map((item) => item.name),
+          locale,
+        ),
+      });
+    }
+    if (isUpdate) {
+      return t('balance.patrimony.recordBalancesUpdateSubtitle', {
+        month: formatMonthKeyLong(resolvedMonthKey, locale),
+      });
+    }
+    return t('balance.patrimony.recordBalancesSubtitle', {
+      month: formatMonthKeyLong(resolvedMonthKey, locale),
+      date: snapshotDateLabel,
+    });
+  }, [
+    missingForMonth,
+    isUpdate,
+    resolvedMonthKey,
+    locale,
+    snapshotDateLabel,
+    t,
+  ]);
 
   const investmentGroupTotal = sumDraftGroupAssets(
     assetRows,
@@ -273,8 +321,10 @@ export function MonthlyCloseModal({
     });
   };
 
-  const handleSubmit = () => {
-    const liabilityRowsForSnapshot = liabilityRows.map((row) => {
+  const handleSubmit = (rowsOverride) => {
+    const assetsToSave = rowsOverride?.assetRows ?? assetRows;
+    const liabilitiesToSave = rowsOverride?.liabilityRows ?? liabilityRows;
+    const liabilityRowsForSnapshot = liabilitiesToSave.map((row) => {
       const liability = activeLiabilities.find((l) => l.id === row.liabilityId);
       if (!liability || row.value == null) return row;
       return {
@@ -282,7 +332,7 @@ export function MonthlyCloseModal({
         value: mortgageOutstandingTotalToShare(settings, liability, row.value),
       };
     });
-    for (const row of liabilityRows) {
+    for (const row of liabilitiesToSave) {
       if (row.value == null) continue;
       const liability = activeLiabilities.find((l) => l.id === row.liabilityId);
       if (!liability || !isLinkedHousingMortgage(liability, settings, liabilities)) {
@@ -294,13 +344,17 @@ export function MonthlyCloseModal({
     }
 
     const snaps = buildCloseMonthSnapshots({
-      assetRows,
+      assetRows: assetsToSave,
       liabilityRows: liabilityRowsForSnapshot,
       snapshotDate: initial.snapshotDate,
       existingSnapshots: snapshots,
     });
     onConfirm(resolvedMonthKey, snaps);
     onClose();
+  };
+
+  const handleQuickSaveRest = () => {
+    handleSubmit(fillEmptyCloseRows(assetRows, liabilityRows));
   };
 
   const renderAssetRow = (asset) => {
@@ -318,6 +372,12 @@ export function MonthlyCloseModal({
       });
     const isPrefilled =
       !row.modified && row.prefillSource === 'previous' && row.prefillMonthKey;
+    const missingSnapshot = row.prefillSource !== 'current';
+    const showInvestmentEmptyHint =
+      isInvestmentAssetCategory(asset.category) &&
+      row.prefillSource === 'empty' &&
+      !row.modified &&
+      (row.value == null || Number(row.value) === 0);
     const tracksGainLoss = assetTracksGainLoss(asset);
 
     const meta = [
@@ -372,7 +432,13 @@ export function MonthlyCloseModal({
           value={row.value}
           fullWidth
           prefilled={Boolean(isPrefilled)}
-          hint={prefillHint(row)}
+          pending={missingSnapshot}
+          hint={
+            prefillHint(row) ??
+            (showInvestmentEmptyHint
+              ? t('balance.patrimony.closeInvestmentEmptyHint')
+              : undefined)
+          }
           onChange={(value) => updateAssetRow(asset.id, { value })}
         />
       </CloseBalanceRow>
@@ -384,6 +450,7 @@ export function MonthlyCloseModal({
     if (!row) return null;
     const isPrefilled =
       !row.modified && row.prefillSource === 'previous' && row.prefillMonthKey;
+    const missingSnapshot = row.prefillSource !== 'current';
     const prevBalance = row.prefillSource === 'previous' ? row.value : null;
     const fullMortgagePayment = housing
       ? getMortgageFullMonthlyPayment(settings, liability)
@@ -455,6 +522,7 @@ export function MonthlyCloseModal({
           value={row.value}
           fullWidth
           prefilled={Boolean(isPrefilled)}
+          pending={missingSnapshot}
           hint={prefillHint(row)}
           onChange={(value) => updateLiabilityRow(liability.id, { value })}
         />
@@ -467,22 +535,21 @@ export function MonthlyCloseModal({
       open={open}
       onClose={onClose}
       title={t('balance.patrimony.recordBalancesTitle')}
-      subtitle={
-        isUpdate
-          ? t('balance.patrimony.recordBalancesUpdateSubtitle', {
-              month: formatMonthKeyLong(resolvedMonthKey, locale),
-            })
-          : t('balance.patrimony.recordBalancesSubtitle', {
-              month: formatMonthKeyLong(resolvedMonthKey, locale),
-              date: snapshotDateLabel,
-            })
-      }
+      subtitle={modalSubtitle}
       footer={
         <ModalFormFooter
           onCancel={onClose}
           onSave={handleSubmit}
           canSave={canSubmit}
           saveLabel={t('balance.patrimony.recordBalancesConfirm')}
+          secondarySave={
+            emptyRowsRemain
+              ? {
+                  label: t('balance.patrimony.closeQuickSaveRest'),
+                  onClick: handleQuickSaveRest,
+                }
+              : undefined
+          }
         />
       }
     >

@@ -15,15 +15,23 @@ export function ProjectionSummary({
 
   const {
     initialPatrimony,
+    initialGrossAssets,
+    initialDebt,
     finalPatrimony,
+    finalGrossAssets,
+    finalDebt,
     totalNetContributed,
     totalReturnGenerated,
     averageSavingsRate,
+    mortgageAmortizationActive,
   } = summary;
 
   const activeBuckets = GROWTH_BUCKETS.filter(
     (bucket) => (buckets?.[bucket] ?? 0) > 0,
   );
+
+  const showGrossBreakdown =
+    mortgageAmortizationActive && initialGrossAssets > 0;
 
   return (
     <div className="space-y-4">
@@ -51,6 +59,20 @@ export function ProjectionSummary({
           value={formatPercent(averageSavingsRate)}
         />
       </div>
+
+      {mortgageAmortizationActive ? (
+        <p
+          className={`rounded-xl border px-4 py-3 text-sm ${
+            finalDebt <= 0
+              ? 'border-emerald-500/35 bg-emerald-500/10 text-emerald-950 dark:text-emerald-100'
+              : `${ui.cardMuted} ${ui.text}`
+          }`}
+        >
+          {finalDebt <= 0
+            ? t('projection.summary.mortgagePaidOff')
+            : t('projection.summary.finalDebt', { amount: formatMoney(finalDebt) })}
+        </p>
+      ) : null}
 
       {activeBuckets.length > 1 && bucketRates ? (
         <div
@@ -87,7 +109,24 @@ export function ProjectionSummary({
           {t('projection.summary.breakdownTitle')}
         </p>
         <dl className="space-y-2">
-          {initialPatrimony > 0 ? (
+          {showGrossBreakdown ? (
+            <>
+              <BreakdownRow
+                label={t('projection.summary.breakdownInitialAssets')}
+                value={formatMoney(initialGrossAssets)}
+              />
+              {initialDebt > 0 ? (
+                <BreakdownRow
+                  label={t('projection.summary.breakdownInitialDebt')}
+                  value={`− ${formatMoney(initialDebt)}`}
+                />
+              ) : null}
+              <BreakdownRow
+                label={t('projection.summary.breakdownInitialNet')}
+                value={formatMoney(initialPatrimony)}
+              />
+            </>
+          ) : initialPatrimony > 0 ? (
             <BreakdownRow
               label={t('projection.summary.breakdownInitial')}
               value={formatMoney(initialPatrimony)}
@@ -101,6 +140,21 @@ export function ProjectionSummary({
             label={t('projection.summary.breakdownReturn')}
             value={`+ ${formatMoney(totalReturnGenerated)}`}
           />
+          {showGrossBreakdown ? (
+            <>
+              <BreakdownRow
+                label={t('projection.summary.breakdownFinalAssets')}
+                value={formatMoney(finalGrossAssets)}
+                emphasis
+              />
+              {finalDebt > 0 ? (
+                <BreakdownRow
+                  label={t('projection.summary.breakdownFinalDebt')}
+                  value={`− ${formatMoney(finalDebt)}`}
+                />
+              ) : null}
+            </>
+          ) : null}
           <BreakdownRow
             label={t('projection.summary.breakdownFinal')}
             value={formatMoney(finalPatrimony)}

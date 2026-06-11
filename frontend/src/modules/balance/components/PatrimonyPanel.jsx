@@ -10,6 +10,7 @@ import { FinanceAlerts } from '../../../components/FinanceAlerts';
 import { getNetWorthTone, KpiCard } from '../../../components/KpiCard';
 import { useFinanceAlerts } from '../../../hooks/useFinanceAlerts';
 import { getAssetCategories, getLiabilityCategories } from '../../../lib/categoryLabels';
+import { getMortgageRentTotal } from '../../../lib/calculations';
 import { getCurrentMonthKey } from '../../../lib/dashboardMetrics';
 import { isMonthlyCloseAlert } from '../../../lib/monthlyClose';
 import {
@@ -57,6 +58,7 @@ import {
   isLinkedHousingMortgage,
   isLinkedMortgageLiability,
   mortgageOutstandingShareToTotal,
+  mortgagePaymentSettingsPatch,
 } from '../../../lib/housingLiability';
 import { getLiabilityOutstandingFromSnapshots } from '../../../lib/liabilitySnapshots';
 import { PatrimonyCatalogTable } from './PatrimonyCatalogTable';
@@ -86,6 +88,7 @@ export function PatrimonyPanel() {
     removeLiability,
     applyHousingType,
     setLiabilityOutstandingBalance,
+    setSettings,
   } = useFinanceData();
 
   usePrunePatrimonyDrafts(assets, liabilities);
@@ -238,6 +241,7 @@ export function PatrimonyPanel() {
         removeLiability={removeLiability}
         applyHousingType={applyHousingType}
         setLiabilityOutstandingBalance={setLiabilityOutstandingBalance}
+        setSettings={setSettings}
         saveToCloud={saveToCloud}
         asOfLabel={asOfLabel}
         hasAnyBalance={hasAnyBalance}
@@ -501,6 +505,7 @@ function PatrimonyLiabilitiesSection({
   removeLiability,
   applyHousingType,
   setLiabilityOutstandingBalance,
+  setSettings,
   saveToCloud,
   asOfLabel,
   hasAnyBalance,
@@ -519,7 +524,7 @@ function PatrimonyLiabilitiesSection({
   const openCreate = () =>
     setModal({
       mode: 'create',
-      draft: { ...createLiability({ name: '' }), outstandingBalance: '' },
+      draft: { ...createLiability({ name: '' }), outstandingBalance: '', interestRate: null },
     });
   const openEdit = (liability) => {
     const share = getLiabilityOutstandingFromSnapshots(
@@ -532,6 +537,9 @@ function PatrimonyLiabilitiesSection({
       id: liability.id,
       draft: {
         ...liability,
+        monthlyPayment: isLinkedMortgageLiability(liability, settings)
+          ? getMortgageRentTotal(settings)
+          : liability.monthlyPayment,
         outstandingBalance:
           mortgageOutstandingShareToTotal(settings, liability, share) ??
           share ??
@@ -542,11 +550,23 @@ function PatrimonyLiabilitiesSection({
   const closeModal = () => setModal(null);
 
   const handleModalSave = async (draft) => {
-    const { outstandingBalance, enteredOutstandingTotal, ...fields } = draft;
+    const { outstandingBalance, enteredOutstandingTotal, monthlyPayment, ...fields } =
+      draft;
+    const linkedMortgage =
+      modal?.mode === 'edit' &&
+      isLinkedMortgageLiability(
+        { id: modal.id, category: fields.category },
+        settings,
+      );
     const liabilityPatch = {
       ...fields,
       ...(enteredOutstandingTotal != null ? { enteredOutstandingTotal } : {}),
     };
+    if (linkedMortgage) {
+      setSettings(mortgagePaymentSettingsPatch(settings, monthlyPayment));
+    } else {
+      liabilityPatch.monthlyPayment = monthlyPayment;
+    }
     if (modal?.mode === 'create') {
       const created = createLiability(liabilityPatch);
       addLiability(created);

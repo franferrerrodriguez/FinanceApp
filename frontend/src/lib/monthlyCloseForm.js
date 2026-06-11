@@ -180,6 +180,26 @@ export function allCloseRowsFilled(assetRows, liabilityRows) {
   );
 }
 
+export function hasEmptyCloseRows(assetRows, liabilityRows) {
+  return [...(assetRows ?? []), ...(liabilityRows ?? [])].some(
+    (r) => r.value == null || !Number.isFinite(Number(r.value)),
+  );
+}
+
+/** Empty rows → 0; prefilled and user-edited rows are kept. */
+export function fillEmptyCloseRows(assetRows, liabilityRows) {
+  const fill = (rows) =>
+    (rows ?? []).map((r) =>
+      r.modified || (r.value != null && Number.isFinite(Number(r.value)))
+        ? r
+        : { ...r, value: 0 },
+    );
+  return {
+    assetRows: fill(assetRows),
+    liabilityRows: fill(liabilityRows),
+  };
+}
+
 export function computeGainLossBreakdown(balance, gainLossEuros) {
   const bal = Number(balance) || 0;
   const gain = gainLossEuros == null ? null : Number(gainLossEuros);

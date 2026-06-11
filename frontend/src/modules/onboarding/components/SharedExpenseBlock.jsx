@@ -18,6 +18,7 @@ export function SharedExpenseBlock({
   percent,
   onPercentChange,
   yourShare,
+  sharePreviewKey = 'onboarding.expenses.sharePreview',
   shareOnly = false,
   embedded = false,
 }) {
@@ -69,7 +70,7 @@ export function SharedExpenseBlock({
             </div>
           </FormFieldFrame>
           <p className={ui.accentSoft}>
-            {t('onboarding.expenses.sharePreview', {
+            {t(sharePreviewKey, {
               yours: formatMoney(yourShare),
               total: formatMoney(total),
             })}

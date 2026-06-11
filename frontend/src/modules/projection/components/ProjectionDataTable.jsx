@@ -14,8 +14,13 @@ import { hasProjectionContributionData } from '../../../lib/contributionProjecti
 import {
   buildInitialBucketState,
   computeWeightedPortfolioReturn,
-  getProjectionStartingPatrimony,
+  getProjectionStartingState,
 } from '../../../lib/projectionBuckets';
+import { resolveProjectionMortgage } from '../../../lib/projectionMortgage';
+import {
+  getProjectionColumnTone,
+  tableCellToneClasses,
+} from '../../../lib/tableColumnTones';
 import { ui } from '../../../lib/uiClasses';
 import { useFinanceData } from '../../../store/hooks';
 import { formatProjectionDate } from '../../../utils/projectionDate';
@@ -40,6 +45,14 @@ const ROW_HEIGHT_WIDE = 44;
 const HEAD_HEIGHT_NARROW = 72;
 const HEAD_HEIGHT_WIDE = 52;
 const LIST_MAX_HEIGHT = 480;
+const MORTGAGE_DETAIL_STORAGE_KEY = 'projection_show_mortgage_detail';
+
+function readMortgageDetailPreference(defaultWhenMissing) {
+  if (typeof window === 'undefined') return false;
+  const stored = window.localStorage.getItem(MORTGAGE_DETAIL_STORAGE_KEY);
+  if (stored === null) return Boolean(defaultWhenMissing);
+  return stored === '1';
+}
 
 function rowBg(isEven) {
   return isEven ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800';
@@ -55,16 +68,20 @@ function stickyDateShadow(scrolledX) {
     : '';
 }
 
-function patrimonyCellClass(isHeader = false) {
-  return isHeader
-    ? 'bg-emerald-50 font-bold text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300'
-    : 'bg-emerald-50/70 font-bold text-emerald-800 dark:bg-emerald-950/35 dark:text-emerald-300';
+function projectionHeaderTone(columnKey) {
+  return tableCellToneClasses(getProjectionColumnTone(columnKey), {
+    header: true,
+  });
+}
+
+function projectionBodyTone(columnKey) {
+  return tableCellToneClasses(getProjectionColumnTone(columnKey));
 }
 
 function ProjectionColumnHeader({ columnKey, columnKeys, narrowViewport, scrolledX, t }) {
   const isYear = columnKey === PROJECTION_COLUMN.YEAR;
   const isDate = columnKey === PROJECTION_COLUMN.DATE;
-  const isPatrimony = columnKey === PROJECTION_COLUMN.PATRIMONY;
+  const toneClass = projectionHeaderTone(columnKey);
   const stickyLeft = stickyColumnLeftOffset(columnKey, narrowViewport);
   const isSticky = stickyLeft != null;
   const alignRight = !isYear && !isDate;
@@ -84,19 +101,19 @@ function ProjectionColumnHeader({ columnKey, columnKeys, narrowViewport, scrolle
         isSticky
           ? `sticky z-30 ${headBg()} ${stickyDateShadow(scrolledX)} ${
               isYear ? 'rounded-tl-2xl' : ''
-            } ${isPatrimony ? patrimonyCellClass(true) : ''}`
-          : isPatrimony
-            ? patrimonyCellClass(true)
-            : ''
+            } ${toneClass}`
+          : toneClass
       }`}
     >
       <span className="inline-flex max-w-full items-center gap-1">
         <span
-          className={`font-semibold text-slate-700 dark:text-slate-300 ${
+          className={`${
+            toneClass ? '' : 'font-semibold text-slate-700 dark:text-slate-300'
+          } ${
             narrowViewport
               ? 'text-[10px] leading-snug whitespace-normal'
               : 'text-xs leading-snug whitespace-normal'
-          } ${isPatrimony ? 'font-bold' : ''}`}
+          }`}
         >
           {t(headerLabelKey(columnKey, narrowViewport))}
         </span>
@@ -134,11 +151,51 @@ export function ProjectionDataTable() {
       : false,
   );
   const [scrolledX, setScrolledX] = useState(false);
+  const [showMortgageDetail, setShowMortgageDetail] = useState(false);
+  const [mortgageDetailPrefReady, setMortgageDetailPrefReady] = useState(false);
 
   const showPunctual = annualExpenses.length > 0;
+
+  const startingState = useMemo(
+    () =>
+      getProjectionStartingState({
+        settings,
+        assets,
+        liabilities,
+        snapshots,
+      }),
+    [settings, assets, liabilities, snapshots],
+  );
+
+  const mortgageCtx = useMemo(
+    () =>
+      resolveProjectionMortgage({
+        settings,
+        liabilities,
+        snapshots,
+        debtBalance: startingState.debtBalance,
+      }),
+    [settings, liabilities, snapshots, startingState.debtBalance],
+  );
+
+  const mortgageAmortizationActive = mortgageCtx.canAmortize;
+
+  useEffect(() => {
+    if (mortgageDetailPrefReady) return;
+    setShowMortgageDetail(
+      readMortgageDetailPreference(mortgageAmortizationActive),
+    );
+    setMortgageDetailPrefReady(true);
+  }, [mortgageAmortizationActive, mortgageDetailPrefReady]);
+
   const columns = useMemo(
-    () => buildProjectionColumnKeys(showPunctual),
-    [showPunctual],
+    () =>
+      buildProjectionColumnKeys({
+        showPunctual,
+        showMortgageDetail,
+        mortgageAmortizationActive,
+      }),
+    [showPunctual, showMortgageDetail, mortgageAmortizationActive],
   );
   const tableMinWidth = getTableMinWidth(columns, narrowViewport);
   const headHeight = narrowViewport ? HEAD_HEIGHT_NARROW : HEAD_HEIGHT_WIDE;
@@ -154,17 +211,6 @@ export function ProjectionDataTable() {
   }, []);
 
   const projectionYears = normalizeProjectionYears(settings.projectionYears);
-
-  const initialPatrimony = useMemo(
-    () =>
-      getProjectionStartingPatrimony({
-        settings,
-        assets,
-        liabilities,
-        snapshots,
-      }),
-    [settings, assets, liabilities, snapshots],
-  );
 
   const bucketPreview = useMemo(
     () =>
@@ -214,9 +260,29 @@ export function ProjectionDataTable() {
   );
 
   const summary = useMemo(
-    () => summarizeMonthlyProjection(rows, initialPatrimony),
-    [rows, initialPatrimony],
+    () =>
+      summarizeMonthlyProjection(rows, startingState.netWorth, {
+        initialGrossAssets: startingState.grossAssets,
+        initialDebt: startingState.debtBalance,
+      }),
+    [rows, startingState],
   );
+
+  const mortgageNeedsRate =
+    mortgageCtx.liability &&
+    startingState.debtBalance > 0 &&
+    mortgageCtx.monthlyPayment > 0 &&
+    !mortgageCtx.canAmortize;
+
+  const toggleMortgageDetail = () => {
+    setShowMortgageDetail((prev) => {
+      const next = !prev;
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(MORTGAGE_DETAIL_STORAGE_KEY, next ? '1' : '0');
+      }
+      return next;
+    });
+  };
 
   const hasInvestmentData = hasProjectionContributionData({
     entries: contributionEntries,
@@ -278,6 +344,26 @@ export function ProjectionDataTable() {
         >
           {t('projection.sources.noContributions')}
         </p>
+      ) : null}
+
+      {mortgageNeedsRate ? (
+        <p
+          className={`rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-950 dark:text-amber-100`}
+        >
+          {t('projection.table.mortgageRateMissing')}
+        </p>
+      ) : null}
+
+      {mortgageAmortizationActive ? (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            className={showMortgageDetail ? ui.scenarioChipActive : ui.scenarioChip}
+            onClick={toggleMortgageDetail}
+          >
+            {t('projection.table.mortgageDetailToggle')}
+          </button>
+        </div>
       ) : null}
 
       <div className={`${ui.chartCard} w-full !p-0`}>
@@ -357,6 +443,8 @@ function ProjectionRow({
     date: formatProjectionDate(row.date),
     salary: formatMoney(row.salary),
     fixed: formatMoney(row.fixedExpenses),
+    mortgage:
+      row.mortgagePayment > 0 ? formatMoney(row.mortgagePayment) : '—',
     groceries: formatMoney(row.groceriesExpenses),
     leisure: formatMoney(row.leisureExpenses),
     punctual:
@@ -366,6 +454,11 @@ function ProjectionRow({
     netContribution: formatMoney(row.netContribution),
     investments: formatMoney(row.additionalInvestments),
     monthlyReturn: formatMoney(row.monthlyReturn),
+    mortgageInterest:
+      row.mortgageInterest > 0 ? formatMoney(row.mortgageInterest) : '—',
+    mortgagePrincipal:
+      row.mortgagePrincipal > 0 ? formatMoney(row.mortgagePrincipal) : '—',
+    debtBalance: formatMoney(row.debtBalance ?? 0),
     patrimony: formatMoney(row.patrimonyEnd),
   };
 
@@ -382,7 +475,7 @@ function ProjectionRow({
       {columns.map((key) => {
         const isYear = key === PROJECTION_COLUMN.YEAR;
         const isDate = key === PROJECTION_COLUMN.DATE;
-        const isPatrimony = key === PROJECTION_COLUMN.PATRIMONY;
+        const toneClass = projectionBodyTone(key);
         const stickyLeft = stickyColumnLeftOffset(key, narrowViewport);
         const isSticky = stickyLeft != null;
         const alignRight = !isYear && !isDate;
@@ -399,9 +492,7 @@ function ProjectionRow({
                 ? `sticky z-10 ${bg} ${january} ${ui.textLabel} ${stickyDateShadow(scrolledX)} ${
                     isYear && isLastRow ? 'rounded-bl-2xl' : ''
                   }`
-                : isPatrimony
-                  ? patrimonyCellClass(false)
-                  : ui.textLabel
+                : toneClass || ui.textLabel
             } ${isYear ? 'font-medium text-slate-500 dark:text-slate-400' : ''}`}
           >
             {cells[key]}

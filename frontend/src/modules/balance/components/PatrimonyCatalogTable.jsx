@@ -74,11 +74,18 @@ export function PatrimonyCatalogTable({
                 </th>
               ) : null}
               {kind === 'liability' ? (
-                <th
-                  className={`hidden px-3 py-2.5 text-right text-xs font-semibold sm:table-cell ${ui.textLabel}`}
-                >
-                  {t('balance.patrimony.tablePayment')}
-                </th>
+                <>
+                  <th
+                    className={`hidden px-3 py-2.5 text-right text-xs font-semibold sm:table-cell ${ui.textLabel}`}
+                  >
+                    {t('balance.patrimony.tableInterestRate')}
+                  </th>
+                  <th
+                    className={`hidden px-3 py-2.5 text-right text-xs font-semibold sm:table-cell ${ui.textLabel}`}
+                  >
+                    {t('balance.patrimony.tablePayment')}
+                  </th>
+                </>
               ) : null}
               {getBalance ? (
                 <th
@@ -121,11 +128,19 @@ export function PatrimonyCatalogTable({
                     </td>
                   ) : null}
                   {kind === 'liability' ? (
-                    <TableMetricCell
-                      className={`hidden sm:table-cell ${ui.textLabel}`}
-                      primary={providerLabel?.(item)}
-                      subtext={getPaymentSubtext?.(item)}
-                    />
+                    <>
+                      <td
+                        className={`hidden whitespace-nowrap px-3 py-2.5 text-right tabular-nums sm:table-cell ${ui.textMuted}`}
+                        title={t('balance.patrimony.tableInterestRateHint')}
+                      >
+                        {formatRatePercent(item.interestRate ?? 0)}
+                      </td>
+                      <TableMetricCell
+                        className={`hidden sm:table-cell ${ui.textLabel}`}
+                        primary={providerLabel?.(item)}
+                        subtext={getPaymentSubtext?.(item)}
+                      />
+                    </>
                   ) : null}
                   {getBalance ? (
                     <TableMetricCell

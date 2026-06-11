@@ -5,14 +5,20 @@ import {
   useHorizontalScrollEdges,
 } from '../../../components/HorizontalScrollRegion';
 import { VirtualList } from '../../../components/VirtualList';
+import { applyShareEuros } from '../../../lib/money';
+import {
+  getAmortizationColumnTone,
+  tableCellToneClasses,
+} from '../../../lib/tableColumnTones';
 import { ui } from '../../../lib/uiClasses';
 import { formatMoney } from '../../../utils/formatters';
 import {
   AMORTIZATION_COLUMN,
-  AMORTIZATION_COLUMN_KEYS,
+  buildAmortizationColumnKeys,
   columnPaddingClass,
   getTableMinWidth,
   headerLabelKey,
+  isYourShareColumn,
   showColumnSeparator,
   stickyColumnLeftOffset,
   tableGridStyle,
@@ -39,10 +45,14 @@ function stickyDateShadow(scrolledX) {
     : '';
 }
 
-function balanceCellClass(isHeader = false) {
-  return isHeader
-    ? 'bg-emerald-50 font-bold text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300'
-    : 'bg-emerald-50/70 font-bold text-emerald-800 dark:bg-emerald-950/35 dark:text-emerald-300';
+function amortizationHeaderTone(columnKey) {
+  return tableCellToneClasses(getAmortizationColumnTone(columnKey), {
+    header: true,
+  });
+}
+
+function amortizationBodyTone(columnKey) {
+  return tableCellToneClasses(getAmortizationColumnTone(columnKey));
 }
 
 function AmortizationColumnHeader({
@@ -50,14 +60,20 @@ function AmortizationColumnHeader({
   columnKeys,
   narrowViewport,
   scrolledX,
+  sharePercent,
   t,
 }) {
   const isDate = columnKey === AMORTIZATION_COLUMN.DATE;
-  const isBalance = columnKey === AMORTIZATION_COLUMN.BALANCE;
+  const isShare = isYourShareColumn(columnKey);
+  const toneClass = amortizationHeaderTone(columnKey);
   const stickyLeft = stickyColumnLeftOffset(columnKey);
   const isSticky = stickyLeft != null;
   const alignRight = !isDate;
   const separator = showColumnSeparator(columnKey, columnKeys);
+
+  const label = isShare
+    ? t('balance.amortization.scheduleYourShare', { percent: sharePercent })
+    : t(headerLabelKey(columnKey, narrowViewport));
 
   return (
     <div
@@ -65,28 +81,37 @@ function AmortizationColumnHeader({
       className={`flex min-w-0 items-center overflow-visible py-1 ${columnPaddingClass(columnKey)} ${
         alignRight ? 'justify-end text-right' : 'justify-start text-left'
       } ${separator ? `border-r ${ui.divider}` : ''} ${
+        isShare ? 'border-l-2 border-indigo-200/90 dark:border-indigo-800/70' : ''
+      } ${
         isSticky
           ? `sticky z-30 ${headBg()} ${stickyDateShadow(scrolledX)} rounded-tl-2xl`
           : ''
-      } ${isBalance ? balanceCellClass(true) : ''}`}
+      } ${toneClass}`}
     >
       <span
-        className={`font-semibold text-slate-700 dark:text-slate-300 ${
+        className={`${
+          toneClass
+            ? ''
+            : 'font-semibold text-slate-700 dark:text-slate-300'
+        } ${
           narrowViewport
             ? 'text-[10px] leading-snug whitespace-normal'
             : 'text-xs leading-snug whitespace-normal'
-        } ${isBalance ? 'font-bold' : ''}`}
+        }`}
       >
-        {t(headerLabelKey(columnKey, narrowViewport))}
+        {label}
       </span>
     </div>
   );
 }
 
-export function AmortizationScheduleTable({ rows, totals, formatDate }) {
+export function AmortizationScheduleTable({ rows, totals, formatDate, sharePercent }) {
   const { t } = useTranslation();
   const scrollRef = useRef(null);
-  const columns = AMORTIZATION_COLUMN_KEYS;
+  const columns = useMemo(
+    () => buildAmortizationColumnKeys(sharePercent),
+    [sharePercent],
+  );
   const [narrowViewport, setNarrowViewport] = useState(() =>
     typeof window !== 'undefined'
       ? window.matchMedia(MOBILE_MEDIA).matches
@@ -122,12 +147,36 @@ export function AmortizationScheduleTable({ rows, totals, formatDate }) {
 
   const footerSummary = useMemo(() => {
     if (!totals) return null;
-    return t('balance.amortization.tableTotalsSummary', {
-      paid: formatMoney(totals.totalPaid),
-      principal: formatMoney(totals.totalPrincipal),
-      interest: formatMoney(totals.totalInterest),
-    });
-  }, [totals, t]);
+    if (sharePercent != null && sharePercent < 100) {
+      return {
+        full: t('balance.amortization.tableFullTotalsSummary', {
+          count: rows.length,
+          paid: formatMoney(totals.totalPaid),
+          principal: formatMoney(totals.totalPrincipal),
+          interest: formatMoney(totals.totalInterest),
+        }),
+        share: t('balance.amortization.tableYourShareTotalsSummary', {
+          percent: sharePercent,
+          paid: formatMoney(applyShareEuros(totals.totalPaid, true, sharePercent)),
+          principal: formatMoney(
+            applyShareEuros(totals.totalPrincipal, true, sharePercent),
+          ),
+          interest: formatMoney(
+            applyShareEuros(totals.totalInterest, true, sharePercent),
+          ),
+        }),
+      };
+    }
+    return {
+      full: null,
+      share: null,
+      legacy: t('balance.amortization.tableTotalsSummary', {
+        paid: formatMoney(totals.totalPaid),
+        principal: formatMoney(totals.totalPrincipal),
+        interest: formatMoney(totals.totalInterest),
+      }),
+    };
+  }, [totals, t, sharePercent, rows.length]);
 
   if (!rows.length) return null;
 
@@ -146,6 +195,7 @@ export function AmortizationScheduleTable({ rows, totals, formatDate }) {
           columnKeys={columns}
           narrowViewport={narrowViewport}
           scrolledX={scrolledX}
+          sharePercent={sharePercent}
           t={t}
         />
       ))}
@@ -192,23 +242,39 @@ export function AmortizationScheduleTable({ rows, totals, formatDate }) {
               isEven={index % 2 === 0}
               isLastRow={index === rows.length - 1}
               formatDate={formatDate}
+              sharePercent={sharePercent}
             />
           )}
         </VirtualList>
       </div>
 
       <div className={`border-t px-4 py-3 sm:px-5 ${ui.divider}`}>
-        <p className={`text-xs leading-snug ${ui.textMuted}`}>
-          {t('balance.amortization.tableRowCount', { count: rows.length })}
-        </p>
-        {footerSummary ? (
-          <p className={`mt-1 text-xs leading-snug ${ui.textLabel}`}>
-            {footerSummary}
-          </p>
-        ) : null}
+        {footerSummary?.full ? (
+          <>
+            <p className={`text-xs leading-snug ${ui.textLabel}`}>{footerSummary.full}</p>
+            <p className={`mt-1 text-xs leading-snug ${ui.textMuted}`}>
+              {footerSummary.share}
+            </p>
+          </>
+        ) : (
+          <>
+            <p className={`text-xs leading-snug ${ui.textMuted}`}>
+              {t('balance.amortization.tableRowCount', { count: rows.length })}
+            </p>
+            {footerSummary?.legacy ? (
+              <p className={`mt-1 text-xs leading-snug ${ui.textLabel}`}>
+                {footerSummary.legacy}
+              </p>
+            ) : null}
+          </>
+        )}
       </div>
     </div>
   );
+}
+
+function shareCellValue(row, sharePercent) {
+  return formatMoney(applyShareEuros(row.balance, true, sharePercent));
 }
 
 function AmortizationRow({
@@ -220,11 +286,12 @@ function AmortizationRow({
   isEven,
   isLastRow,
   formatDate,
+  sharePercent,
 }) {
   const bg = rowBg(isEven);
   const isCurrent = row.month === 1;
   const currentRow = isCurrent
-    ? 'bg-emerald-50/60 dark:bg-emerald-950/25'
+    ? 'ring-1 ring-inset ring-emerald-500/25 dark:ring-emerald-500/20'
     : '';
 
   const cells = {
@@ -234,6 +301,10 @@ function AmortizationRow({
     interest: formatMoney(row.interest),
     startBalance: formatMoney(row.startBalance),
     balance: formatMoney(row.balance),
+    yourShare:
+      sharePercent != null && sharePercent < 100
+        ? shareCellValue(row, sharePercent)
+        : '',
   };
 
   const textSize = narrowViewport ? 'text-xs' : 'text-sm';
@@ -248,7 +319,8 @@ function AmortizationRow({
     >
       {columns.map((key) => {
         const isDate = key === AMORTIZATION_COLUMN.DATE;
-        const isBalance = key === AMORTIZATION_COLUMN.BALANCE;
+        const isShare = isYourShareColumn(key);
+        const toneClass = amortizationBodyTone(key);
         const stickyLeft = stickyColumnLeftOffset(key);
         const isSticky = stickyLeft != null;
         const alignRight = !isDate;
@@ -261,13 +333,13 @@ function AmortizationRow({
             className={`flex min-w-0 items-center overflow-hidden tabular-nums ${columnPaddingClass(key)} ${textSize} whitespace-nowrap ${
               alignRight ? 'justify-end text-right' : 'justify-start text-left'
             } ${separator ? `border-r ${ui.divider}` : ''} ${
+              isShare ? 'border-l-2 border-indigo-200/90 dark:border-indigo-800/70' : ''
+            } ${
               isSticky
                 ? `sticky z-10 ${bg} ${currentRow} ${ui.textLabel} ${stickyDateShadow(scrolledX)} ${
                     isLastRow ? 'rounded-bl-2xl' : ''
                   }`
-                : isBalance
-                  ? balanceCellClass(false)
-                  : ui.textLabel
+                : toneClass || ui.textLabel
             }`}
           >
             {cells[key]}

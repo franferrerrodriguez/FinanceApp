@@ -5,6 +5,7 @@ export const AMORTIZATION_COLUMN = {
   INTEREST: 'interest',
   START_BALANCE: 'startBalance',
   BALANCE: 'balance',
+  YOUR_SHARE: 'yourShare',
 };
 
 export const AMORTIZATION_COLUMN_KEYS = [
@@ -16,6 +17,13 @@ export const AMORTIZATION_COLUMN_KEYS = [
   AMORTIZATION_COLUMN.BALANCE,
 ];
 
+export function buildAmortizationColumnKeys(sharePercent) {
+  if (sharePercent == null || sharePercent >= 100) {
+    return AMORTIZATION_COLUMN_KEYS;
+  }
+  return [...AMORTIZATION_COLUMN_KEYS, AMORTIZATION_COLUMN.YOUR_SHARE];
+}
+
 const FIXED_WIDTH_COLUMNS = new Set([AMORTIZATION_COLUMN.DATE]);
 
 const COLUMN_WIDTH_PX = {
@@ -25,6 +33,7 @@ const COLUMN_WIDTH_PX = {
   interest: { narrow: 88, wide: 96 },
   startBalance: { narrow: 100, wide: 112 },
   balance: { narrow: 108, wide: 124 },
+  yourShare: { narrow: 96, wide: 108 },
 };
 
 export function getColumnWidthPx(key, narrow) {
@@ -66,6 +75,10 @@ export function columnPaddingClass(key) {
 
 export function showColumnSeparator(columnKey, columnKeys) {
   return columnKeys[columnKeys.length - 1] !== columnKey;
+}
+
+export function isYourShareColumn(columnKey) {
+  return columnKey === AMORTIZATION_COLUMN.YOUR_SHARE;
 }
 
 export function headerLabelKey(key, narrow) {

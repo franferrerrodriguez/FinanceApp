@@ -44,7 +44,7 @@ export function OnboardingLiabilitiesSection() {
   const openCreate = () =>
     setModal({
       mode: 'create',
-      draft: { ...createLiability({ name: '' }), outstandingBalance: '' },
+      draft: { ...createLiability({ name: '' }), outstandingBalance: '', interestRate: null },
     });
   const openEdit = (liability) => {
     const share = getLiabilityOutstandingFromSnapshots(

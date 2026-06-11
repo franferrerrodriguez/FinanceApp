@@ -225,14 +225,13 @@ function computeDebtMonthDelta(debtBalance, liabilities = [], settings = {}) {
   return { interest, payments };
 }
 
-/** One projection month: returns on buckets, debt dynamics, then contributions. */
+/** One projection month: returns, contributions, then optional mortgage amortization. */
 export function applyMonthToBucketState({
   buckets,
   debtBalance,
   bucketRates,
   bucketContributions,
-  liabilities = [],
-  settings = {},
+  mortgageMonth = null,
 }) {
   let monthlyReturn = 0;
   const nextBuckets = { ...buckets };
@@ -245,12 +244,24 @@ export function applyMonthToBucketState({
     nextBuckets[bucket] = roundMoney(balance + ret);
   }
 
-  // Debt balance comes from real snapshots only; cuota ≠ amortización en proyección.
-  const nextDebt = debtBalance;
-
   for (const bucket of GROWTH_BUCKETS) {
     nextBuckets[bucket] = roundMoney(
       (nextBuckets[bucket] ?? 0) + (bucketContributions[bucket] ?? 0),
+    );
+  }
+
+  let nextDebt = debtBalance;
+  let mortgagePayment = 0;
+  let mortgageInterest = 0;
+  let mortgagePrincipal = 0;
+
+  if (mortgageMonth && (mortgageMonth.mortgagePayment ?? 0) > 0) {
+    mortgagePayment = mortgageMonth.mortgagePayment;
+    mortgageInterest = mortgageMonth.mortgageInterest;
+    mortgagePrincipal = mortgageMonth.mortgagePrincipal;
+    nextDebt = mortgageMonth.debtBalanceEnd;
+    nextBuckets.liquid = roundMoney(
+      Math.max(0, (nextBuckets.liquid ?? 0) - mortgagePayment),
     );
   }
 
@@ -258,18 +269,22 @@ export function applyMonthToBucketState({
     buckets: nextBuckets,
     debtBalance: nextDebt,
     monthlyReturn,
+    grossAssets: sumBucketBalances(nextBuckets),
     netWorth: netWorthFromState(nextBuckets, nextDebt),
+    mortgagePayment,
+    mortgageInterest,
+    mortgagePrincipal,
   };
 }
 
-export function getProjectionStartingPatrimony({
+export function getProjectionStartingState({
   settings,
   assets,
   liabilities,
   snapshots,
   monthKey = getCurrentMonthKey(),
 }) {
-  const { buckets, debtBalance, fromSnapshots } = buildInitialBucketState({
+  const { buckets, debtBalance, bucketRates, fromSnapshots } = buildInitialBucketState({
     settings,
     assets,
     liabilities,
@@ -277,8 +292,22 @@ export function getProjectionStartingPatrimony({
     initialPatrimony: settings?.initialPatrimony ?? 0,
     monthKey,
   });
-  if (fromSnapshots) return netWorthFromState(buckets, debtBalance);
-  return settings?.initialPatrimony ?? 0;
+  const grossAssets = sumBucketBalances(buckets);
+  const netWorth = netWorthFromState(buckets, debtBalance);
+  return {
+    buckets,
+    debtBalance,
+    bucketRates,
+    fromSnapshots,
+    grossAssets,
+    netWorth,
+  };
+}
+
+export function getProjectionStartingPatrimony(params) {
+  const state = getProjectionStartingState(params);
+  if (state.fromSnapshots) return state.netWorth;
+  return params.settings?.initialPatrimony ?? 0;
 }
 
 export function formatBucketRatesForDisplay(settings, bucketRates) {

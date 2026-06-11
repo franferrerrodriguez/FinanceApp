@@ -193,4 +193,55 @@ const withEntries = buildMonthlyProjectionTable({
 });
 assert.equal(withEntries[0].additionalInvestments, 500);
 
+const mortgageSettings = {
+  ...coherentSettings,
+  mortgageRentTotal: 517.81,
+  mortgageRentShared: true,
+  mortgageRentYourSharePercent: 50,
+  householdFixedEstimate: 0,
+  linkedMortgageLiabilityId: 'mort-1',
+  housingType: 'mortgage',
+};
+
+const mortgageLiability = {
+  id: 'mort-1',
+  category: 'mortgage',
+  name: 'Hipoteca',
+  interestRate: 0.0225,
+  monthlyPayment: 517.81,
+  isActive: true,
+};
+
+const mortgageSnapshots = [
+  { id: 's-bank', assetId: 'bank-1', snapshotDate: '2026-06-09', value: 10000 },
+  { id: 's-bank2', assetId: 'bank-2', snapshotDate: '2026-06-09', value: 40442 },
+  {
+    id: 's-mort',
+    liabilityId: 'mort-1',
+    snapshotDate: '2026-06-09',
+    value: -45603.8,
+  },
+];
+
+const mortgageAssets = [
+  { id: 'bank-1', category: 'bank', name: 'Bankinter', isActive: true, customAnnualReturn: 0.05 },
+  { id: 'bank-2', category: 'bank', name: 'Trade', isActive: true, customAnnualReturn: 0.03 },
+];
+
+const mortgageRows = buildMonthlyProjectionTable({
+  settings: mortgageSettings,
+  assets: mortgageAssets,
+  liabilities: [mortgageLiability],
+  snapshots: mortgageSnapshots,
+  startDate: new Date(2026, 6, 1),
+  years: 1,
+});
+
+assert.equal(mortgageRows[0].mortgageAmortizationActive, true);
+assert.equal(mortgageRows[0].fixedExpenses, 0);
+assert.ok(mortgageRows[0].mortgageInterest > 0);
+assert.ok(mortgageRows[0].mortgagePrincipal > 0);
+assert.ok(mortgageRows[0].debtBalance < 45603.8);
+assert.ok(mortgageRows[0].patrimonyEnd < mortgageRows[0].grossPatrimonyEnd);
+
 console.log('projectionTable.test.js: ok');

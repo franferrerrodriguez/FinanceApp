@@ -3,29 +3,41 @@ export const PROJECTION_COLUMN = {
   DATE: 'date',
   SALARY: 'salary',
   FIXED: 'fixed',
+  MORTGAGE: 'mortgage',
   GROCERIES: 'groceries',
   LEISURE: 'leisure',
-  NET_CONTRIBUTION: 'netContribution',
+  PUNCTUAL: 'punctual',
   INVESTMENTS: 'investments',
+  MORTGAGE_INTEREST: 'mortgageInterest',
+  MORTGAGE_PRINCIPAL: 'mortgagePrincipal',
+  DEBT_BALANCE: 'debtBalance',
+  NET_CONTRIBUTION: 'netContribution',
   MONTHLY_RETURN: 'monthlyReturn',
   PATRIMONY: 'patrimony',
-  PUNCTUAL: 'punctual',
 };
 
-export const BASE_COLUMN_KEYS = [
+const CORE_COLUMN_KEYS = [
   PROJECTION_COLUMN.YEAR,
   PROJECTION_COLUMN.DATE,
   PROJECTION_COLUMN.SALARY,
   PROJECTION_COLUMN.FIXED,
+  PROJECTION_COLUMN.MORTGAGE,
   PROJECTION_COLUMN.GROCERIES,
   PROJECTION_COLUMN.LEISURE,
+];
+
+const TAIL_COLUMN_KEYS = [
   PROJECTION_COLUMN.INVESTMENTS,
   PROJECTION_COLUMN.NET_CONTRIBUTION,
   PROJECTION_COLUMN.MONTHLY_RETURN,
   PROJECTION_COLUMN.PATRIMONY,
 ];
 
-export const PUNCTUAL_COLUMN_KEY = PROJECTION_COLUMN.PUNCTUAL;
+const MORTGAGE_DETAIL_COLUMN_KEYS = [
+  PROJECTION_COLUMN.MORTGAGE_INTEREST,
+  PROJECTION_COLUMN.MORTGAGE_PRINCIPAL,
+  PROJECTION_COLUMN.DEBT_BALANCE,
+];
 
 /** Fixed-width columns (year, date) use exact px; others use minWidth + flex grow. */
 const FIXED_WIDTH_COLUMNS = new Set([
@@ -39,23 +51,43 @@ const COLUMN_WIDTH_PX = {
   date: { narrow: 44, wide: 48 },
   salary: { narrow: 112, wide: 120 },
   fixed: { narrow: 120, wide: 128 },
+  mortgage: { narrow: 108, wide: 112 },
   groceries: { narrow: 108, wide: 112 },
   leisure: { narrow: 108, wide: 112 },
   punctual: { narrow: 124, wide: 104 },
-  netContribution: { narrow: 112, wide: 120 },
   investments: { narrow: 112, wide: 120 },
+  mortgageInterest: { narrow: 112, wide: 128 },
+  mortgagePrincipal: { narrow: 112, wide: 128 },
+  debtBalance: { narrow: 112, wide: 128 },
+  netContribution: { narrow: 112, wide: 120 },
   monthlyReturn: { narrow: 112, wide: 128 },
   patrimony: { narrow: 128, wide: 140 },
 };
 
-export function buildProjectionColumnKeys(showPunctual) {
-  if (!showPunctual) return [...BASE_COLUMN_KEYS];
-  const idx = BASE_COLUMN_KEYS.indexOf(PROJECTION_COLUMN.INVESTMENTS);
-  return [
-    ...BASE_COLUMN_KEYS.slice(0, idx),
-    PUNCTUAL_COLUMN_KEY,
-    ...BASE_COLUMN_KEYS.slice(idx),
+export function buildProjectionColumnKeys({
+  showPunctual = false,
+  showMortgageDetail = false,
+  mortgageAmortizationActive = false,
+} = {}) {
+  const keys = [
+    PROJECTION_COLUMN.YEAR,
+    PROJECTION_COLUMN.DATE,
+    PROJECTION_COLUMN.SALARY,
+    PROJECTION_COLUMN.FIXED,
   ];
+  if (mortgageAmortizationActive) keys.push(PROJECTION_COLUMN.MORTGAGE);
+  keys.push(PROJECTION_COLUMN.GROCERIES, PROJECTION_COLUMN.LEISURE);
+  if (showPunctual) keys.push(PROJECTION_COLUMN.PUNCTUAL);
+  keys.push(PROJECTION_COLUMN.INVESTMENTS);
+  if (showMortgageDetail && mortgageAmortizationActive) {
+    keys.push(...MORTGAGE_DETAIL_COLUMN_KEYS);
+  }
+  keys.push(
+    PROJECTION_COLUMN.NET_CONTRIBUTION,
+    PROJECTION_COLUMN.MONTHLY_RETURN,
+    PROJECTION_COLUMN.PATRIMONY,
+  );
+  return keys;
 }
 
 export function getColumnWidthPx(key, narrow) {
@@ -92,21 +124,6 @@ export function tableGridStyle(columnKeys, narrow) {
   };
 }
 
-/** @deprecated use tableGridStyle — kept for tests if any */
-export function columnFlexStyle(key, narrow) {
-  const w = getColumnWidthPx(key, narrow);
-  if (isFixedWidthColumn(key)) {
-    return {
-      flex: '0 0 auto',
-      width: w,
-    };
-  }
-  return {
-    flex: '1 1 0',
-    minWidth: w,
-  };
-}
-
 export function columnPaddingClass(key) {
   return isFixedWidthColumn(key) ? 'px-1 sm:px-1.5' : 'px-2 sm:px-3';
 }
@@ -115,20 +132,27 @@ export function showColumnSeparator(columnKey, columnKeys) {
   return columnKeys[columnKeys.length - 1] !== columnKey;
 }
 
-export const tableRowLayoutStyle = (tableMinWidth) => ({
-  width: '100%',
-  minWidth: tableMinWidth,
-});
-
 export function headerLabelKey(key, narrow) {
   if (key === PROJECTION_COLUMN.YEAR) {
     return narrow ? 'projection.table.yearShort' : 'projection.table.year';
+  }
+  if (key === PROJECTION_COLUMN.MORTGAGE && narrow) {
+    return 'projection.table.mortgageShort';
   }
   if (key === PROJECTION_COLUMN.GROCERIES && narrow) {
     return 'projection.table.groceriesShort';
   }
   if (key === PROJECTION_COLUMN.PATRIMONY && narrow) {
-    return 'projection.table.patrimonyShort';
+    return 'projection.table.patrimonyNetShort';
+  }
+  if (key === PROJECTION_COLUMN.MORTGAGE_INTEREST && narrow) {
+    return 'projection.table.mortgageInterestShort';
+  }
+  if (key === PROJECTION_COLUMN.MORTGAGE_PRINCIPAL && narrow) {
+    return 'projection.table.mortgagePrincipalShort';
+  }
+  if (key === PROJECTION_COLUMN.DEBT_BALANCE && narrow) {
+    return 'projection.table.debtBalanceShort';
   }
   return `projection.table.${key}`;
 }
@@ -142,6 +166,8 @@ export function headerTooltipKey(key) {
 
 export function stickyColumnLeftOffset(key, narrow) {
   if (key === PROJECTION_COLUMN.YEAR) return 0;
-  if (key === PROJECTION_COLUMN.DATE) return getColumnWidthPx(PROJECTION_COLUMN.YEAR, narrow);
+  if (key === PROJECTION_COLUMN.DATE) {
+    return getColumnWidthPx(PROJECTION_COLUMN.YEAR, narrow);
+  }
   return null;
 }

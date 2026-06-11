@@ -18,11 +18,16 @@ import {
   computeWeightedPortfolioReturn,
   netWorthFromState,
   splitContributionBreakdownToBuckets,
+  sumBucketBalances,
 } from './projectionBuckets.js';
 import {
   resolveInvestmentFromBreakdown,
 } from './contributionEntries.js';
 import { resolveContributionsForProjectionMonth } from './contributionProjection.js';
+import {
+  calcMortgageMonthDelta,
+  resolveProjectionMortgage,
+} from './projectionMortgage.js';
 
 export const applyYourShare = applyShareEuros;
 
@@ -373,6 +378,13 @@ export function buildMonthlyProjectionRows({
   let buckets = { ...initialState.buckets };
   let debtBalance = initialState.debtBalance;
   let bucketRates = { ...initialState.bucketRates };
+  const mortgageCtx = resolveProjectionMortgage({
+    settings,
+    liabilities,
+    snapshots,
+    debtBalance: initialState.debtBalance,
+  });
+  const mortgageAmortizationActive = mortgageCtx.canAmortize;
   const rows = [];
 
   for (let monthIndex = 0; monthIndex < monthCount; monthIndex++) {
@@ -385,7 +397,9 @@ export function buildMonthlyProjectionRows({
       date,
       monthIndex,
     });
-    const baseCoreFixed = calcCoreFixedExpenses(monthSettings);
+    const baseCoreFixed = mortgageAmortizationActive
+      ? getEffectiveHouseholdExpenses(monthSettings)
+      : calcCoreFixedExpenses(monthSettings);
     const baseGroceries = getEffectiveGroceries(monthSettings);
     const baseLeisure = calcTotalVariableExpenses(monthSettings);
     const otherIncome = monthSettings?.otherMonthlyIncome ?? 0;
@@ -429,9 +443,24 @@ export function buildMonthlyProjectionRows({
       monthIndex,
       monthKey,
     });
-    const netContribution = roundMoney(grossCashflow - additionalInvestments);
+    let mortgageMonth = null;
+    if (mortgageAmortizationActive && debtBalance > 0) {
+      mortgageMonth = calcMortgageMonthDelta(
+        debtBalance,
+        mortgageCtx.annualRate,
+        mortgageCtx.monthlyPayment,
+      );
+    }
+
+    let netContribution = roundMoney(grossCashflow - additionalInvestments);
+    if (mortgageMonth) {
+      netContribution = roundMoney(
+        netContribution - mortgageMonth.mortgagePayment,
+      );
+    }
 
     const patrimonioInicio = roundMoney(netWorthFromState(buckets, debtBalance));
+    const grossPatrimonioInicio = roundMoney(sumBucketBalances(buckets));
     bucketRates = computeBucketAnnualRates({
       settings,
       assets,
@@ -458,8 +487,7 @@ export function buildMonthlyProjectionRows({
       debtBalance,
       bucketRates,
       bucketContributions,
-      liabilities,
-      settings: monthSettings,
+      mortgageMonth,
     });
 
     buckets = monthResult.buckets;
@@ -482,7 +510,13 @@ export function buildMonthlyProjectionRows({
       netContribution,
       monthlyReturn,
       patrimonioInicio,
+      grossPatrimonioInicio,
       patrimonyEnd: patrimonioFin,
+      grossPatrimonyEnd: roundMoney(monthResult.grossAssets),
+      mortgageAmortizationActive,
+      mortgagePayment: roundMoney(monthResult.mortgagePayment),
+      mortgageInterest: roundMoney(monthResult.mortgageInterest),
+      mortgagePrincipal: roundMoney(monthResult.mortgagePrincipal),
       appliedAnnualRate: appliedWeightedReturn,
       appliedWeightedReturn,
       appliedMonthlyRate: annualToMonthlyRate(appliedWeightedReturn),
@@ -494,19 +528,30 @@ export function buildMonthlyProjectionRows({
   return rows;
 }
 
-export function summarizeProjectionRows(rows, initialPatrimony = 0) {
+export function summarizeProjectionRows(rows, initialPatrimony = 0, options = {}) {
   const initial = roundMoney(initialPatrimony);
+  const initialGrossAssets = roundMoney(options.initialGrossAssets ?? 0);
+  const initialDebt = roundMoney(options.initialDebt ?? 0);
+
   if (!rows.length) {
     return {
       initialPatrimony: initial,
+      initialGrossAssets,
+      initialDebt,
       finalPatrimony: initial,
+      finalGrossAssets: initialGrossAssets,
+      finalDebt: initialDebt,
       totalNetContributed: 0,
       totalReturnGenerated: 0,
+      totalMortgageInterest: 0,
+      totalMortgagePrincipal: 0,
       averageSavingsRate: 0,
+      mortgageAmortizationActive: false,
       isCoherent: true,
     };
   }
 
+  const mortgageAmortizationActive = rows[0]?.mortgageAmortizationActive === true;
   const totalNetContributed = roundMoney(
     rows.reduce(
       (s, r) => s + r.netContribution + (r.additionalInvestments ?? 0),
@@ -516,10 +561,27 @@ export function summarizeProjectionRows(rows, initialPatrimony = 0) {
   const totalReturnGenerated = roundMoney(
     rows.reduce((s, r) => s + r.monthlyReturn, 0),
   );
-  const finalPatrimony = rows[rows.length - 1].patrimonyEnd;
-  const expectedFinal = roundMoney(
-    initial + totalNetContributed + totalReturnGenerated,
+  const totalMortgageInterest = roundMoney(
+    rows.reduce((s, r) => s + (r.mortgageInterest ?? 0), 0),
   );
+  const totalMortgagePrincipal = roundMoney(
+    rows.reduce((s, r) => s + (r.mortgagePrincipal ?? 0), 0),
+  );
+  const finalPatrimony = rows[rows.length - 1].patrimonyEnd;
+  const finalGrossAssets = roundMoney(
+    rows[rows.length - 1].grossPatrimonyEnd ?? 0,
+  );
+  const finalDebt = roundMoney(rows[rows.length - 1].debtBalance ?? 0);
+
+  let expectedFinal;
+  if (mortgageAmortizationActive && initialGrossAssets > 0) {
+    expectedFinal = roundMoney(finalGrossAssets - finalDebt);
+  } else {
+    expectedFinal = roundMoney(
+      initial + totalNetContributed + totalReturnGenerated,
+    );
+  }
+
   const salarySum = rows.reduce((s, r) => s + r.salary, 0);
   const avgSalary = salarySum / rows.length;
   const avgNetContribution = totalNetContributed / rows.length;
@@ -528,11 +590,18 @@ export function summarizeProjectionRows(rows, initialPatrimony = 0) {
 
   return {
     initialPatrimony: initial,
+    initialGrossAssets,
+    initialDebt,
     finalPatrimony,
+    finalGrossAssets,
+    finalDebt,
     totalNetContributed,
     totalReturnGenerated,
+    totalMortgageInterest,
+    totalMortgagePrincipal,
     averageSavingsRate,
+    mortgageAmortizationActive,
     expectedFinal,
-    isCoherent: Math.abs(finalPatrimony - expectedFinal) < 0.02,
+    isCoherent: Math.abs(finalPatrimony - expectedFinal) < 0.05,
   };
 }

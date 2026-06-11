@@ -233,14 +233,26 @@ export function computeDiagnostics({
         }),
       );
     } else if (rate >= 0.1) {
-      const yearsSaved = computeInvestmentRateYearsSaved(settings, rate, 0.2);
+      const yearsSavedRaw = computeInvestmentRateYearsSaved(settings, rate, 0.2);
+      let bodyKey = 'diagnostics.investmentRate.mid.body';
+      const params = { rate };
+      if (yearsSavedRaw == null) {
+        bodyKey = 'diagnostics.investmentRate.mid.unreachable';
+      } else {
+        const yearsSaved = Math.round(yearsSavedRaw);
+        if (yearsSaved <= 0) {
+          bodyKey = 'diagnostics.investmentRate.mid.lessThanOne';
+        } else {
+          params.yearsSaved = yearsSaved;
+        }
+      }
       results.push(
         diag({
           id: 'investment_rate',
           status: STATUS.OPPORTUNITY,
           titleKey: 'diagnostics.investmentRate.mid.title',
-          bodyKey: 'diagnostics.investmentRate.mid.body',
-          params: { rate, yearsSaved: yearsSaved ?? '—' },
+          bodyKey,
+          params,
           actionHref: balancePath(BALANCE_TAB.CASHFLOW),
           actionKey: 'diagnostics.investmentRate.action',
         }),

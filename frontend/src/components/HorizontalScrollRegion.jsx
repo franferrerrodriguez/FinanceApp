@@ -27,12 +27,11 @@ export function useHorizontalScrollEdges(scrollRef, deps = []) {
     const el = scrollRef.current;
     if (!el) return;
     const overflow = el.scrollWidth > el.clientWidth + 2;
-    setScroll({
-      overflow,
-      right:
-        overflow &&
-        el.scrollLeft + el.clientWidth < el.scrollWidth - 4,
-    });
+    const right =
+      overflow && el.scrollLeft + el.clientWidth < el.scrollWidth - 4;
+    setScroll((prev) =>
+      prev.overflow === overflow && prev.right === right ? prev : { overflow, right },
+    );
   }, [scrollRef]);
 
   useEffect(() => {

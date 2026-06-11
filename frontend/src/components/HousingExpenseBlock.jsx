@@ -158,6 +158,7 @@ export function HousingExpenseBlock({
         onPercentChange={(v) =>
           setSettings({ mortgageRentYourSharePercent: v })
         }
+        sharePreviewKey="balance.cashflow.housingSharePreview"
       />
 
       {inOnboarding && housingType === HOUSING_TYPE.MORTGAGE ? (

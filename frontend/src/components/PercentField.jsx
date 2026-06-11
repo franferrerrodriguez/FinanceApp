@@ -12,6 +12,9 @@ export function PercentField({
   max = 30,
   step = 0.1,
   nullable = false,
+  required = false,
+  error = false,
+  errorMessage,
   compact = false,
   layout = 'stacked',
   reserveHintSpace,
@@ -32,6 +35,7 @@ export function PercentField({
     <FormFieldFrame
       label={label}
       hint={hint}
+      required={required}
       layout={resolvedLayout}
       reserveHintSpace={reserveHintSpace ?? resolvedLayout === 'grid'}
       className={className}
@@ -54,7 +58,8 @@ export function PercentField({
             }
             onChange(displayToPct(raw));
           }}
-          className={`${ui.inputPercent} w-full max-w-none pr-7`}
+          aria-invalid={error || undefined}
+          className={`${error ? ui.inputError : ui.inputPercent} w-full max-w-none pr-7`}
         />
         <span
           className={`pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs ${ui.textMuted}`}
@@ -62,6 +67,11 @@ export function PercentField({
           %
         </span>
       </div>
+      {error && errorMessage ? (
+        <p className="mt-2 text-sm text-red-500" role="alert">
+          {errorMessage}
+        </p>
+      ) : null}
     </FormFieldFrame>
   );
 }

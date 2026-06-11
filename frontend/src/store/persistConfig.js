@@ -9,6 +9,7 @@ import {
   SAVE_BANNER_SNOOZE_MS,
   resolveProjectionYearsFromPersist,
 } from '../lib/constants';
+import { normalizeLiabilityInterestRate } from '../lib/patrimony.js';
 import { enrichSettingsWithSalary } from '../lib/salary';
 import {
   createCashflowEntry,
@@ -32,7 +33,7 @@ import { deriveOnboardingResumeStep, resolveOnboardingResumeStep } from '../lib/
 import { ONBOARDING_STEP_IDS } from '../modules/onboarding/constants';
 
 export const PERSIST_STORAGE_KEY = 'financia_app_data';
-export const PERSIST_VERSION = 19;
+export const PERSIST_VERSION = 20;
 
 const MAX_ONBOARDING_STEP = ONBOARDING_STEP_IDS.length - 1;
 
@@ -60,7 +61,9 @@ export function mergePersistedState(persisted, current, options = {}) {
 
   const preferLocal = options.preferLocal === true;
   const liabilities = filterDraftLiabilities(
-    mergeFinanceLists(persisted.liabilities, current.liabilities),
+    normalizePersistedLiabilities(
+      mergeFinanceLists(persisted.liabilities, current.liabilities),
+    ),
   );
 
   const settings = syncHousingSettings(
@@ -342,7 +345,18 @@ export function migratePersistedState(persisted, version) {
     });
   }
 
+  if (version < 20) {
+    next.liabilities = normalizePersistedLiabilities(next.liabilities);
+  }
+
   return next;
+}
+
+function normalizePersistedLiabilities(liabilities = []) {
+  return (liabilities ?? []).map((liability) => ({
+    ...liability,
+    interestRate: normalizeLiabilityInterestRate(liability.interestRate ?? 0),
+  }));
 }
 
 function calcHasAnyExpense(settings) {

@@ -16,6 +16,7 @@ function formatDiagParams(params) {
   if (out.real != null) out.real = formatPercent(out.real);
   if (out.estimated != null) out.estimated = formatPercent(out.estimated);
   if (out.savingsRate != null) out.savingsRate = formatPercent(out.savingsRate);
+  if (out.indexRate != null) out.indexRate = formatPercent(out.indexRate);
   if (out.liquid != null) out.liquid = formatMoney(out.liquid);
   if (out.excess != null) out.excess = formatMoney(out.excess);
   if (out.gap != null) out.gap = formatMoney(out.gap);

@@ -9,6 +9,7 @@ export function ModalFormFooter({
   cancelLabel,
   onDelete,
   deleteLabel,
+  secondarySave,
 }) {
   const { t } = useTranslation();
 
@@ -30,9 +31,18 @@ export function ModalFormFooter({
       >
         {cancelLabel ?? t('common.cancel')}
       </button>
+      {secondarySave ? (
+        <button
+          type="button"
+          className={`${ui.btnSecondary} order-1 w-full border-emerald-500/35 text-emerald-800 hover:bg-emerald-500/10 sm:order-none sm:w-auto dark:text-emerald-200`}
+          onClick={secondarySave.onClick}
+        >
+          {secondarySave.label}
+        </button>
+      ) : null}
       <button
         type="button"
-        className={`${ui.btnPrimary} order-1 w-full sm:order-none sm:w-auto`}
+        className={`${ui.btnPrimary} order-0 w-full sm:order-none sm:w-auto`}
         disabled={!canSave}
         onClick={onSave}
       >

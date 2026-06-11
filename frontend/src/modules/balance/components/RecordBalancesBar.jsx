@@ -3,6 +3,61 @@ import { getCurrentMonthKey } from '../../../lib/dashboardMetrics';
 import { ui } from '../../../lib/uiClasses';
 import { formatMonthKeyLong } from '../../../utils/monthLabel';
 
+function PendingBalancesNotice({ detail, locale, onOpen, t }) {
+  if (!detail) return null;
+
+  const { variant, month, missingItems } = detail;
+
+  if (variant === 'overdue') {
+    return (
+      <p className="text-xs leading-snug text-amber-800 dark:text-amber-200 lg:text-right">
+        {t('balance.recordBalancesPendingOverdue', {
+          count: detail.overdueCount,
+          month: detail.month,
+        })}
+      </p>
+    );
+  }
+
+  if (!missingItems?.length) {
+    return (
+      <p className="text-xs leading-snug text-amber-800 dark:text-amber-200 lg:text-right">
+        {variant === 'past'
+          ? t('balance.recordBalancesPendingPast', { month })
+          : t('balance.recordBalancesPendingCurrent', { month })}
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-2 text-left text-xs leading-snug text-amber-900 dark:text-amber-100 lg:text-right">
+      <p className="font-medium">
+        {t('balance.recordBalancesPendingListTitle', { month })}
+      </p>
+      <ul className="list-inside list-disc space-y-0.5 text-amber-800 dark:text-amber-200">
+        {missingItems.map((item) => (
+          <li key={`${item.type}-${item.id}`}>
+            {t('balance.recordBalancesPendingListItem', {
+              name: item.name,
+              category: t(`categories.${item.type}.${item.category}`),
+            })}
+          </li>
+        ))}
+      </ul>
+      <p className="text-amber-800/90 dark:text-amber-200/90">
+        {t('balance.recordBalancesPendingZeroHint')}
+      </p>
+      <button
+        type="button"
+        onClick={onOpen}
+        className="font-semibold text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400"
+      >
+        {t('dashboard.diagnosis.actionUpdateBalances')}
+      </button>
+    </div>
+  );
+}
+
 export function RecordBalancesBar({
   hasAccounts,
   pendingMonths,
@@ -13,7 +68,7 @@ export function RecordBalancesBar({
   onViewHistory,
   layout = 'page',
   showPendingBadge = false,
-  pendingHint,
+  pendingDetail,
   showHistoryLink = false,
 }) {
   const { t } = useTranslation();
@@ -89,13 +144,12 @@ export function RecordBalancesBar({
 
         {hasAccounts ? (
           <>
-            {pendingHint ? (
-              <p
-                className={`text-xs leading-snug text-amber-800 dark:text-amber-200 lg:text-right`}
-              >
-                {t(pendingHint.key, pendingHint.params)}
-              </p>
-            ) : null}
+            <PendingBalancesNotice
+              detail={pendingDetail}
+              locale={locale}
+              onOpen={onOpen}
+              t={t}
+            />
             <p
               id="record-balances-why"
               className={`text-xs leading-snug ${ui.textMuted} lg:text-right`}

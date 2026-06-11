@@ -271,36 +271,107 @@ function getDaysLeftInMonth(date) {
   return Math.max(0, last - date.getDate());
 }
 
-/** User-facing hint when pending months remain after a close attempt. */
-export function getPendingCloseHint(status, locale = 'es') {
+/** Active catalog lines without a snapshot row for the given month. */
+export function getMissingCloseItemsForMonth(
+  snapshots,
+  assets,
+  liabilities,
+  monthKey,
+) {
+  if (!isMonthKey(monthKey)) return [];
+
+  const monthSnaps = groupSnapshotsByMonth(snapshots)[monthKey] ?? [];
+  const items = [];
+
+  for (const asset of getCloseableAssets(assets)) {
+    if (!monthSnaps.some((s) => getSnapshotAssetId(s) === asset.id)) {
+      items.push({
+        type: 'asset',
+        id: asset.id,
+        name: asset.name,
+        category: asset.category,
+      });
+    }
+  }
+  for (const liability of getCloseableLiabilities(liabilities)) {
+    if (!monthSnaps.some((s) => getSnapshotLiabilityId(s) === liability.id)) {
+      items.push({
+        type: 'liability',
+        id: liability.id,
+        name: liability.name,
+        category: liability.category,
+      });
+    }
+  }
+  return items;
+}
+
+/** User-facing detail when pending months remain (list + context for the bar). */
+export function getPendingCloseDetail(
+  status,
+  snapshots,
+  assets,
+  liabilities,
+  locale = 'es',
+) {
   if (!status?.pendingMonths?.length) return null;
 
   const currentKey = getCurrentMonthKey();
   const currentClosed = !status.pendingMonths.includes(currentKey);
+  const monthKey = currentClosed ? status.suggestedMonthKey : currentKey;
+  const missingItems = getMissingCloseItemsForMonth(
+    snapshots,
+    assets,
+    liabilities,
+    monthKey,
+  );
 
   if (status.overdueMonths?.length > 0) {
     return {
-      key: 'balance.recordBalancesPendingOverdue',
-      params: {
-        count: status.overdueMonths.length,
-        month: formatMonthName(status.overdueMonths[0], locale),
-      },
+      variant: 'overdue',
+      monthKey,
+      month: formatMonthName(status.overdueMonths[0], locale),
+      overdueCount: status.overdueMonths.length,
+      missingItems,
     };
   }
 
   if (currentClosed) {
     return {
-      key: 'balance.recordBalancesPendingPast',
-      params: {
-        month: formatMonthName(status.suggestedMonthKey, locale),
-      },
+      variant: 'past',
+      monthKey,
+      month: formatMonthName(monthKey, locale),
+      missingItems,
     };
   }
 
   return {
+    variant: 'current',
+    monthKey,
+    month: formatMonthName(currentKey, locale),
+    missingItems,
+  };
+}
+
+/** @deprecated Use getPendingCloseDetail */
+export function getPendingCloseHint(status, locale = 'es') {
+  const detail = getPendingCloseDetail(status, [], [], [], locale);
+  if (!detail) return null;
+
+  if (detail.variant === 'overdue') {
+    return {
+      key: 'balance.recordBalancesPendingOverdue',
+      params: { count: detail.overdueCount, month: detail.month },
+    };
+  }
+  if (detail.variant === 'past') {
+    return {
+      key: 'balance.recordBalancesPendingPast',
+      params: { month: detail.month },
+    };
+  }
+  return {
     key: 'balance.recordBalancesPendingCurrent',
-    params: {
-      month: formatMonthName(currentKey, locale),
-    },
+    params: { month: detail.month },
   };
 }

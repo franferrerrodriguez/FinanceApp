@@ -17,7 +17,7 @@ export function mapLiabilityRow(liability, userId) {
     name: liability.name,
     category: liability.category,
     monthly_payment: liability.monthlyPayment ?? 0,
-    interest_rate: liability.interestRate ?? null,
+    interest_rate: liability.interestRate ?? 0,
     is_active: liability.isActive !== false,
   };
 }

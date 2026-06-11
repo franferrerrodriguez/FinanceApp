@@ -46,16 +46,18 @@ export function createAsset(partial = {}) {
   };
 }
 
+export function normalizeLiabilityInterestRate(rate) {
+  const n = Number(rate);
+  return Number.isFinite(n) ? Math.max(0, n) : 0;
+}
+
 export function createLiability(partial = {}) {
   return {
     id: partial.id ?? createId(),
     name: partial.name?.trim() ?? '',
     category: partial.category ?? 'personal_loan',
     monthlyPayment: Math.max(0, partial.monthlyPayment ?? 0),
-    interestRate:
-      partial.interestRate != null && Number.isFinite(Number(partial.interestRate))
-        ? Number(partial.interestRate)
-        : undefined,
+    interestRate: normalizeLiabilityInterestRate(partial.interestRate ?? 0),
     isActive: partial.isActive !== false,
   };
 }

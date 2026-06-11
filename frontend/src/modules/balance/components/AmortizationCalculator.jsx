@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { KpiCard } from '../../../components/KpiCard';
 import { MoneyField } from '../../../components/MoneyField';
 import { MoneyInput } from '../../../components/MoneyInput';
-import { pctToDisplay } from '../../../components/PercentRow';
 import { resolveMortgageAmortization } from '../../../lib/amortization';
 import { AmortizationScheduleTable } from './AmortizationScheduleTable';
 import {
@@ -13,9 +12,14 @@ import {
 import { parseMoneyEuros } from '../../../lib/money';
 import { ui } from '../../../lib/uiClasses';
 import { useFinanceData, usePreferences } from '../../../store/hooks';
-import { formatMoney, formatRatePercent } from '../../../utils/formatters';
+import {
+  formatMoney,
+  formatRateInputValue,
+  formatRatePercent,
+} from '../../../utils/formatters';
 
 const PORTFOLIO_TOLERANCE = 0.005;
+const DEFAULT_MORTGAGE_ANNUAL_RATE = 0.0225;
 
 export function AmortizationCalculator({
   fullCapital: snapshotFullCapital,
@@ -32,22 +36,40 @@ export function AmortizationCalculator({
   const [lumpMode, setLumpMode] = useState('reduce_term');
   const [extraLump, setExtraLump] = useState('');
   const [extraMonthly, setExtraMonthly] = useState('');
-  const [capitalEuros, setCapitalEuros] = useState(0);
-  const [paymentEuros, setPaymentEuros] = useState(0);
-  const [rateInput, setRateInput] = useState('');
+  const initialRate =
+    liabilityRate != null && Number.isFinite(liabilityRate)
+      ? liabilityRate
+      : DEFAULT_MORTGAGE_ANNUAL_RATE;
+
+  const [capitalEuros, setCapitalEuros] = useState(() =>
+    snapshotFullCapital > 0 ? snapshotFullCapital : 0,
+  );
+  const [paymentEuros, setPaymentEuros] = useState(() =>
+    fullMonthlyPayment > 0 ? fullMonthlyPayment : 0,
+  );
+  const [rateInput, setRateInput] = useState(() =>
+    formatRateInputValue(initialRate, locale),
+  );
   const [scheduleView, setScheduleView] = useState('baseline');
 
   useEffect(() => {
-    setCapitalEuros(snapshotFullCapital > 0 ? snapshotFullCapital : 0);
+    const next = snapshotFullCapital > 0 ? snapshotFullCapital : 0;
+    setCapitalEuros((prev) => (prev === next ? prev : next));
   }, [snapshotFullCapital]);
 
   useEffect(() => {
-    setPaymentEuros(fullMonthlyPayment > 0 ? fullMonthlyPayment : 0);
+    const next = fullMonthlyPayment > 0 ? fullMonthlyPayment : 0;
+    setPaymentEuros((prev) => (prev === next ? prev : next));
   }, [fullMonthlyPayment]);
 
   useEffect(() => {
-    setRateInput(liabilityRate != null ? String(pctToDisplay(liabilityRate)) : '');
-  }, [liabilityRate]);
+    const rate =
+      liabilityRate != null && Number.isFinite(liabilityRate)
+        ? liabilityRate
+        : DEFAULT_MORTGAGE_ANNUAL_RATE;
+    const next = formatRateInputValue(rate, locale);
+    setRateInput((prev) => (prev === next ? prev : next));
+  }, [liabilityRate, locale]);
 
   const remainingCapital = capitalEuros > 0 ? capitalEuros : null;
   const monthlyPayment = paymentEuros > 0 ? paymentEuros : null;
@@ -80,9 +102,12 @@ export function AmortizationCalculator({
     });
   }, [canCalculate, remainingCapital, annualRate, monthlyPayment, scenario]);
 
+  const hasScenario = scenario != null;
+
   useEffect(() => {
-    setScheduleView(scenario ? 'scenario' : 'baseline');
-  }, [scenario]);
+    const next = hasScenario ? 'scenario' : 'baseline';
+    setScheduleView((prev) => (prev === next ? prev : next));
+  }, [hasScenario]);
 
   const portfolioPreview = useMemo(
     () =>
@@ -186,6 +211,7 @@ export function AmortizationCalculator({
           <MortgageDataField
             label={t('balance.patrimony.interestRate')}
             kind="rate"
+            locale={locale}
             value={rateInput}
             onChange={setRateInput}
             missingHint={t('balance.amortization.missingRate')}
@@ -381,6 +407,7 @@ export function AmortizationCalculator({
                 rows={activeSummary.schedule}
                 totals={activeSummary}
                 formatDate={formatScheduleDate}
+                sharePercent={balanceShareInfo?.percent}
               />
             ) : null}
           </div>
@@ -433,6 +460,7 @@ const MORTGAGE_FIELD_SHELL_WARN =
 function MortgageDataField({
   label,
   kind,
+  locale,
   hint,
   missingHint,
   value,
@@ -462,8 +490,12 @@ function MortgageDataField({
                 const next = e.target.value;
                 if (isValidRateDraft(next)) onChange(next);
               }}
+              onBlur={() => {
+                const parsed = parseRateInput(value);
+                if (parsed != null) onChange(formatRateInputValue(parsed, locale));
+              }}
               placeholder="2,25"
-              className={`${ui.input} w-full max-w-none py-2.5 pr-8 text-right text-sm tabular-nums`}
+              className={`${ui.input} w-full max-w-none py-2.5 pl-3 pr-8 text-sm tabular-nums`}
             />
             <span
               className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm ${ui.textMuted}`}

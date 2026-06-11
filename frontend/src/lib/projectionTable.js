@@ -2,7 +2,10 @@ import {
   buildMonthlyProjectionRows,
   summarizeProjectionRows,
 } from './calculations.js';
-import { getProjectionStartingPatrimony } from './projectionBuckets.js';
+import {
+  getProjectionStartingPatrimony,
+  getProjectionStartingState,
+} from './projectionBuckets.js';
 import { getProjectionAnnualRate } from './projectionRates.js';
 
 export { getProjectionAnnualRate } from './projectionRates.js';
@@ -11,7 +14,10 @@ export {
   buildMonthlyProjectionRows,
   summarizeProjectionRows,
 } from './calculations.js';
-export { getProjectionStartingPatrimony } from './projectionBuckets.js';
+export {
+  getProjectionStartingPatrimony,
+  getProjectionStartingState,
+} from './projectionBuckets.js';
 
 /**
  * Builds the monthly table from settings + Balance data (multi-bucket).
@@ -56,8 +62,8 @@ export function buildMonthlyProjectionTable({
 }
 
 /** @deprecated Use summarizeProjectionRows */
-export function summarizeMonthlyProjection(rows, initialPatrimony = 0) {
-  const summary = summarizeProjectionRows(rows, initialPatrimony);
+export function summarizeMonthlyProjection(rows, initialPatrimony = 0, options = {}) {
+  const summary = summarizeProjectionRows(rows, initialPatrimony, options);
   return {
     ...summary,
     totalContributions: summary.totalNetContributed,

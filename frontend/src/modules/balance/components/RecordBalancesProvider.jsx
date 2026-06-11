@@ -12,7 +12,7 @@ import { useToast } from '../../../context/ToastContext';
 import { BALANCE_TAB } from '../../../lib/balanceTabs';
 import { getCurrentMonthKey } from '../../../lib/dashboardMetrics';
 import {
-  getPendingCloseHint,
+  getPendingCloseDetail,
   hasPatrimonyAccounts,
   isMonthKey,
 } from '../../../lib/monthlyClose';
@@ -130,10 +130,16 @@ export function RecordBalancesProvider({ children }) {
 export function BalanceRecordBalancesSection() {
   const { locale } = usePreferences();
   const { monthlyClose } = useFinanceAlerts();
-  const { snapshots } = useFinanceData();
+  const { snapshots, assets, liabilities } = useFinanceData();
   const { openRecordBalances, goToPatrimonyCatalog, goToPatrimonyHistory, hasAccounts } =
     useRecordBalances();
-  const pendingHint = getPendingCloseHint(monthlyClose, locale);
+  const pendingDetail = getPendingCloseDetail(
+    monthlyClose,
+    snapshots,
+    assets,
+    liabilities,
+    locale,
+  );
   const showHistoryLink = getCurrentPatrimonySummary(snapshots).hasClose;
 
   return (
@@ -144,7 +150,7 @@ export function BalanceRecordBalancesSection() {
         pendingMonths={monthlyClose?.pendingMonths?.length}
         suggestedMonthKey={monthlyClose?.suggestedMonthKey}
         showPendingBadge={(monthlyClose?.pendingMonths?.length ?? 0) > 0}
-        pendingHint={pendingHint}
+        pendingDetail={pendingDetail}
         showHistoryLink={showHistoryLink}
         onViewHistory={goToPatrimonyHistory}
         locale={locale}

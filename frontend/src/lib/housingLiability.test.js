@@ -7,11 +7,13 @@ import {
   getMortgageFullMonthlyPayment,
   getMortgageFullOutstandingBalance,
   getMortgageOutstandingBalance,
+  getMortgagePaymentShareInfoFromTotal,
   getMortgageYourSharePayment,
   inferHousingType,
   liabilityMonthlyPaymentForProjection,
   mortgageOutstandingShareToTotal,
   mortgageOutstandingTotalToShare,
+  mortgagePaymentSettingsPatch,
   syncHousingSettings,
   HOUSING_TYPE,
 } from './housingLiability.js';
@@ -95,5 +97,14 @@ assert.deepEqual(
   getMortgageBalanceShareInfo(settings, mortgageWithTotal, 45603.8),
   { yourShare: 45603.8, fullTotal: 91207.59, percent: 50 },
 );
+
+assert.deepEqual(getMortgagePaymentShareInfoFromTotal(settings, 517), {
+  amount: 258.5,
+  percent: 50,
+});
+assert.deepEqual(mortgagePaymentSettingsPatch(settings, 600), {
+  mortgageRentTotal: 600,
+  mortgageRent: 300,
+});
 
 console.log('housingLiability.test.js: ok');

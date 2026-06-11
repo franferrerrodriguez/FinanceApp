@@ -185,13 +185,33 @@ export function getMortgageFullMonthlyPayment(settings, liability) {
 /** Your budget share when the linked mortgage is split; null if not shared. */
 export function getMortgageYourSharePayment(settings, liability) {
   if (!isLinkedMortgageLiability(liability, settings)) return null;
+  return getMortgagePaymentShareInfoFromTotal(
+    settings,
+    getMortgageRentTotal(settings),
+  );
+}
+
+/** Share preview from a total monthly payment (modal draft / housing UI). */
+export function getMortgagePaymentShareInfoFromTotal(settings, total) {
   if (!settings?.mortgageRentShared) return null;
-  const total = getMortgageRentTotal(settings);
-  const share = getEffectiveMortgageRent(settings);
-  if (total <= 0 || share >= total) return null;
+  const amount = Math.max(0, Number(total) || 0);
+  if (amount <= 0) return null;
+  const percent = getMortgageSharePercent(settings);
+  const share = applyShareEuros(amount, true, percent);
+  if (share >= amount) return null;
+  return { amount: share, percent };
+}
+
+/** Sync linked mortgage cuota edits into budget settings. */
+export function mortgagePaymentSettingsPatch(settings, totalPayment) {
+  const total = normalizeEuros(Math.max(0, Number(totalPayment) || 0));
   return {
-    amount: share,
-    percent: getMortgageSharePercent(settings),
+    mortgageRentTotal: total,
+    mortgageRent: applyShareEuros(
+      total,
+      settings?.mortgageRentShared,
+      getMortgageSharePercent(settings),
+    ),
   };
 }
 

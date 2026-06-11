@@ -10,16 +10,21 @@ export function isDraftAsset(asset) {
   return !['cash', 'real_estate'].includes(asset?.category);
 }
 
-export function isDraftLiability(liability) {
-  if (!liability) return true;
-  const name = (liability.name ?? '').trim().toLowerCase();
-  if (!name) return true;
-  if (DRAFT_LIABILITY_NAMES.has(name)) {
+export function isSavableLiability(liability) {
+  if (!liability) return false;
+  const name = (liability.name ?? '').trim();
+  if (!name) return false;
+  if (!Number.isFinite(Number(liability.interestRate))) return false;
+  if (DRAFT_LIABILITY_NAMES.has(name.toLowerCase())) {
     const payment = liability.monthlyPayment ?? 0;
-    const rate = liability.interestRate;
-    return payment === 0 && (rate == null || rate === 0);
+    const rate = Number(liability.interestRate);
+    return payment > 0 || rate > 0;
   }
-  return false;
+  return true;
+}
+
+export function isDraftLiability(liability) {
+  return !isSavableLiability(liability);
 }
 
 export function filterDraftAssets(assets = []) {
@@ -35,7 +40,3 @@ export function isSavableAsset(asset) {
 }
 
 export { isSavableAssetCatalog } from './patrimonyNames.js';
-
-export function isSavableLiability(liability) {
-  return !isDraftLiability(liability);
-}

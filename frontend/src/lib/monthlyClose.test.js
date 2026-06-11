@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {
+  getMissingCloseItemsForMonth,
   getMonthlyCloseAlert,
   getMonthlyCloseStatus,
   getPendingCloseMonths,
@@ -133,5 +134,18 @@ assert.equal(
   isMonthFullyClosed(juneOnlyAsset, june, [asset, draftAsset], []),
   true,
 );
+
+const missingJune = getMissingCloseItemsForMonth(
+  mayClose,
+  [asset, asset2],
+  [],
+  june,
+);
+assert.equal(missingJune.length, 2);
+assert.ok(missingJune.some((i) => i.id === 'a1'));
+assert.ok(missingJune.some((i) => i.id === 'a2'));
+
+const missingNone = getMissingCloseItemsForMonth(mayClose, [asset], [], may);
+assert.equal(missingNone.length, 0);
 
 console.log('monthlyClose.test.js OK');
