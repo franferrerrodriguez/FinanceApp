@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { appStorage } from '../lib/appStorage';
 import { DEFAULT_SETTINGS } from '../lib/constants';
+import { clearLocalFinancePersist } from '../lib/financeSession';
 import {
   onRehydrateOnboardingState,
   onRehydrateProjectionYears,
@@ -24,6 +25,45 @@ export const useAppStore = create(
       ...createPreferencesSlice(set, get),
       ...createOnboardingSlice(set, get),
       ...createFinanceSlice(set, get),
+
+      resetFinanceState: () =>
+        set({
+          profile: null,
+          onboardingCompleted: false,
+          onboardingStep: 0,
+          saveBannerSnoozedUntil: null,
+          settings: { ...DEFAULT_SETTINGS },
+          contributionPlans: [],
+          contributionEntries: [],
+          annualExpenses: [],
+          cashflowHistory: [],
+          assets: [],
+          liabilities: [],
+          snapshots: [],
+          sessionStatus: 'guest_no_data',
+        }),
+
+      logout: () => {
+        clearLocalFinancePersist();
+        set({
+          user: null,
+          profile: null,
+          cloudSyncStatus: 'idle',
+          authBootstrapped: true,
+          sessionStatus: 'guest_no_data',
+          onboardingCompleted: false,
+          onboardingStep: 0,
+          saveBannerSnoozedUntil: null,
+          settings: { ...DEFAULT_SETTINGS },
+          contributionPlans: [],
+          contributionEntries: [],
+          annualExpenses: [],
+          cashflowHistory: [],
+          assets: [],
+          liabilities: [],
+          snapshots: [],
+        });
+      },
 
       resetApp: () =>
         set({

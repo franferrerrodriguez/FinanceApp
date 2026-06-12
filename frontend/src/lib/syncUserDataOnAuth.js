@@ -1,4 +1,9 @@
 import { pauseCloudAutoSync } from './cloudSync';
+import {
+  prepareFinanceSessionForUser,
+  rememberCloudUserId,
+  shouldSkipCloudPull,
+} from './financeSession';
 import { useAppStore } from '../store/appStore';
 import { loadUserDataFromSupabase } from './loadUserDataFromSupabase';
 import { migrateLocalToSupabase } from './migrateLocalToSupabase';
@@ -46,21 +51,37 @@ export async function syncUserDataOnAuth(userId) {
     useAppStore.setState({ cloudSyncStatus: 'syncing' });
 
     try {
+      const session = prepareFinanceSessionForUser(userId);
+      if (session.switchedUser) {
+        useAppStore.getState().resetFinanceState();
+      }
+
       const state = useAppStore.getState();
       const hasCloud = await userHasCloudSettings(userId);
 
       if (hasLocalDataToMigrate(state) && !hasCloud) {
         const migration = await migrateLocalToSupabase(userId);
+        rememberCloudUserId(userId);
         if (migration.success) {
           useAppStore.setState({ cloudSyncStatus: 'ready' });
           pauseCloudAutoSync();
           return migration;
         }
         const load = await loadUserDataFromSupabase(userId);
+        rememberCloudUserId(userId);
         return { ...migration, fallbackLoad: load };
       }
 
-      return loadUserDataFromSupabase(userId);
+      if (shouldSkipCloudPull(userId, session)) {
+        rememberCloudUserId(userId);
+        useAppStore.setState({ cloudSyncStatus: 'ready' });
+        pauseCloudAutoSync();
+        return { success: true, skippedPull: true };
+      }
+
+      const load = await loadUserDataFromSupabase(userId);
+      rememberCloudUserId(userId);
+      return load;
     } catch (error) {
       console.error('syncUserDataOnAuth failed:', error);
       useAppStore.setState({ cloudSyncStatus: 'error' });

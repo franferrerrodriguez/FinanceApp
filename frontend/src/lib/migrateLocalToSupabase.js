@@ -1,5 +1,6 @@
 import { useAppStore } from '../store/appStore';
 import { PERSIST_STORAGE_KEY } from '../store/persistConfig';
+import { rememberCloudUserId } from './financeSession';
 import { buildAppDataPayload, mapSettingsToUserSettingsRow } from './mapSettingsToDb';
 import {
   mapAssetRow,
@@ -65,6 +66,7 @@ export async function migrateLocalToSupabase(userId) {
     }
 
     localStorage.removeItem(PERSIST_STORAGE_KEY);
+    rememberCloudUserId(userId);
     useAppStore.setState({ sessionStatus: 'authenticated', cloudSyncStatus: 'ready' });
     return { success: true };
   } catch (error) {

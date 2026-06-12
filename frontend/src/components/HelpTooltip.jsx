@@ -1,7 +1,12 @@
 import { useCallback, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-export function HelpTooltip({ ariaLabel, children, symbol = '?' }) {
+const TRIGGER_SIZE = {
+  sm: 'h-4 w-4 text-[10px]',
+  md: 'h-6 w-6 text-sm ring-1 ring-inset ring-slate-300/80 dark:ring-slate-600/80',
+};
+
+export function HelpTooltip({ ariaLabel, children, symbol = '?', size = 'sm' }) {
   const tooltipId = useId();
   const triggerRef = useRef(null);
   const [open, setOpen] = useState(false);
@@ -53,7 +58,7 @@ export function HelpTooltip({ ariaLabel, children, symbol = '?' }) {
           role="img"
           aria-label={ariaLabel}
           aria-describedby={open ? tooltipId : undefined}
-          className="inline-flex h-4 w-4 cursor-help items-center justify-center rounded-full text-[10px] font-semibold leading-none transition hover:bg-emerald-500/10 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:hover:text-emerald-400 text-slate-400 dark:text-slate-500"
+          className={`inline-flex cursor-help items-center justify-center rounded-full font-semibold leading-none transition hover:bg-emerald-500/10 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:hover:text-emerald-400 text-slate-400 dark:text-slate-500 ${TRIGGER_SIZE[size] ?? TRIGGER_SIZE.sm}`}
         >
           {symbol}
         </span>

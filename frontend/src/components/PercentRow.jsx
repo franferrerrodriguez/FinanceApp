@@ -20,13 +20,9 @@ export function PercentRow({ label, hint, value, onChange }) {
           max={30}
           value={pctToDisplay(value)}
           onChange={(e) => onChange(displayToPct(e.target.value))}
-          className={`${ui.inputPercent} pr-6`}
+          className={`${ui.inputPercent} pr-9`}
         />
-        <span
-          className={`pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs ${ui.textMuted}`}
-        >
-          %
-        </span>
+        <span className={`${ui.inputSuffixAdornment} ${ui.textMuted}`}>%</span>
       </div>
     </div>
   );

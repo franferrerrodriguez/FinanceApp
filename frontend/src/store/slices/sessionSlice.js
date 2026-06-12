@@ -21,16 +21,6 @@ export const createSessionSlice = (set, get) => ({
       profile: { ...state.profile, ...profile },
     })),
 
-  logout: () =>
-    set({
-      user: null,
-      cloudSyncStatus: 'idle',
-      authBootstrapped: true,
-      sessionStatus: get().onboardingCompleted
-        ? 'guest_with_data'
-        : 'guest_no_data',
-    }),
-
   snoozeSaveBanner: () =>
     set({ saveBannerSnoozedUntil: Date.now() + SAVE_BANNER_SNOOZE_MS }),
 

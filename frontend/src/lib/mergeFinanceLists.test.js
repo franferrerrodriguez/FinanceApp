@@ -6,8 +6,8 @@ assert.deepEqual(mergeFinanceLists([], [{ id: 'a1', name: 'X' }]), [
 ]);
 
 assert.deepEqual(
-  mergeFinanceLists([{ id: 'a1', name: 'Cloud' }], [{ id: 'a1', name: 'Local' }]),
-  [{ id: 'a1', name: 'Local' }],
+  mergeFinanceLists([{ id: 'a1', name: 'Base' }], [{ id: 'a1', name: 'Incoming' }]),
+  [{ id: 'a1', name: 'Incoming' }],
 );
 
 assert.equal(

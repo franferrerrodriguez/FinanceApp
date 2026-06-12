@@ -50,7 +50,7 @@ import { parseSignedMoneyEuros } from '../../../lib/money';
 import { useFinanceData, usePreferences } from '../../../store/hooks';
 import { formatInstitutionLabel } from '../../../lib/institutions';
 import { formatConjunctionList } from '../../../utils/listLabel';
-import { formatMonthKeyLong, formatMonthKeyLabel, formatSnapshotDateLabel } from '../../../utils/monthLabel';
+import { formatMonthKeyLong, formatMonthKeyLabel } from '../../../utils/monthLabel';
 import {
   SPANISH_BANK_IDS,
   SPANISH_BANK_LEGACY_LABELS,
@@ -189,9 +189,13 @@ export function MonthlyCloseModal({
 
   const [assetRows, setAssetRows] = useState(initial.assetRows);
   const [liabilityRows, setLiabilityRows] = useState(initial.liabilityRows);
+  const [showEmptyConfirm, setShowEmptyConfirm] = useState(false);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      setShowEmptyConfirm(false);
+      return;
+    }
     setAssetRows(initial.assetRows);
     setLiabilityRows(
       initial.liabilityRows.map((row) => {
@@ -241,8 +245,15 @@ export function MonthlyCloseModal({
   const quickSaveAvailable = canQuickSaveAllSame(assetRows, liabilityRows);
   const emptyRowsRemain = hasEmptyCloseRows(assetRows, liabilityRows);
   const canSubmit = allCloseRowsFilled(assetRows, liabilityRows);
-  const isUpdate = selectedOption?.hasClose;
-  const snapshotDateLabel = formatSnapshotDateLabel(initial.snapshotDate, locale);
+  const emptyFieldCount = useMemo(
+    () =>
+      [...assetRows, ...liabilityRows].filter(
+        (r) => r.value == null || !Number.isFinite(Number(r.value)),
+      ).length,
+    [assetRows, liabilityRows],
+  );
+  const canSaveDraft =
+    activeAssets.length > 0 || activeLiabilities.length > 0;
 
   const missingForMonth = useMemo(
     () =>
@@ -256,32 +267,18 @@ export function MonthlyCloseModal({
   );
 
   const modalSubtitle = useMemo(() => {
-    if (missingForMonth.length > 0) {
-      return t('balance.patrimony.recordBalancesPendingSubtitle', {
-        count: missingForMonth.length,
-        names: formatConjunctionList(
-          missingForMonth.map((item) => item.name),
-          locale,
-        ),
-      });
-    }
-    if (isUpdate) {
-      return t('balance.patrimony.recordBalancesUpdateSubtitle', {
-        month: formatMonthKeyLong(resolvedMonthKey, locale),
-      });
-    }
-    return t('balance.patrimony.recordBalancesSubtitle', {
-      month: formatMonthKeyLong(resolvedMonthKey, locale),
-      date: snapshotDateLabel,
+    if (missingForMonth.length === 0) return undefined;
+    return t('balance.patrimony.recordBalancesPendingSubtitle', {
+      names: formatConjunctionList(
+        missingForMonth.map((item) => item.name),
+        locale,
+      ),
     });
-  }, [
-    missingForMonth,
-    isUpdate,
-    resolvedMonthKey,
-    locale,
-    snapshotDateLabel,
-    t,
-  ]);
+  }, [missingForMonth, locale, t]);
+
+  const modalTitle = t('balance.patrimony.recordBalancesTitleWithMonth', {
+    month: formatMonthKeyLong(resolvedMonthKey, locale),
+  });
 
   const investmentGroupTotal = sumDraftGroupAssets(
     assetRows,
@@ -353,7 +350,17 @@ export function MonthlyCloseModal({
     onClose();
   };
 
-  const handleQuickSaveRest = () => {
+  const handleSaveClick = () => {
+    if (emptyRowsRemain) {
+      setShowEmptyConfirm(true);
+      return;
+    }
+    setShowEmptyConfirm(false);
+    handleSubmit();
+  };
+
+  const handleConfirmSaveWithZeros = () => {
+    setShowEmptyConfirm(false);
     handleSubmit(fillEmptyCloseRows(assetRows, liabilityRows));
   };
 
@@ -534,23 +541,48 @@ export function MonthlyCloseModal({
     <AppModal
       open={open}
       onClose={onClose}
-      title={t('balance.patrimony.recordBalancesTitle')}
+      title={modalTitle}
       subtitle={modalSubtitle}
+      maxHeightClass="max-h-[85dvh]"
       footer={
-        <ModalFormFooter
-          onCancel={onClose}
-          onSave={handleSubmit}
-          canSave={canSubmit}
-          saveLabel={t('balance.patrimony.recordBalancesConfirm')}
-          secondarySave={
-            emptyRowsRemain
-              ? {
-                  label: t('balance.patrimony.closeQuickSaveRest'),
-                  onClick: handleQuickSaveRest,
-                }
-              : undefined
-          }
-        />
+        <div className="w-full space-y-3">
+          <div className="flex w-full flex-col-reverse gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-3">
+            <ModalFormFooter
+              onCancel={() => {
+                setShowEmptyConfirm(false);
+                onClose();
+              }}
+              onSave={handleSaveClick}
+              canSave={canSaveDraft}
+              saveLabel={t('balance.patrimony.recordBalancesConfirm')}
+            />
+          </div>
+          {showEmptyConfirm ? (
+            <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+              <p className="text-sm leading-snug text-amber-950 dark:text-amber-100">
+                {t('balance.patrimony.closeEmptyFieldsConfirm', {
+                  count: emptyFieldCount,
+                })}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  className={ui.btnPrimary}
+                  onClick={handleConfirmSaveWithZeros}
+                >
+                  {t('balance.patrimony.closeEmptyFieldsConfirmYes')}
+                </button>
+                <button
+                  type="button"
+                  className={ui.btnSecondary}
+                  onClick={() => setShowEmptyConfirm(false)}
+                >
+                  {t('balance.patrimony.closeEmptyFieldsConfirmReview')}
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </div>
       }
     >
       {monthOptions.length > 0 ? (

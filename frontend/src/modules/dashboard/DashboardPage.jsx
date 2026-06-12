@@ -12,6 +12,9 @@ import { DashboardAlerts } from './components/DashboardAlerts';
 import { AnnualExpensesSummaryLine } from '../../components/AnnualExpensesSection';
 import { EmergencyFundCard } from './components/EmergencyFundCard';
 import { KpiGrid } from './components/KpiGrid';
+import { EcbDepositRateCard } from './components/EcbDepositRateCard';
+import { EcbEuriborCard } from './components/EcbEuriborCard';
+import { IneCoreInflationCard } from './components/IneCoreInflationCard';
 import { IneInflationCard } from './components/IneInflationCard';
 import { NetWorthChart } from './components/NetWorthChart';
 import { TopHoldingsTable } from './components/TopHoldingsTable';
@@ -49,7 +52,12 @@ export function DashboardPage() {
 
       <DiagnosticCard />
 
-      <IneInflationCard />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <IneInflationCard />
+        <IneCoreInflationCard />
+        <EcbEuriborCard />
+        <EcbDepositRateCard />
+      </div>
 
       <NetWorthChart history={data.history} />
 

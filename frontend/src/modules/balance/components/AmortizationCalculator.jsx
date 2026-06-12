@@ -495,13 +495,9 @@ function MortgageDataField({
                 if (parsed != null) onChange(formatRateInputValue(parsed, locale));
               }}
               placeholder="2,25"
-              className={`${ui.input} w-full max-w-none py-2.5 pl-3 pr-8 text-sm tabular-nums`}
+              className={`${ui.input} w-full max-w-none pr-9 tabular-nums`}
             />
-            <span
-              className={`pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm ${ui.textMuted}`}
-            >
-              %
-            </span>
+            <span className={`${ui.inputSuffixAdornment} ${ui.textMuted}`}>%</span>
           </div>
         ) : (
           <MoneyInput fullWidth value={value} onChange={onChange} className="max-w-none" />

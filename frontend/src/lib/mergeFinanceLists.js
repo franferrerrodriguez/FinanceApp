@@ -1,17 +1,16 @@
-/** Merge cloud + local finance lists by id (local wins field conflicts). */
+/** Merge finance lists by id; the second list wins field conflicts. */
+export function mergeFinanceLists(base = [], incoming = []) {
+  const fromBase = Array.isArray(base) ? base : [];
+  const fromIncoming = Array.isArray(incoming) ? incoming : [];
 
-export function mergeFinanceLists(cloud = [], local = []) {
-  const fromCloud = Array.isArray(cloud) ? cloud : [];
-  const fromLocal = Array.isArray(local) ? local : [];
-
-  if (!fromCloud.length) return fromLocal;
-  if (!fromLocal.length) return fromCloud;
+  if (!fromBase.length) return fromIncoming;
+  if (!fromIncoming.length) return fromBase;
 
   const byId = new Map();
-  for (const item of fromCloud) {
+  for (const item of fromBase) {
     if (item?.id) byId.set(item.id, item);
   }
-  for (const item of fromLocal) {
+  for (const item of fromIncoming) {
     if (!item?.id) continue;
     const prev = byId.get(item.id);
     byId.set(item.id, prev ? { ...prev, ...item } : item);

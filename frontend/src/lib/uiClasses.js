@@ -48,10 +48,12 @@ export const ui = {
     'inline-flex items-center justify-center rounded-lg px-4 py-2.5 text-sm font-medium text-emerald-800/90 transition hover:bg-emerald-200/60 hover:text-emerald-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 dark:text-emerald-300/90 dark:hover:bg-emerald-900/60 dark:hover:text-emerald-100',
   input:
     'w-full min-h-[2.75rem] rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-600',
-  inputMoney: 'pl-9',
+  inputMoney: 'pr-9',
+  inputSuffixAdornment:
+    'pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm',
   /** 0–100 % — fixed width (Tu parte, tasas, etc.) */
   inputPercent:
-    'h-11 min-h-0 w-[5.5rem] max-w-[36vw] shrink-0 rounded-xl border border-slate-300 bg-white px-2 py-2 text-right text-sm tabular-nums text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white',
+    'min-h-[2.75rem] w-[5.5rem] max-w-[36vw] shrink-0 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base tabular-nums text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white',
   /** € amounts, patrimonio, cuotas — not full panel width on desktop */
   inputAmount: 'max-w-[12rem]',
   /** Age, pagas, small integers */

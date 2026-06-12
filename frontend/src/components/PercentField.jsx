@@ -59,13 +59,9 @@ export function PercentField({
             onChange(displayToPct(raw));
           }}
           aria-invalid={error || undefined}
-          className={`${error ? ui.inputError : ui.inputPercent} w-full max-w-none pr-7`}
+          className={`${error ? ui.inputError : ui.input} w-full max-w-none pr-9 tabular-nums`}
         />
-        <span
-          className={`pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-xs ${ui.textMuted}`}
-        >
-          %
-        </span>
+        <span className={`${ui.inputSuffixAdornment} ${ui.textMuted}`}>%</span>
       </div>
       {error && errorMessage ? (
         <p className="mt-2 text-sm text-red-500" role="alert">

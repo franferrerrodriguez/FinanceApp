@@ -36,18 +36,14 @@ export function MoneyInput({
   const displayValue = editing ? draft : formatDisplay(value);
   const widthClass = fullWidth ? 'w-full max-w-none' : `w-full ${ui.inputAmount}`;
   const inputClass = pending
-    ? `${ui.input} ${ui.inputMoney} w-full max-w-none border-emerald-500/50 bg-emerald-500/[0.04] ring-1 ring-emerald-500/25 focus:border-emerald-500 dark:border-emerald-500/45 dark:bg-emerald-950/20`
+    ? `${ui.input} ${ui.inputMoney} w-full max-w-none border-emerald-500/35 bg-emerald-500/[0.03] ring-1 ring-emerald-500/15 focus:border-emerald-500 dark:border-emerald-500/40 dark:bg-emerald-950/15`
     : prefilled
       ? `${ui.input} ${ui.inputMoney} w-full max-w-none border-slate-300 bg-slate-50 text-slate-600 dark:border-slate-600 dark:bg-slate-800/80 dark:text-slate-300`
       : `${ui.input} ${ui.inputMoney} w-full max-w-none`;
 
   return (
     <div className={`relative ${widthClass} ${className}`.trim()}>
-      <span
-        className={`pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm ${ui.textMuted}`}
-      >
-        €
-      </span>
+      <span className={`${ui.inputSuffixAdornment} ${ui.textMuted}`}>€</span>
       <input
         id={id}
         type="text"
@@ -72,7 +68,7 @@ export function MoneyInput({
         }}
         placeholder="0"
         className={`${inputClass} ${
-          compact ? `${ui.inputCompact} pl-8` : 'pl-9'
+          compact ? `${ui.inputCompact} pr-8` : ''
         }${disabled ? ' opacity-60' : ''}`}
       />
       {hint ? (

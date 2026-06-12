@@ -12,6 +12,7 @@ export function AppModal({
   subtitle,
   children,
   footer,
+  maxHeightClass = 'max-h-[min(92dvh,720px)] sm:max-h-[85dvh]',
   ariaLabelledBy = 'app-modal-title',
 }) {
   const keyboardInset = useModalKeyboardInset(open);
@@ -48,7 +49,7 @@ export function AppModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={ariaLabelledBy}
-        className={`relative z-10 flex max-h-[min(92dvh,720px)] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border shadow-xl sm:max-h-[85dvh] sm:rounded-2xl ${ui.divider} bg-white dark:bg-slate-900`}
+        className={`relative z-10 flex ${maxHeightClass} w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border shadow-xl sm:rounded-2xl ${ui.divider} bg-white dark:bg-slate-900`}
       >
         <div
           className="mx-auto mt-2 mb-1 h-1 w-10 shrink-0 rounded-full bg-slate-300 dark:bg-slate-600 sm:hidden"

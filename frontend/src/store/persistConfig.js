@@ -33,6 +33,7 @@ import { deriveOnboardingResumeStep, resolveOnboardingResumeStep } from '../lib/
 import { ONBOARDING_STEP_IDS } from '../modules/onboarding/constants';
 
 export const PERSIST_STORAGE_KEY = 'financia_app_data';
+export const CLOUD_USER_ID_KEY = 'financia_cloud_user_id';
 export const PERSIST_VERSION = 20;
 
 const MAX_ONBOARDING_STEP = ONBOARDING_STEP_IDS.length - 1;
@@ -56,44 +57,32 @@ export function partializePersistedState(state) {
   };
 }
 
-export function mergePersistedState(persisted, current, options = {}) {
+export function mergePersistedState(persisted, current) {
   if (!persisted) return current;
 
-  const preferLocal = options.preferLocal === true;
   const liabilities = filterDraftLiabilities(
     normalizePersistedLiabilities(
-      mergeFinanceLists(persisted.liabilities, current.liabilities),
+      mergeFinanceLists(current.liabilities, persisted.liabilities),
     ),
   );
 
   const settings = syncHousingSettings(
-    preferLocal
-      ? {
-          ...DEFAULT_SETTINGS,
-          ...persisted.settings,
-          ...current.settings,
-          ...mergeBudgetSettingsFields(current.settings, persisted.settings),
-          projectionYears: resolveProjectionYearsFromPersist(
-            persisted.settings?.projectionYears ??
-              current.settings?.projectionYears,
-          ),
-        }
-      : {
-          ...DEFAULT_SETTINGS,
-          ...current.settings,
-          ...persisted.settings,
-          ...mergeBudgetSettingsFields(current.settings, persisted.settings),
-          projectionYears: resolveProjectionYearsFromPersist(
-            persisted.settings?.projectionYears ??
-              current.settings?.projectionYears,
-          ),
-        },
+    {
+      ...DEFAULT_SETTINGS,
+      ...current.settings,
+      ...persisted.settings,
+      ...mergeBudgetSettingsFields(persisted.settings, current.settings),
+      projectionYears: resolveProjectionYearsFromPersist(
+        persisted.settings?.projectionYears ??
+          current.settings?.projectionYears,
+      ),
+    },
     liabilities,
   );
   const assets = filterDraftAssets(
-    mergeFinanceLists(persisted.assets, current.assets),
+    mergeFinanceLists(current.assets, persisted.assets),
   );
-  const snapshots = mergeFinanceLists(persisted.snapshots, current.snapshots);
+  const snapshots = mergeFinanceLists(current.snapshots, persisted.snapshots);
   const cashflowHistory = upsertCurrentMonthCashflowTramo(
     settings,
     persisted.cashflowHistory ?? current.cashflowHistory ?? [],

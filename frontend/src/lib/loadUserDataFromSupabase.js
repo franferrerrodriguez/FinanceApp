@@ -97,31 +97,25 @@ export async function loadUserDataFromSupabase(userId) {
       onboardingCompleted:
         lists.onboardingCompleted || Boolean(settingsRow),
       settings: mapUserSettingsRowToSettings(settingsRow),
-      annualExpenses: lists.annualExpenses,
-      cashflowHistory: lists.cashflowHistory,
-      contributionPlans: lists.contributionPlans,
-      contributionEntries: lists.contributionEntries,
+      annualExpenses: lists.annualExpenses ?? [],
+      cashflowHistory: lists.cashflowHistory ?? [],
+      contributionPlans: lists.contributionPlans ?? [],
+      contributionEntries: lists.contributionEntries ?? [],
       assets: filterDraftAssets(
-        mergeFinanceLists(cloudAssets, lists.assets ?? current.assets),
+        mergeFinanceLists(cloudAssets, lists.assets ?? []),
       ),
       liabilities: filterDraftLiabilities(
-        mergeFinanceLists(
-          cloudLiabilities,
-          lists.liabilities ?? current.liabilities,
-        ),
+        mergeFinanceLists(cloudLiabilities, lists.liabilities ?? []),
       ),
       snapshots: dedupeSnapshots(
-        mergeFinanceLists(
-          cloudSnapshots,
-          lists.snapshots ?? current.snapshots,
-        ),
+        mergeFinanceLists(cloudSnapshots, lists.snapshots ?? []),
       ),
       profile,
       locale: lists.locale,
       theme: lists.theme,
     };
 
-    const merged = mergePersistedState(persisted, current, { preferLocal: true });
+    const merged = mergePersistedState(persisted, current);
 
     useAppStore.setState({
       ...merged,

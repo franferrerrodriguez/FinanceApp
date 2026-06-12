@@ -17,6 +17,8 @@ const SYNC_WATCH_KEYS = [
   'snapshots',
   'profile',
   'onboardingCompleted',
+  'locale',
+  'theme',
 ];
 
 let debounceTimer = null;
