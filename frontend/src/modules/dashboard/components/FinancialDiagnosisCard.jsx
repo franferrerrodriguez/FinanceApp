@@ -8,23 +8,23 @@ import { formatMoney } from '../../../utils/formatters';
 const toneStyles = {
   positive: {
     icon: Check,
-    row: 'border-emerald-500/25 bg-emerald-500/5 dark:bg-emerald-950/20',
-    iconClass: 'text-emerald-600 dark:text-emerald-400',
+    row: '[border:0.5px_solid_rgba(29,158,117,0.25)] bg-[rgba(29,158,117,0.06)]',
+    iconClass: 'text-[var(--color-positive)]',
   },
   info: {
     icon: Info,
-    row: 'border-sky-500/25 bg-sky-500/5 dark:bg-sky-950/20',
-    iconClass: 'text-sky-600 dark:text-sky-400',
+    row: '[border:0.5px_solid_rgba(55,138,221,0.25)] bg-[rgba(55,138,221,0.06)]',
+    iconClass: 'text-[var(--color-info)]',
   },
   warn: {
     icon: TriangleAlert,
-    row: 'border-amber-500/25 bg-amber-500/5 dark:bg-amber-950/20',
-    iconClass: 'text-amber-600 dark:text-amber-400',
+    row: '[border:0.5px_solid_rgba(239,159,39,0.25)] bg-[rgba(239,159,39,0.06)]',
+    iconClass: 'text-[var(--color-warning)]',
   },
   tip: {
     icon: Lightbulb,
-    row: 'border-slate-300/80 bg-slate-50/80 dark:border-slate-600 dark:bg-slate-800/40',
-    iconClass: 'text-slate-500 dark:text-slate-400',
+    row: '[border:0.5px_solid_rgba(255,255,255,0.10)] bg-[rgba(255,255,255,0.03)]',
+    iconClass: 'text-[var(--text-muted)]',
   },
 };
 

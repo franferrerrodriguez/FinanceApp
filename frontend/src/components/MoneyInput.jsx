@@ -36,9 +36,9 @@ export function MoneyInput({
   const displayValue = editing ? draft : formatDisplay(value);
   const widthClass = fullWidth ? 'w-full max-w-none' : `w-full ${ui.inputAmount}`;
   const inputClass = pending
-    ? `${ui.input} ${ui.inputMoney} w-full max-w-none border-emerald-500/35 bg-emerald-500/[0.03] ring-1 ring-emerald-500/15 focus:border-emerald-500 dark:border-emerald-500/40 dark:bg-emerald-950/15`
+    ? `${ui.input} ${ui.inputMoney} w-full max-w-none [border-color:rgba(29,158,117,0.40)] bg-[rgba(29,158,117,0.04)] ring-1 ring-[rgba(29,158,117,0.15)] focus:[border-color:var(--accent)]`
     : prefilled
-      ? `${ui.input} ${ui.inputMoney} w-full max-w-none border-slate-300 bg-slate-50 text-slate-600 dark:border-slate-600 dark:bg-slate-800/80 dark:text-slate-300`
+      ? `${ui.input} ${ui.inputMoney} w-full max-w-none [border-color:rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-[var(--text-muted)]`
       : `${ui.input} ${ui.inputMoney} w-full max-w-none`;
 
   return (

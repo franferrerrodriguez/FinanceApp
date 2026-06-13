@@ -17,7 +17,7 @@ export function PatrimonyEvolutionSection({ snapshots, locale }) {
             {t('balance.patrimony.evolutionTitle')}
           </h3>
           <span
-            className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${ui.menuInnerBorder} text-emerald-700 dark:text-emerald-300`}
+            className={`rounded-full [border:0.5px_solid_rgba(29,158,117,0.30)] px-2.5 py-0.5 text-xs font-medium text-[var(--accent)]`}
           >
             {t('balance.patrimony.realDataBadge')}
           </span>
@@ -90,8 +90,8 @@ function GrowthKpi({ label, value, hint, positive }) {
     positive === undefined
       ? ui.heading
       : positive
-        ? 'text-emerald-700 dark:text-emerald-400'
-        : 'text-red-600 dark:text-red-400';
+        ? 'text-[var(--color-positive)]'
+        : 'text-[var(--color-negative)]';
 
   return (
     <div className={ui.kpiCard}>

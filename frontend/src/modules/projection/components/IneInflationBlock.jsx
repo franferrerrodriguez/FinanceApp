@@ -21,7 +21,7 @@ export function IneInflationBlock() {
         </p>
       ) : null}
       {status === 'error' ? (
-        <p className={`mt-1 text-sm text-amber-700 dark:text-amber-300`}>
+        <p className={`mt-1 text-sm text-[var(--color-warning)]`}>
           {t('projection.sources.inflationError')}
         </p>
       ) : null}
@@ -41,7 +41,7 @@ export function IneInflationBlock() {
         href={INE_IPC_SOURCE_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-2 inline-block text-xs font-medium text-emerald-600 hover:underline dark:text-emerald-400"
+        className="mt-2 inline-block text-xs font-medium text-[var(--accent)] hover:underline"
       >
         {t('projection.sources.inflationSource')}
       </a>

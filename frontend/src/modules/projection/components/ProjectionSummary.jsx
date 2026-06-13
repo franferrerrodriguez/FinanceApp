@@ -64,7 +64,7 @@ export function ProjectionSummary({
         <p
           className={`rounded-xl border px-4 py-3 text-sm ${
             finalDebt <= 0
-              ? 'border-emerald-500/35 bg-emerald-500/10 text-emerald-950 dark:text-emerald-100'
+              ? '[border:0.5px_solid_rgba(29,158,117,0.35)] bg-[rgba(29,158,117,0.10)] text-[var(--color-positive)]'
               : `${ui.cardMuted} ${ui.text}`
           }`}
         >

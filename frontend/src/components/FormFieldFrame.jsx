@@ -49,7 +49,7 @@ export function FormFieldFrame({
     <div className={`flex min-w-0 flex-col ${className}`}>
       <span className={labelClass}>
         {label}
-        {required ? <span className="text-emerald-500"> *</span> : null}
+        {required ? <span className="text-[var(--accent)]"> *</span> : null}
       </span>
       {showHint ? (
         <p

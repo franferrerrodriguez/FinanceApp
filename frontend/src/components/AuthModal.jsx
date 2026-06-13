@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import { AlertTriangle, Check, Mail, User, X } from 'lucide-react';
 import { useAuthModal } from '../context/AuthModalContext';
 import { isAuthAvailable, signInWithEmail, signUpWithEmail } from '../lib/auth';
 import { isSimpleAuthMode } from '../lib/authConfig';
@@ -115,6 +116,17 @@ export function AuthModal() {
     headerSubtitle = '';
   }
 
+  const phaseIcon =
+    phase === 'confirm_email' ? (
+      <Mail size={22} />
+    ) : phase === 'success' ? (
+      <Check size={22} />
+    ) : phase === 'migration_failed' ? (
+      <AlertTriangle size={22} />
+    ) : (
+      <User size={22} />
+    );
+
   return createPortal(
     <div className="fixed inset-0 z-[210] flex items-end justify-center p-4 sm:items-center">
       <button
@@ -130,30 +142,34 @@ export function AuthModal() {
         aria-labelledby={titleId}
         className={ui.modalPanel}
       >
-        <AuthModalHeader
-          titleId={titleId}
-          title={headerTitle}
-          subtitle={headerSubtitle}
-          onClose={closeAuthModal}
-          disabled={submitting}
-          icon={
-            phase === 'confirm_email' ? (
-              <MailIcon />
-            ) : phase === 'success' ? (
-              <CheckIcon />
-            ) : phase === 'migration_failed' ? (
-              <AlertIcon />
-            ) : (
-              <UserIcon />
-            )
-          }
-        />
+        <div className="relative [border-bottom:0.5px_solid_rgba(255,255,255,0.08)] px-6 py-5">
+          <button
+            type="button"
+            className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-muted)] transition hover:bg-[var(--bg-hover)] hover:text-[var(--text-secondary)]"
+            aria-label={t('auth.close')}
+            disabled={submitting}
+            onClick={closeAuthModal}
+          >
+            <X size={18} />
+          </button>
+          <div className="flex items-start gap-3 pr-8">
+            <div className="mt-0.5 shrink-0 text-[var(--accent)]">{phaseIcon}</div>
+            <div className="min-w-0">
+              <h2 id={titleId} className={`text-lg font-semibold tracking-tight ${ui.heading}`}>
+                {headerTitle}
+              </h2>
+              {headerSubtitle ? (
+                <p className={`mt-1 text-sm leading-snug ${ui.textMuted}`}>{headerSubtitle}</p>
+              ) : null}
+            </div>
+          </div>
+        </div>
 
         <div className={ui.modalBody}>
           {phase === 'confirm_email' && (
             <div className="text-center" role="status" aria-live="polite">
               <div className={ui.authIconWrap}>
-                <MailIcon large />
+                <Mail size={28} />
               </div>
               <p className={`mt-5 text-sm leading-relaxed ${ui.text}`}>
                 {t('auth.confirmEmailBody')}
@@ -179,7 +195,7 @@ export function AuthModal() {
           {phase === 'success' && (
             <div className="text-center" role="status" aria-live="polite">
               <div className={ui.authIconWrap}>
-                <CheckIcon large />
+                <Check size={28} />
               </div>
               <p className={`mt-4 text-sm ${ui.text}`}>{t('auth.success')}</p>
             </div>
@@ -188,7 +204,7 @@ export function AuthModal() {
           {phase === 'migration_failed' && (
             <div className="text-center" role="status">
               <div className={ui.authIconWrap}>
-                <AlertIcon large />
+                <AlertTriangle size={28} />
               </div>
               <p className={`mt-4 text-sm leading-relaxed ${ui.text}`}>
                 {t('auth.migrationFailed')}
@@ -256,7 +272,7 @@ export function AuthModal() {
                 />
                 {errorKey && (
                   <p
-                    className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300"
+                    className="rounded-xl [border:0.5px_solid_rgba(226,75,74,0.25)] bg-[rgba(226,75,74,0.10)] px-3 py-2 text-sm text-[var(--color-negative)]"
                     role="alert"
                   >
                     {t(errorKey)}
@@ -308,39 +324,10 @@ export function AuthModal() {
   );
 }
 
-function AuthModalHeader({ titleId, title, subtitle, onClose, disabled, icon }) {
-  const { t } = useTranslation();
-
-  return (
-    <div className="relative border-b border-slate-100 px-6 py-5 dark:border-slate-800">
-      <button
-        type="button"
-        className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-        aria-label={t('auth.close')}
-        disabled={disabled}
-        onClick={onClose}
-      >
-        <CloseIcon />
-      </button>
-      <div className="flex items-start gap-3 pr-8">
-        <div className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400">{icon}</div>
-        <div className="min-w-0">
-          <h2 id={titleId} className={`text-lg font-semibold tracking-tight ${ui.heading}`}>
-            {title}
-          </h2>
-          {subtitle ? (
-            <p className={`mt-1 text-sm leading-snug ${ui.textMuted}`}>{subtitle}</p>
-          ) : null}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function Field({ label, id, children }) {
   return (
     <div>
-      <label htmlFor={id} className={`${ui.formFieldLabel} ${ui.textLabel} ${ui.formFieldHintAfter}`}>
+      <label htmlFor={id} className={`${ui.formFieldLabel} ${ui.formFieldHintAfter}`}>
         {label}
       </label>
       {children}
@@ -353,57 +340,11 @@ function StepBadge({ n, done = false }) {
     <span
       className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
         done
-          ? 'bg-emerald-500 text-slate-950'
-          : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
+          ? 'bg-[var(--accent)] text-white'
+          : 'bg-[rgba(255,255,255,0.10)] text-[var(--text-secondary)]'
       }`}
     >
       {done ? '✓' : n}
     </span>
-  );
-}
-
-function CloseIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function UserIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
-      <circle cx="12" cy="8" r="4" />
-      <path d="M5 20c0-4 3.5-6 7-6s7 2 7 6" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function MailIcon({ large = false }) {
-  const size = large ? 28 : 22;
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
-      <rect x="3" y="5" width="18" height="14" rx="2" />
-      <path d="M3 7l9 6 9-6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function CheckIcon({ large = false }) {
-  const size = large ? 28 : 22;
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <path d="M5 12l5 5L19 7" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function AlertIcon({ large = false }) {
-  const size = large ? 28 : 22;
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
-      <path d="M12 9v4M12 17h.01" strokeLinecap="round" />
-      <path d="M10.3 4.3h3.4L20 19H4L10.3 4.3z" strokeLinejoin="round" />
-    </svg>
   );
 }

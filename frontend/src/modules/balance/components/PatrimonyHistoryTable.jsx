@@ -56,7 +56,7 @@ export function PatrimonyHistoryTable({ assets, liabilities, snapshots }) {
           <thead>
             <tr className={`border-b ${ui.divider}`}>
               <th
-                className={`sticky left-0 z-10 min-w-[10rem] bg-white px-3 py-2 text-left text-xs font-semibold dark:bg-slate-900 ${ui.textLabel}`}
+                className={`sticky left-0 z-10 min-w-[10rem] bg-[var(--bg-secondary)] px-3 py-2 text-left text-xs font-semibold ${ui.textLabel}`}
               >
                 {t('balance.patrimony.historyRow')}
               </th>
@@ -74,10 +74,10 @@ export function PatrimonyHistoryTable({ assets, liabilities, snapshots }) {
             {table.categoryTotals.map((row) => (
               <tr
                 key={row.category}
-                className={`border-b border-dashed ${ui.divider} bg-slate-50/50 dark:bg-slate-800/30`}
+                className={`border-b border-dashed ${ui.divider} bg-[rgba(255,255,255,0.02)]`}
               >
                 <td
-                  className={`sticky left-0 z-10 bg-slate-50/90 px-3 py-1.5 text-xs font-medium dark:bg-slate-800/90 ${ui.textMuted}`}
+                  className={`sticky left-0 z-10 bg-[var(--bg-secondary)] px-3 py-1.5 text-xs font-medium ${ui.textMuted}`}
                 >
                   {t(`categories.asset.${row.category}`)}
                 </td>
@@ -95,7 +95,7 @@ export function PatrimonyHistoryTable({ assets, liabilities, snapshots }) {
             {table.valueGrid.map(({ item, values }) => (
               <tr key={`${item.type}-${item.id}`} className={`border-b ${ui.divider}`}>
                 <td
-                  className={`sticky left-0 z-10 bg-white px-3 py-2 dark:bg-slate-900 ${ui.textLabel}`}
+                  className={`sticky left-0 z-10 bg-[var(--bg-secondary)] px-3 py-2 ${ui.textLabel}`}
                 >
                   <span className="block font-medium">{item.name}</span>
                   {item.sublabel ? (
@@ -157,9 +157,9 @@ function SummaryRow({
   prevValues,
 }) {
   return (
-    <tr className={`border-t-2 ${ui.divider} bg-slate-50/80 dark:bg-slate-800/50`}>
+    <tr className={`border-t-2 ${ui.divider} bg-[rgba(255,255,255,0.03)]`}>
       <td
-        className={`sticky left-0 z-10 bg-slate-50/95 px-3 py-2 text-sm font-semibold dark:bg-slate-800/95 ${ui.heading}`}
+        className={`sticky left-0 z-10 bg-[var(--bg-tertiary)] px-3 py-2 text-sm font-semibold ${ui.heading}`}
       >
         {label}
       </td>
@@ -188,8 +188,8 @@ function SummaryRow({
               <span
                 className={`block text-xs ${
                   delta >= 0
-                    ? 'text-emerald-600 dark:text-emerald-400'
-                    : 'text-red-600 dark:text-red-400'
+                    ? 'text-[var(--color-positive)]'
+                    : 'text-[var(--color-negative)]'
                 }`}
               >
                 {delta >= 0 ? '+' : ''}

@@ -1,12 +1,10 @@
-import { ui } from '../lib/uiClasses';
+import { X } from 'lucide-react';
 
-const VARIANT_STYLES = {
-  success:
-    'border-emerald-500/35 bg-emerald-50 text-emerald-950 dark:border-emerald-500/40 dark:bg-emerald-950/90 dark:text-emerald-50',
-  error:
-    'border-red-500/35 bg-red-50 text-red-950 dark:border-red-500/40 dark:bg-red-950/90 dark:text-red-50',
-  info:
-    'border-slate-300/80 bg-white text-slate-800 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100',
+const VARIANT_BORDER = {
+  success: 'border-l-[var(--color-positive)]',
+  error: 'border-l-[var(--color-negative)]',
+  info: 'border-l-[var(--color-info)]',
+  warn: 'border-l-[var(--color-warning)]',
 };
 
 export function ToastStack({ toasts, onDismiss }) {
@@ -18,23 +16,26 @@ export function ToastStack({ toasts, onDismiss }) {
       aria-live="polite"
       aria-relevant="additions"
     >
-      {toasts.map((toast) => (
-        <div
-          key={toast.id}
-          role="status"
-          className={`pointer-events-auto flex max-w-sm items-start gap-3 rounded-xl border px-4 py-3 text-sm leading-snug shadow-lg ${VARIANT_STYLES[toast.variant] ?? VARIANT_STYLES.info}`}
-        >
-          <p className="min-w-0 flex-1">{toast.message}</p>
-          <button
-            type="button"
-            onClick={() => onDismiss(toast.id)}
-            className={`shrink-0 rounded-md px-1 text-xs font-semibold opacity-70 transition hover:opacity-100 ${ui.textMuted}`}
-            aria-label="Close"
+      {toasts.map((toast) => {
+        const borderClass = VARIANT_BORDER[toast.variant] ?? VARIANT_BORDER.info;
+        return (
+          <div
+            key={toast.id}
+            role="status"
+            className={`pointer-events-auto flex max-w-sm items-start gap-3 rounded-xl [border:0.5px_solid_rgba(255,255,255,0.14)] border-l-4 ${borderClass} bg-[#1A2030] px-4 py-3 text-sm leading-snug shadow-lg text-[var(--text-secondary)]`}
           >
-            ×
-          </button>
-        </div>
-      ))}
+            <p className="min-w-0 flex-1">{toast.message}</p>
+            <button
+              type="button"
+              onClick={() => onDismiss(toast.id)}
+              className="shrink-0 rounded-md p-0.5 text-[var(--text-muted)] transition hover:text-[var(--text-primary)]"
+              aria-label="Close"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        );
+      })}
     </div>
   );
 }

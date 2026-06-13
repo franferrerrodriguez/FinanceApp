@@ -331,7 +331,7 @@ export function AmortizationCalculator({
               </div>
 
               <div
-                className={`rounded-xl border border-emerald-500/40 bg-emerald-50/80 p-4 text-sm dark:bg-emerald-950/30 ${ui.heading}`}
+                className={`rounded-xl [border:0.5px_solid_rgba(29,158,117,0.40)] bg-[rgba(29,158,117,0.10)] p-4 text-sm ${ui.heading}`}
               >
                 <p className="font-semibold">
                   {t('balance.amortization.interestSaved', {
@@ -453,9 +453,9 @@ function isValidRateDraft(raw) {
 }
 
 const MORTGAGE_FIELD_SHELL =
-  'flex h-full flex-col rounded-xl border border-slate-200/80 p-3 dark:border-slate-700/80';
+  'flex h-full flex-col rounded-xl [border:0.5px_solid_rgba(255,255,255,0.10)] p-3';
 const MORTGAGE_FIELD_SHELL_WARN =
-  'flex h-full flex-col rounded-xl border border-amber-400/50 bg-amber-50/40 p-3 dark:bg-amber-950/15';
+  'flex h-full flex-col rounded-xl [border:0.5px_solid_rgba(239,159,39,0.40)] bg-[rgba(239,159,39,0.08)] p-3';
 
 function MortgageDataField({
   label,
@@ -471,7 +471,7 @@ function MortgageDataField({
     highlight && missingHint ? missingHint : hint || null;
   const footnoteClass =
     highlight && missingHint
-      ? 'text-amber-800 dark:text-amber-200'
+      ? 'text-[var(--color-warning)]'
       : ui.textMuted;
 
   return (
@@ -516,11 +516,11 @@ function MortgageDataField({
 
 function PortfolioBanner({ tone, message }) {
   const styles = {
-    info: 'border-sky-500/40 bg-sky-50/80 text-sky-950 dark:bg-sky-950/30 dark:text-sky-100',
+    info: '[border:0.5px_solid_rgba(55,138,221,0.40)] bg-[rgba(55,138,221,0.10)] text-[var(--color-info)]',
     success:
-      'border-emerald-500/40 bg-emerald-50/80 text-emerald-950 dark:bg-emerald-950/30 dark:text-emerald-100',
+      '[border:0.5px_solid_rgba(29,158,117,0.40)] bg-[rgba(29,158,117,0.10)] text-[var(--color-positive)]',
     neutral:
-      'border-slate-400/40 bg-slate-50/80 text-slate-800 dark:bg-slate-900/50 dark:text-slate-200',
+      '[border:0.5px_solid_rgba(255,255,255,0.10)] bg-[rgba(255,255,255,0.04)] text-[var(--text-secondary)]',
   };
   return (
     <p className={`rounded-xl border p-3 text-sm ${styles[tone] ?? styles.neutral}`}>

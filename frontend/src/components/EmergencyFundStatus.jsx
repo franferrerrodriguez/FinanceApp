@@ -5,23 +5,23 @@ import { ui } from '../lib/uiClasses';
 import { formatMoney } from '../utils/formatters';
 
 const STATUS_BAR = {
-  danger: 'bg-red-500',
-  warn: 'bg-amber-500',
-  good: 'bg-emerald-500',
-  unavailable: 'bg-slate-300 dark:bg-slate-600',
+  danger: 'bg-[var(--color-negative)]',
+  warn: 'bg-[var(--color-warning)]',
+  good: 'bg-[var(--color-positive)]',
+  unavailable: 'bg-[var(--text-disabled)]',
 };
 
 const STATUS_TEXT = {
-  danger: 'text-red-600 dark:text-red-400',
-  warn: 'text-amber-600 dark:text-amber-400',
-  good: 'text-emerald-600 dark:text-emerald-400',
+  danger: 'text-[var(--color-negative)]',
+  warn: 'text-[var(--color-warning)]',
+  good: 'text-[var(--color-positive)]',
   unavailable: ui.textMuted,
 };
 
 const STATUS_BOX = {
-  danger: 'border-red-500/35 bg-red-500/10 dark:border-red-500/30 dark:bg-red-950/40',
-  warn: 'border-amber-500/35 bg-amber-500/10 dark:border-amber-500/30 dark:bg-amber-950/40',
-  good: 'border-emerald-500/40 bg-emerald-500/10 dark:border-emerald-500/35 dark:bg-emerald-950/50',
+  danger: '[border:0.5px_solid_rgba(226,75,74,0.30)] bg-[rgba(226,75,74,0.10)]',
+  warn: '[border:0.5px_solid_rgba(239,159,39,0.30)] bg-[rgba(239,159,39,0.10)]',
+  good: '[border:0.5px_solid_rgba(29,158,117,0.35)] bg-[rgba(29,158,117,0.10)]',
   unavailable: ui.cardMuted,
 };
 
@@ -75,7 +75,7 @@ export function EmergencyFundStatus({ metrics, variant = 'card' }) {
   const progressBlock = (
     <>
       <div
-        className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700"
+        className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-[rgba(255,255,255,0.08)]"
         role="progressbar"
         aria-valuenow={pct}
         aria-valuemin={0}
@@ -133,7 +133,7 @@ export function EmergencyFundStatus({ metrics, variant = 'card' }) {
       <p
         className={`text-xs font-semibold uppercase tracking-wide ${
           status === 'good'
-            ? 'text-emerald-800 dark:text-emerald-300'
+            ? 'text-[var(--color-positive)]'
             : status === 'unavailable'
               ? ui.textMuted
               : textClass
@@ -151,7 +151,7 @@ function PatrimonyLink({ className = '' }) {
   return (
     <Link
       to={balancePath(BALANCE_TAB.PATRIMONY)}
-      className={`inline-block text-sm font-semibold text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400 ${className}`}
+      className={`inline-block text-sm font-semibold text-[var(--accent)] underline-offset-2 hover:underline ${className}`}
     >
       {t('balance.cashflow.emergencyFundViewPatrimony')}
     </Link>

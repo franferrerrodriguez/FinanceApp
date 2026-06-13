@@ -32,16 +32,16 @@ const HEAD_HEIGHT_WIDE = 52;
 const LIST_MAX_HEIGHT = 480;
 
 function rowBg(isEven) {
-  return isEven ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800';
+  return isEven ? 'bg-[var(--bg-secondary)]' : 'bg-[rgba(255,255,255,0.02)]';
 }
 
 function headBg() {
-  return 'bg-slate-50 dark:bg-slate-900';
+  return 'bg-[var(--bg-tertiary)]';
 }
 
 function stickyDateShadow(scrolledX) {
   return scrolledX
-    ? 'shadow-[4px_0_10px_-2px_rgba(15,23,42,0.12)] dark:shadow-[4px_0_10px_-2px_rgba(0,0,0,0.45)]'
+    ? 'shadow-[4px_0_10px_-2px_rgba(0,0,0,0.40)]'
     : '';
 }
 
@@ -81,7 +81,7 @@ function AmortizationColumnHeader({
       className={`flex min-w-0 items-center overflow-visible py-1 ${columnPaddingClass(columnKey)} ${
         alignRight ? 'justify-end text-right' : 'justify-start text-left'
       } ${separator ? `border-r ${ui.divider}` : ''} ${
-        isShare ? 'border-l-2 border-indigo-200/90 dark:border-indigo-800/70' : ''
+        isShare ? 'border-l-2 border-[rgba(93,202,165,0.30)]' : ''
       } ${
         isSticky
           ? `sticky z-30 ${headBg()} ${stickyDateShadow(scrolledX)} rounded-tl-2xl`
@@ -92,7 +92,7 @@ function AmortizationColumnHeader({
         className={`${
           toneClass
             ? ''
-            : 'font-semibold text-slate-700 dark:text-slate-300'
+            : 'font-semibold text-[var(--text-primary)]'
         } ${
           narrowViewport
             ? 'text-[10px] leading-snug whitespace-normal'
@@ -216,7 +216,7 @@ export function AmortizationScheduleTable({ rows, totals, formatDate, sharePerce
       <div className="relative w-full min-w-0 overflow-hidden rounded-t-2xl">
         {canScrollRight && narrowViewport ? (
           <div
-            className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-white via-white/95 to-transparent dark:from-slate-900 dark:via-slate-900/95"
+            className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-[var(--bg-secondary)] via-[var(--bg-secondary)]/95 to-transparent"
             aria-hidden
           />
         ) : null}
@@ -291,7 +291,7 @@ function AmortizationRow({
   const bg = rowBg(isEven);
   const isCurrent = row.month === 1;
   const currentRow = isCurrent
-    ? 'ring-1 ring-inset ring-emerald-500/25 dark:ring-emerald-500/20'
+    ? 'ring-1 ring-inset ring-[rgba(29,158,117,0.25)]'
     : '';
 
   const cells = {
@@ -333,7 +333,7 @@ function AmortizationRow({
             className={`flex min-w-0 items-center overflow-hidden tabular-nums ${columnPaddingClass(key)} ${textSize} whitespace-nowrap ${
               alignRight ? 'justify-end text-right' : 'justify-start text-left'
             } ${separator ? `border-r ${ui.divider}` : ''} ${
-              isShare ? 'border-l-2 border-indigo-200/90 dark:border-indigo-800/70' : ''
+              isShare ? 'border-l-2 border-[rgba(93,202,165,0.30)]' : ''
             } ${
               isSticky
                 ? `sticky z-10 ${bg} ${currentRow} ${ui.textLabel} ${stickyDateShadow(scrolledX)} ${

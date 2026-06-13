@@ -6,7 +6,7 @@ import { ui } from '../lib/uiClasses';
 import { formatMonthKeyLong } from '../utils/monthLabel';
 
 const iconBtn =
-  'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-600 transition hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 disabled:pointer-events-none disabled:opacity-35 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:bg-slate-700/80';
+  'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl [border:0.5px_solid_rgba(255,255,255,0.12)] bg-[var(--bg-tertiary)] text-[var(--text-secondary)] transition hover:[border-color:rgba(255,255,255,0.20)] hover:bg-[var(--bg-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(29,158,117,0.40)] disabled:pointer-events-none disabled:opacity-35';
 
 /**
  * Month picker with prev/next (no native &lt;select&gt;).
@@ -56,13 +56,13 @@ export function MonthKeyPicker({
         ? {
             text: t('balance.patrimony.closeMonthPending'),
             className:
-              'bg-amber-500/15 text-amber-800 ring-amber-500/30 dark:bg-amber-500/20 dark:text-amber-200 dark:ring-amber-500/40',
+              'bg-[rgba(239,159,39,0.15)] text-[var(--color-warning)] ring-[rgba(239,159,39,0.30)]',
           }
         : current.hasClose
           ? {
               text: t('balance.patrimony.closeMonthClosed'),
               className:
-                'bg-emerald-500/15 text-emerald-800 ring-emerald-500/30 dark:bg-emerald-500/20 dark:text-emerald-300 dark:ring-emerald-500/40',
+                'bg-[rgba(29,158,117,0.15)] text-[var(--color-positive)] ring-[rgba(29,158,117,0.30)]',
             }
           : null
       : null;

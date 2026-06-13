@@ -44,7 +44,7 @@ export function SalaryHistoryTable({
       >
         <table className="w-full min-w-[28rem] border-separate border-spacing-0 text-sm">
           <thead>
-            <tr className={`bg-slate-50/90 dark:bg-slate-800/50`}>
+            <tr className="bg-[rgba(255,255,255,0.03)]">
               <th
                 className={`rounded-tl-xl border-b px-3 py-2.5 text-left text-xs font-semibold ${ui.divider} ${ui.textLabel}`}
               >
@@ -84,7 +84,7 @@ export function SalaryHistoryTable({
                       {formatMonthKey(item.effectiveFrom, locale)}
                     </span>
                     {isCurrent ? (
-                      <span className="mt-0.5 inline-block rounded-full bg-emerald-600 px-1.5 py-px text-[0.65rem] font-semibold uppercase tracking-wide text-white dark:bg-emerald-500 dark:text-slate-950">
+                      <span className="mt-0.5 inline-block rounded-full bg-[var(--accent)] px-1.5 py-px text-[0.65rem] font-semibold uppercase tracking-wide text-white">
                         {t('balance.cashflow.salaryHistoryCurrent')}
                       </span>
                     ) : null}

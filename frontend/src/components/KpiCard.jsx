@@ -13,33 +13,33 @@ export function getNetWorthTone(netWorth) {
   return 'netWorth';
 }
 
-/** Shared KPI value colors (Dashboard + Patrimonio). */
+/** Shared KPI value colors — map to DS semantic tokens. */
 export const KPI_VALUE_TONE_CLASS = {
   default: ui.heading,
-  netWorth: 'text-emerald-600 dark:text-emerald-400',
-  assets: 'text-sky-600 dark:text-sky-400',
-  positive: 'text-teal-600 dark:text-teal-400',
-  income: 'text-sky-600 dark:text-sky-400',
-  savings: 'text-teal-600 dark:text-teal-400',
-  expense: 'text-orange-500 dark:text-orange-400',
-  leisure: 'text-amber-500 dark:text-amber-400',
-  warn: 'text-amber-600 dark:text-amber-400',
-  danger: 'text-red-600 dark:text-red-400',
-  liability: 'text-red-600 dark:text-red-400',
+  netWorth: 'text-[var(--color-positive)]',
+  assets: 'text-[var(--color-info)]',
+  positive: 'text-[var(--color-positive)]',
+  income: 'text-[var(--color-info)]',
+  savings: 'text-[var(--color-positive)]',
+  expense: 'text-[var(--color-negative)]',
+  leisure: 'text-[var(--color-warning)]',
+  warn: 'text-[var(--color-warning)]',
+  danger: 'text-[var(--color-negative)]',
+  liability: 'text-[var(--color-negative)]',
 };
 
 const ACCENT_BORDER = {
-  netWorth: 'border-t-emerald-500',
-  assets: 'border-t-sky-500',
-  income: 'border-t-sky-500',
-  savings: 'border-t-teal-500',
-  expense: 'border-t-orange-500',
-  leisure: 'border-t-amber-500',
-  positive: 'border-t-teal-500',
-  warn: 'border-t-amber-500',
-  danger: 'border-t-red-500',
-  default: 'border-t-slate-300 dark:border-t-slate-600',
-  liability: 'border-t-red-500',
+  netWorth: 'border-t-[var(--color-positive)]',
+  assets: 'border-t-[var(--color-info)]',
+  income: 'border-t-[var(--color-info)]',
+  savings: 'border-t-[var(--color-positive)]',
+  expense: 'border-t-[var(--color-negative)]',
+  leisure: 'border-t-[var(--color-warning)]',
+  positive: 'border-t-[var(--color-positive)]',
+  warn: 'border-t-[var(--color-warning)]',
+  danger: 'border-t-[var(--color-negative)]',
+  default: 'border-t-[rgba(255,255,255,0.18)]',
+  liability: 'border-t-[var(--color-negative)]',
 };
 
 export function getKpiValueClass(tone = 'default') {

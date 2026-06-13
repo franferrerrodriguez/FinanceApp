@@ -36,9 +36,9 @@ function SetupStepRow({
 }) {
   return (
     <li
-      className={`flex flex-wrap items-start justify-between gap-3 rounded-xl border px-4 py-3 ${
+      className={`flex flex-wrap items-start justify-between gap-3 rounded-xl px-4 py-3 ${
         isNext && !complete
-          ? 'border-emerald-300 bg-emerald-50/80 dark:border-emerald-700/60 dark:bg-emerald-950/30'
+          ? '[border:0.5px_solid_rgba(29,158,117,0.40)] bg-[rgba(29,158,117,0.08)]'
           : ui.cardInset
       }`}
     >
@@ -46,8 +46,8 @@ function SetupStepRow({
         <span
           className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
             complete
-              ? 'bg-emerald-500 text-white'
-              : 'border border-slate-300 text-slate-600 dark:border-slate-600 dark:text-slate-300'
+              ? 'bg-[var(--accent)] text-white'
+              : '[border:0.5px_solid_rgba(255,255,255,0.18)] text-[var(--text-secondary)]'
           }`}
           aria-hidden
         >
@@ -58,7 +58,7 @@ function SetupStepRow({
             <p className={`text-sm font-medium ${ui.textLabel}`}>{label}</p>
             {optional ? (
               <span
-                className={`rounded-full border border-slate-200 px-2 py-0.5 text-xs font-medium dark:border-slate-600 ${ui.textMuted}`}
+                className={`rounded-full [border:0.5px_solid_rgba(255,255,255,0.12)] px-2 py-0.5 text-xs font-medium ${ui.textMuted}`}
               >
                 {optional}
               </span>

@@ -34,8 +34,8 @@ export function AppAlertsButton({ className = '' }) {
           type="button"
           className={`relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition ${
             open
-              ? 'border-emerald-500/60 bg-emerald-500/10 ring-2 ring-emerald-500/25'
-              : `${ui.profileChip} hover:border-slate-300 dark:hover:border-slate-600`
+              ? '[border-color:rgba(29,158,117,0.60)] bg-[rgba(29,158,117,0.10)] ring-2 ring-[rgba(29,158,117,0.25)]'
+              : `${ui.profileChip} hover:[border-color:rgba(255,255,255,0.18)]`
           }`}
           aria-expanded={open}
           aria-haspopup="dialog"
@@ -47,11 +47,11 @@ export function AppAlertsButton({ className = '' }) {
           }
           onClick={() => setOpen((value) => !value)}
         >
-          <BellIcon className="h-5 w-5 text-slate-600 dark:text-slate-300" />
+          <BellIcon className="h-5 w-5 text-[var(--text-secondary)]" />
           {count > 0 ? (
             <span
               className={`absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[0.65rem] font-bold text-white ${
-                hasDanger ? 'bg-red-600' : 'bg-amber-500'
+                hasDanger ? 'bg-[var(--color-negative)]' : 'bg-[var(--color-warning)]'
               }`}
               aria-hidden
             >
@@ -94,7 +94,7 @@ export function AppAlertsButton({ className = '' }) {
                   <button
                     type="button"
                     onClick={close}
-                    className={`absolute right-3 top-3 rounded-lg p-1.5 ${ui.textMuted} hover:bg-slate-100 dark:hover:bg-slate-800`}
+                    className={`absolute right-3 top-3 rounded-lg p-1.5 ${ui.textMuted} hover:bg-[var(--bg-hover)]`}
                     aria-label={t('menu.close')}
                   >
                     <CloseIcon />

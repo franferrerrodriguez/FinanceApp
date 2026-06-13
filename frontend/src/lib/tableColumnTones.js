@@ -7,58 +7,49 @@ export const TABLE_CELL_TONE = {
     body: '',
   },
   liability: {
-    header:
-      'bg-red-50 font-semibold text-red-800 dark:bg-red-950/45 dark:text-red-300',
-    body: 'font-medium text-red-700 dark:text-red-400',
-    bodyBg: 'bg-red-50/55 dark:bg-red-950/20',
+    header: 'bg-[rgba(226,75,74,0.10)] font-semibold text-[var(--color-negative)]',
+    body: 'font-medium text-[var(--color-negative)]',
+    bodyBg: 'bg-[rgba(226,75,74,0.05)]',
   },
   contribution: {
-    header:
-      'bg-emerald-50 font-semibold text-emerald-800 dark:bg-emerald-950/45 dark:text-emerald-300',
-    body: 'font-medium text-emerald-700 dark:text-emerald-400',
-    bodyBg: 'bg-emerald-50/50 dark:bg-emerald-950/18',
+    header: 'bg-[rgba(29,158,117,0.10)] font-semibold text-[var(--color-positive)]',
+    body: 'font-medium text-[var(--color-positive)]',
+    bodyBg: 'bg-[rgba(29,158,117,0.05)]',
   },
   interest: {
-    header:
-      'bg-orange-50 font-semibold text-orange-800 dark:bg-orange-950/45 dark:text-orange-300',
-    body: 'font-medium text-orange-700 dark:text-orange-400',
-    bodyBg: 'bg-orange-50/50 dark:bg-orange-950/18',
+    header: 'bg-[rgba(239,159,39,0.10)] font-semibold text-[var(--color-warning)]',
+    body: 'font-medium text-[var(--color-warning)]',
+    bodyBg: 'bg-[rgba(239,159,39,0.05)]',
   },
   payment: {
-    header:
-      'bg-slate-100 font-semibold text-slate-800 dark:bg-slate-800/80 dark:text-slate-200',
-    body: 'font-medium text-slate-800 dark:text-slate-200',
-    bodyBg: 'bg-slate-100/60 dark:bg-slate-800/50',
+    header: 'bg-[rgba(255,255,255,0.06)] font-semibold text-[var(--text-primary)]',
+    body: 'font-medium text-[var(--text-primary)]',
+    bodyBg: 'bg-[rgba(255,255,255,0.03)]',
   },
   income: {
-    header:
-      'bg-sky-50 font-semibold text-sky-800 dark:bg-sky-950/45 dark:text-sky-300',
-    body: 'font-medium text-sky-700 dark:text-sky-400',
-    bodyBg: 'bg-sky-50/50 dark:bg-sky-950/18',
+    header: 'bg-[rgba(55,138,221,0.10)] font-semibold text-[var(--color-info)]',
+    body: 'font-medium text-[var(--color-info)]',
+    bodyBg: 'bg-[rgba(55,138,221,0.05)]',
   },
   expense: {
-    header:
-      'bg-amber-50 font-semibold text-amber-900 dark:bg-amber-950/45 dark:text-amber-300',
-    body: 'font-medium text-amber-800 dark:text-amber-400',
-    bodyBg: 'bg-amber-50/45 dark:bg-amber-950/15',
+    header: 'bg-[rgba(239,159,39,0.08)] font-semibold text-[var(--color-warning)]',
+    body: 'font-medium text-[var(--color-warning)]',
+    bodyBg: 'bg-[rgba(239,159,39,0.04)]',
   },
   patrimony: {
-    header:
-      'bg-teal-50 font-bold text-teal-900 dark:bg-teal-950/50 dark:text-teal-300',
-    body: 'font-bold text-teal-800 dark:text-teal-300',
-    bodyBg: 'bg-teal-50/65 dark:bg-teal-950/28',
+    header: 'bg-[rgba(29,158,117,0.12)] font-bold text-[var(--color-positive)]',
+    body: 'font-bold text-[var(--color-positive)]',
+    bodyBg: 'bg-[rgba(29,158,117,0.06)]',
   },
   return: {
-    header:
-      'bg-violet-50 font-semibold text-violet-800 dark:bg-violet-950/45 dark:text-violet-300',
-    body: 'font-medium text-violet-700 dark:text-violet-400',
-    bodyBg: 'bg-violet-50/50 dark:bg-violet-950/18',
+    header: 'bg-[rgba(55,138,221,0.08)] font-semibold text-[var(--color-info)]',
+    body: 'font-medium text-[var(--color-info)]',
+    bodyBg: 'bg-[rgba(55,138,221,0.04)]',
   },
   share: {
-    header:
-      'bg-indigo-50/90 font-semibold text-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-200',
-    body: 'font-medium text-indigo-800 dark:text-indigo-300',
-    bodyBg: 'bg-indigo-50/55 dark:bg-indigo-950/22',
+    header: 'bg-[rgba(93,202,165,0.10)] font-semibold text-[var(--accent-light)]',
+    body: 'font-medium text-[var(--accent-light)]',
+    bodyBg: 'bg-[rgba(93,202,165,0.05)]',
   },
 };
 

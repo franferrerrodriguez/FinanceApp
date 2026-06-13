@@ -133,7 +133,7 @@ export function StatementAnalysisPanel() {
         <div
           className={`mt-4 flex flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-10 transition ${
             dragOver
-              ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20'
+              ? '[border-color:var(--accent)] bg-[rgba(29,158,117,0.08)]'
               : `${ui.cardDashed}`
           }`}
           onDragOver={(e) => {
@@ -195,7 +195,7 @@ export function StatementAnalysisPanel() {
               {analyzing ? t('statementAnalysis.analyzing') : t('statementAnalysis.analyze')}
             </button>
             {analysisError ? (
-              <p className="text-sm text-red-600 dark:text-red-400">
+              <p className="text-sm text-[var(--color-negative)]">
                 {t(`statementAnalysis.errors.${analysisError}`)}
               </p>
             ) : null}
@@ -431,7 +431,7 @@ function CategoriesTab({ comparison }) {
               </td>
               <td
                 className={`px-2 py-2 tabular-nums ${
-                  row.diff > 0 ? 'text-red-600 dark:text-red-400' : ui.text
+                  row.diff > 0 ? 'text-[var(--color-negative)]' : ui.text
                 }`}
               >
                 {row.diff > 0
@@ -521,7 +521,7 @@ function MovementsTab({ movements, filters, onFiltersChange }) {
                 </td>
                 <td
                   className={`px-2 py-2 tabular-nums ${
-                    m.amount < 0 ? 'text-red-600 dark:text-red-400' : ui.accent
+                    m.amount < 0 ? 'text-[var(--color-negative)]' : ui.accent
                   }`}
                 >
                   {formatMoney(m.amount)}

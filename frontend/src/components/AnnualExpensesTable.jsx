@@ -25,7 +25,7 @@ export function AnnualExpensesTable({ items, onEdit, onDelete }) {
       >
         <table className="w-full min-w-[28rem] border-collapse text-sm">
           <thead>
-            <tr className={`border-b bg-slate-50/90 dark:bg-slate-800/50 ${ui.divider}`}>
+            <tr className={`border-b bg-[rgba(255,255,255,0.03)] ${ui.divider}`}>
               <th
                 className={`px-3 py-2.5 text-left text-xs font-semibold ${ui.textLabel}`}
               >

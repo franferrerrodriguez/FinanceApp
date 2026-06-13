@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { CheckCircle, AlertTriangle, Lightbulb } from 'lucide-react';
 import { ui } from '../../lib/uiClasses';
 import {
   computeDiagnostics,
-  getDiagnosticIcon,
   groupDiagnosticsByStatus,
   sortDiagnosticsByUrgency,
 } from '../../lib/diagnostics';
@@ -25,15 +25,22 @@ function formatDiagParams(params) {
   return out;
 }
 
+const STATUS_ICON = {
+  ok: { Icon: CheckCircle, color: 'text-[var(--color-positive)]' },
+  warn: { Icon: AlertTriangle, color: 'text-[var(--color-warning)]' },
+  opportunity: { Icon: Lightbulb, color: 'text-[var(--color-info)]' },
+};
+
 function DiagnosticItem({ item }) {
   const { t } = useTranslation();
   const params = formatDiagParams(item.params);
+  const { Icon, color } = STATUS_ICON[item.status] ?? STATUS_ICON.opportunity;
 
   return (
     <li className={`${ui.cardInset} p-4`}>
       <div className="flex gap-3">
-        <span className="text-lg" aria-hidden>
-          {getDiagnosticIcon(item.status)}
+        <span className={`mt-0.5 shrink-0 ${color}`} aria-hidden>
+          <Icon size={18} />
         </span>
         <div className="min-w-0 flex-1">
           <h3 className={`text-sm font-semibold ${ui.heading}`}>{t(item.titleKey, params)}</h3>

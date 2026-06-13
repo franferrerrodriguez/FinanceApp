@@ -55,16 +55,16 @@ function readMortgageDetailPreference(defaultWhenMissing) {
 }
 
 function rowBg(isEven) {
-  return isEven ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800';
+  return isEven ? 'bg-[var(--bg-secondary)]' : 'bg-[rgba(255,255,255,0.02)]';
 }
 
 function headBg() {
-  return 'bg-slate-50 dark:bg-slate-900';
+  return 'bg-[var(--bg-tertiary)]';
 }
 
 function stickyDateShadow(scrolledX) {
   return scrolledX
-    ? 'shadow-[4px_0_10px_-2px_rgba(15,23,42,0.12)] dark:shadow-[4px_0_10px_-2px_rgba(0,0,0,0.45)]'
+    ? 'shadow-[4px_0_10px_-2px_rgba(0,0,0,0.40)]'
     : '';
 }
 
@@ -108,7 +108,7 @@ function ProjectionColumnHeader({ columnKey, columnKeys, narrowViewport, scrolle
       <span className="inline-flex max-w-full items-center gap-1">
         <span
           className={`${
-            toneClass ? '' : 'font-semibold text-slate-700 dark:text-slate-300'
+            toneClass ? '' : 'font-semibold text-[var(--text-primary)]'
           } ${
             narrowViewport
               ? 'text-[10px] leading-snug whitespace-normal'
@@ -340,7 +340,7 @@ export function ProjectionDataTable() {
 
       {!hasInvestmentData ? (
         <p
-          className={`rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-950 dark:text-amber-100`}
+          className={`rounded-xl [border:0.5px_solid_rgba(239,159,39,0.30)] bg-[rgba(239,159,39,0.10)] px-4 py-3 text-sm text-[var(--color-warning)]`}
         >
           {t('projection.sources.noContributions')}
         </p>
@@ -348,7 +348,7 @@ export function ProjectionDataTable() {
 
       {mortgageNeedsRate ? (
         <p
-          className={`rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-950 dark:text-amber-100`}
+          className={`rounded-xl [border:0.5px_solid_rgba(239,159,39,0.30)] bg-[rgba(239,159,39,0.10)] px-4 py-3 text-sm text-[var(--color-warning)]`}
         >
           {t('projection.table.mortgageRateMissing')}
         </p>
@@ -379,7 +379,7 @@ export function ProjectionDataTable() {
         <div className="relative w-full min-w-0 overflow-hidden rounded-t-2xl">
           {canScrollRight && narrowViewport ? (
             <div
-              className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-white via-white/95 to-transparent dark:from-slate-900 dark:via-slate-900/95"
+              className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-[var(--bg-secondary)] via-[var(--bg-secondary)]/95 to-transparent"
               aria-hidden
             />
           ) : null}
@@ -435,7 +435,7 @@ function ProjectionRow({
 }) {
   const bg = rowBg(isEven);
   const january = row.isJanuary
-    ? 'bg-slate-100/90 dark:bg-slate-800/90'
+    ? 'bg-[rgba(255,255,255,0.04)]'
     : '';
 
   const cells = {
@@ -493,7 +493,7 @@ function ProjectionRow({
                     isYear && isLastRow ? 'rounded-bl-2xl' : ''
                   }`
                 : toneClass || ui.textLabel
-            } ${isYear ? 'font-medium text-slate-500 dark:text-slate-400' : ''}`}
+            } ${isYear ? 'font-medium text-[var(--text-muted)]' : ''}`}
           >
             {cells[key]}
           </div>

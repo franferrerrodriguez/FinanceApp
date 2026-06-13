@@ -48,10 +48,10 @@ export function UnderlineTabNav({
               aria-selected={active}
               aria-controls={`tabpanel-${tab.id}`}
               onClick={() => onChange(tab.id)}
-              className={`shrink-0 cursor-pointer whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition -mb-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950 ${
+              className={`shrink-0 cursor-pointer whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition -mb-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(29,158,117,0.40)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-primary)] ${
                 active
-                  ? 'border-emerald-500 text-emerald-700 dark:border-emerald-400 dark:text-emerald-300'
-                  : `border-transparent ${ui.textMuted} hover:text-slate-800 dark:hover:text-slate-200`
+                  ? 'border-[var(--accent)] text-[var(--accent)]'
+                  : `border-transparent ${ui.textMuted} hover:text-[var(--text-secondary)]`
               }`}
             >
               {label}

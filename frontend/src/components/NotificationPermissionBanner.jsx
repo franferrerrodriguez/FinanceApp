@@ -64,7 +64,7 @@ export function NotificationPermissionBanner() {
   if (permission === 'granted' && subscribed) {
     return (
       <div
-        className={`flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm ${ui.divider} border-emerald-500/30 bg-emerald-500/10`}
+        className={`flex flex-wrap items-center justify-between gap-3 rounded-xl [border:0.5px_solid_rgba(29,158,117,0.30)] bg-[rgba(29,158,117,0.10)] px-4 py-3 text-sm`}
         role="status"
       >
         <p className={`${ui.textLabel}`}>{t('notifications.push.active')}</p>
@@ -72,7 +72,7 @@ export function NotificationPermissionBanner() {
           type="button"
           disabled={busy}
           onClick={handleDisable}
-          className={`text-sm font-medium text-emerald-700 underline-offset-2 hover:underline disabled:opacity-50 dark:text-emerald-300`}
+          className="text-sm font-medium text-[var(--accent)] underline-offset-2 hover:underline disabled:opacity-50"
         >
           {t('notifications.push.disable')}
         </button>
@@ -90,7 +90,7 @@ export function NotificationPermissionBanner() {
 
   return (
     <div
-      className={`flex flex-col gap-3 rounded-xl border px-4 py-3 sm:flex-row sm:items-center sm:justify-between ${ui.divider} border-sky-500/30 bg-sky-500/10`}
+      className={`flex flex-col gap-3 rounded-xl border px-4 py-3 sm:flex-row sm:items-center sm:justify-between ${ui.divider} [border:0.5px_solid_rgba(55,138,221,0.30)] bg-[rgba(55,138,221,0.10)]`}
     >
       <p className={`text-sm ${ui.textLabel}`}>{t('notifications.push.prompt')}</p>
       <button

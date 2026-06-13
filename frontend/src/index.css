@@ -9,6 +9,41 @@
   --font-display: var(--font-sans);
 }
 
+/* ── Design System color tokens (dark-only palette) ─────────────── */
+:root {
+  --bg-primary:    #0D1117;
+  --bg-secondary:  #161C24;
+  --bg-tertiary:   #1E2530;
+  --bg-hover:      #242D3A;
+
+  --accent:        #1D9E75;
+  --accent-light:  #5DCAA5;
+  --accent-muted:  rgba(29, 158, 117, 0.12);
+  --accent-border: rgba(29, 158, 117, 0.30);
+
+  --text-primary:   #FFFFFF;
+  --text-secondary: #C5D0DC;
+  --text-muted:     #8A9AAD;
+  --text-disabled:  #3D4F61;
+
+  --border-subtle:  rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.10);
+  --border-strong:  rgba(255, 255, 255, 0.18);
+
+  --color-positive: #1D9E75;
+  --color-negative: #E24B4A;
+  --color-warning:  #EF9F27;
+  --color-info:     #378ADD;
+
+  /* Border shorthand helpers (for [border:var(--...)] pattern) */
+  --border-default-rule: 0.5px solid rgba(255, 255, 255, 0.10);
+  --border-subtle-rule:  0.5px solid rgba(255, 255, 255, 0.06);
+  --border-strong-rule:  0.5px solid rgba(255, 255, 255, 0.18);
+  --border-accent-rule:  0.5px solid rgba(29, 158, 117, 0.30);
+  --border-error-rule:   0.5px solid rgba(226, 75, 74, 0.50);
+  --border-focus-rule:   0.5px solid rgba(29, 158, 117, 0.50);
+}
+
 html {
   overflow-x: hidden;
   font-family: var(--font-sans);
@@ -20,6 +55,8 @@ body {
   @apply min-h-screen font-sans text-[1.0625rem] leading-[1.47] tracking-[-0.011em] antialiased;
   overflow-x: hidden;
   font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 h1,
@@ -60,15 +97,15 @@ h4 {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: stretch;
-  border-top: 1px solid rgb(226 232 240);
-  background: rgb(255 255 255 / 0.96);
+  border-top: 0.5px solid rgba(255, 255, 255, 0.08);
+  background: rgba(22, 28, 36, 0.96);
   padding-bottom: env(safe-area-inset-bottom);
   backdrop-filter: blur(12px);
 }
 
 html.dark .financia-bottom-nav {
-  border-top-color: rgb(51 65 85);
-  background: rgb(15 23 42 / 0.96);
+  border-top-color: rgba(255, 255, 255, 0.08);
+  background: rgba(22, 28, 36, 0.96);
 }
 
 .financia-bottom-nav__item {
@@ -84,7 +121,7 @@ html.dark .financia-bottom-nav {
   min-height: 3.25rem;
   padding: 0.35rem 0.15rem 0.5rem;
   text-decoration: none;
-  color: rgb(100 116 139);
+  color: #3D4F61;
   font-size: 0.625rem;
   font-weight: 500;
   letter-spacing: -0.01em;
@@ -92,16 +129,16 @@ html.dark .financia-bottom-nav {
 }
 
 html.dark .financia-bottom-nav__item {
-  color: rgb(148 163 184);
+  color: #3D4F61;
 }
 
 .financia-bottom-nav__item--active {
-  color: rgb(5 150 105);
+  color: #1D9E75;
   font-weight: 600;
 }
 
 html.dark .financia-bottom-nav__item--active {
-  color: rgb(52 211 153);
+  color: #1D9E75;
 }
 
 .financia-bottom-nav__icon {
@@ -128,7 +165,7 @@ html.dark .financia-bottom-nav__item--active {
   height: 2px;
   transform: translateX(-50%);
   border-radius: 9999px;
-  background: rgb(16 185 129);
+  background: #1D9E75;
 }
 
 /* Hide number input spinners */

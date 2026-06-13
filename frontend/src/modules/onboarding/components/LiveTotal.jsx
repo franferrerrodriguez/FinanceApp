@@ -4,9 +4,9 @@ import { ui } from '../../../lib/uiClasses';
 export function LiveTotal({ label, amount, variant = 'neutral', inList = false }) {
   const amountClass =
     variant === 'positive'
-      ? 'text-emerald-600 dark:text-emerald-400'
+      ? 'text-[var(--color-positive)]'
       : variant === 'negative'
-        ? 'text-red-600 dark:text-red-400'
+        ? 'text-[var(--color-negative)]'
         : ui.heading;
 
   if (inList) {

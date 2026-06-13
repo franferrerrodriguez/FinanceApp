@@ -92,7 +92,7 @@ export function WelcomeStep({ onNext }) {
       </div>
 
       {showErrors && !canContinue ? (
-        <p className="mt-4 text-sm text-amber-600 dark:text-amber-400/90" role="status">
+        <p className="mt-4 text-sm text-[var(--color-warning)]" role="status">
           {t('onboarding.welcome.formIncomplete')}
         </p>
       ) : null}

@@ -7,9 +7,9 @@ import { FinanceAlerts } from './FinanceAlerts';
 
 const severityStyles = {
   danger:
-    'border-red-500/30 bg-red-500/10 text-red-900 dark:border-red-500/35 dark:text-red-100',
+    '[border:0.5px_solid_rgba(226,75,74,0.30)] bg-[rgba(226,75,74,0.10)] text-[var(--color-negative)]',
   warn:
-    'border-amber-500/30 bg-amber-500/10 text-amber-950 dark:border-amber-500/35 dark:text-amber-100',
+    '[border:0.5px_solid_rgba(239,159,39,0.30)] bg-[rgba(239,159,39,0.10)] text-[var(--color-warning)]',
   info: ui.cardMuted,
 };
 

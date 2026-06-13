@@ -110,7 +110,7 @@ export function SummaryStep({ onBack, onFinish }) {
 
 function SummaryCard({ label, value, highlight, colorClass, className = '' }) {
   const valueStyle = highlight
-    ? 'text-red-600 dark:text-red-400'
+    ? 'text-[var(--color-negative)]'
     : colorClass ?? ui.heading;
 
   return (
@@ -122,7 +122,7 @@ function SummaryCard({ label, value, highlight, colorClass, className = '' }) {
 }
 
 function getSavingsColor(rate) {
-  if (rate >= DEFAULT_SETTINGS.SAVINGS_RATE_GREEN) return 'text-emerald-600 dark:text-emerald-400';
-  if (rate >= DEFAULT_SETTINGS.SAVINGS_RATE_YELLOW) return 'text-amber-600 dark:text-amber-400';
-  return 'text-red-600 dark:text-red-400';
+  if (rate >= DEFAULT_SETTINGS.SAVINGS_RATE_GREEN) return 'text-[var(--color-positive)]';
+  if (rate >= DEFAULT_SETTINGS.SAVINGS_RATE_YELLOW) return 'text-[var(--color-warning)]';
+  return 'text-[var(--color-negative)]';
 }

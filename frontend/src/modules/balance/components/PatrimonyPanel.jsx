@@ -455,7 +455,7 @@ function PatrimonyAssetsSection({
         <button
           type="button"
           onClick={onViewHistory}
-          className="text-sm font-medium text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400"
+          className="text-sm font-medium text-[var(--accent)] underline-offset-2 hover:underline"
         >
           {t('balance.patrimony.currentBalancesViewHistory')}
         </button>

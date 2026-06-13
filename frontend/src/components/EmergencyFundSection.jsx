@@ -66,9 +66,9 @@ export function EmergencyFundSection({
             return (
               <label
                 key={value}
-                className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm ${
+                className={`inline-flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm ${
                   selected
-                    ? 'border-emerald-500 bg-emerald-50 dark:border-emerald-500 dark:bg-emerald-950/40'
+                    ? '[border:0.5px_solid_var(--accent)] bg-[rgba(29,158,117,0.10)]'
                     : ui.cardMuted
                 }`}
               >
@@ -85,8 +85,8 @@ export function EmergencyFundSection({
                     <span
                       className={`rounded-full px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide ${
                         selected
-                          ? 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-slate-950'
-                          : 'bg-emerald-500/15 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300'
+                          ? 'bg-[var(--accent)] text-white'
+                          : 'bg-[var(--accent-muted)] text-[var(--accent)]'
                       }`}
                     >
                       {t('balance.cashflow.emergencyFundMonthsRecommended')}
@@ -100,11 +100,11 @@ export function EmergencyFundSection({
       </fieldset>
 
       <div
-        className={`${ui.block} border-emerald-500/40 bg-emerald-500/10 px-4 py-4 dark:border-emerald-500/35 dark:bg-emerald-950/50`}
+        className={`${ui.block} [border-color:rgba(29,158,117,0.35)] bg-[rgba(29,158,117,0.10)] px-4 py-4`}
         aria-live="polite"
       >
         <p
-          className={`text-xs font-semibold uppercase tracking-wide text-emerald-800 dark:text-emerald-300`}
+          className="text-xs font-semibold uppercase tracking-wide text-[var(--color-positive)]"
         >
           {t('balance.cashflow.emergencyFundTargetLabel')}
         </p>

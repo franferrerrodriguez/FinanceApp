@@ -39,7 +39,7 @@ export function BalanceSetupStepBanner({ stepId, onAction }) {
       className={`rounded-xl border px-4 py-3 ${
         optional
           ? ui.cardMuted
-          : 'border-emerald-300 bg-emerald-50/80 dark:border-emerald-700/60 dark:bg-emerald-950/30'
+          : '[border:0.5px_solid_rgba(29,158,117,0.40)] bg-[rgba(29,158,117,0.08)]'
       }`}
       aria-label={t(`balance.setup.steps.${stepId}.label`)}
     >
@@ -51,7 +51,7 @@ export function BalanceSetupStepBanner({ stepId, onAction }) {
             </p>
             {optional ? (
               <span
-                className={`rounded-full border border-slate-200 px-2 py-0.5 text-xs font-medium dark:border-slate-600 ${ui.textMuted}`}
+                className={`rounded-full [border:0.5px_solid_rgba(255,255,255,0.12)] px-2 py-0.5 text-xs font-medium ${ui.textMuted}`}
               >
                 {t('balance.setup.optional')}
               </span>

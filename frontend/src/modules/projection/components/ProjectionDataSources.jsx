@@ -172,7 +172,7 @@ export function ProjectionDataSources() {
             </div>
             <Link
               to={balancePath(BALANCE_TAB.PATRIMONY)}
-              className="text-xs font-medium text-emerald-600 hover:underline dark:text-emerald-400"
+              className="text-xs font-medium text-[var(--accent)] hover:underline"
             >
               {t('projection.sources.editReturns')}
             </Link>
@@ -200,7 +200,7 @@ export function ProjectionDataSources() {
 
       {!hasInvestments ? (
         <p
-          className={`rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-100`}
+          className={`rounded-xl [border:0.5px_solid_rgba(239,159,39,0.30)] bg-[rgba(239,159,39,0.10)] px-4 py-3 text-sm text-[var(--color-warning)]`}
         >
           {t('projection.sources.noContributions')}
         </p>
@@ -268,7 +268,7 @@ function CashflowSummaryBlock({
       </dl>
       <Link
         to={balancePath(BALANCE_TAB.CASHFLOW)}
-        className="mt-2 inline-block text-xs font-medium text-emerald-600 hover:underline dark:text-emerald-400"
+        className="mt-2 inline-block text-xs font-medium text-[var(--accent)] hover:underline"
       >
         {t('projection.sources.edit')}
       </Link>
@@ -292,7 +292,7 @@ function SourceItem({ label, value, hint, editTo, editLabel }) {
       {editTo ? (
         <Link
           to={editTo}
-          className="mt-2 inline-block text-xs font-medium text-emerald-600 hover:underline dark:text-emerald-400"
+          className="mt-2 inline-block text-xs font-medium text-[var(--accent)] hover:underline"
         >
           {linkText}
         </Link>

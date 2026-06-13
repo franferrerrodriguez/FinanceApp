@@ -15,7 +15,7 @@ export function AppHeader({ compact = false, navItems = MAIN_NAV_ITEMS }) {
       >
         <Link
           to="/dashboard"
-          className={`group truncate text-base font-semibold transition group-hover:text-emerald-600 dark:group-hover:text-emerald-400 ${ui.heading}`}
+          className={`group truncate text-base font-semibold transition hover:text-[var(--accent)] ${ui.heading}`}
         >
           {t('app.name')}
         </Link>
@@ -32,7 +32,7 @@ export function AppHeader({ compact = false, navItems = MAIN_NAV_ITEMS }) {
       <div className="flex items-center justify-between gap-3">
         <NavLink
           to="/dashboard"
-          className={`group truncate text-lg font-semibold transition group-hover:text-emerald-600 dark:group-hover:text-emerald-400 ${ui.heading}`}
+          className={`group truncate text-lg font-semibold transition hover:text-[var(--accent)] ${ui.heading}`}
         >
           {t('app.name')}
         </NavLink>

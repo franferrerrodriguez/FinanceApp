@@ -5,7 +5,7 @@ import { formatMoney, formatPercent } from '../utils/formatters';
 function SummaryRow({ label, amount, tone = 'default', emphasis = false }) {
   const amountClass =
     tone === 'income'
-      ? 'text-emerald-700 dark:text-emerald-300'
+      ? 'text-[var(--color-positive)]'
       : tone === 'expense'
         ? ui.text
         : emphasis

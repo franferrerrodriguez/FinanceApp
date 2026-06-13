@@ -17,7 +17,7 @@ export function ProjectionPage() {
           {t('projection.subtitle')}
         </p>
         <p
-          className={`rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm leading-relaxed text-amber-950 dark:text-amber-100`}
+          className="rounded-xl [border:0.5px_solid_rgba(239,159,39,0.30)] bg-[rgba(239,159,39,0.10)] px-4 py-3 text-sm leading-relaxed text-[var(--color-warning)]"
           role="note"
         >
           {t('projection.simulationNotice')}

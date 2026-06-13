@@ -14,16 +14,17 @@ import { formatMonthKey } from '../../../utils/monthLabel';
 import { formatMoney, formatMoneyCompact } from '../../../utils/formatters';
 import { ChartCard } from './ChartCard';
 
+// DS chart palette
 const COLORS = {
-  netWorth: '#34d399',
-  totalAssets: '#60a5fa',
+  netWorth: '#1D9E75',
+  totalAssets: '#378ADD',
 };
 
 const chartTheme = {
-  grid: '#334155',
-  tick: '#94a3b8',
-  tooltipBg: '#0f172a',
-  tooltipBorder: '#334155',
+  grid: 'rgba(255,255,255,0.04)',
+  tick: '#8A9AAD',
+  tooltipBg: '#1A2030',
+  tooltipBorder: 'rgba(255,255,255,0.14)',
 };
 
 export function NetWorthChart({
@@ -47,7 +48,7 @@ export function NetWorthChart({
   );
 
   const legend = (
-    <ul className={`flex flex-wrap gap-x-4 gap-y-1 text-xs ${ui.text}`}>
+    <ul className={`flex flex-wrap gap-x-4 gap-y-1 text-xs ${ui.textMuted}`}>
       <li className="flex items-center gap-1.5">
         <span
           className="inline-block h-0.5 w-5 rounded-full"
@@ -68,61 +69,63 @@ export function NetWorthChart({
   );
 
   const chartBody = !hasSeries ? (
-    <p className={`py-16 text-center text-sm ${ui.textMuted}`}>{chartEmpty}</p>
+    <div className="flex flex-col items-center gap-3 py-16">
+      <p className={`text-center text-sm ${ui.textMuted}`}>{chartEmpty}</p>
+    </div>
   ) : (
     <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={data} margin={{ top: 8, right: 12, left: 4, bottom: 4 }}>
-          <CartesianGrid
-            stroke={chartTheme.grid}
-            strokeDasharray="3 3"
-            vertical={false}
-          />
-          <XAxis
-            dataKey="month"
-            tick={{ fill: chartTheme.tick, fontSize: 12 }}
-            axisLine={false}
-            tickLine={false}
-          />
-          <YAxis
-            tick={{ fill: chartTheme.tick, fontSize: 12 }}
-            tickFormatter={(v) => formatMoneyCompact(v)}
-            width={56}
-            axisLine={false}
-            tickLine={false}
-          />
-          <Tooltip
-            contentStyle={{
-              background: chartTheme.tooltipBg,
-              border: `1px solid ${chartTheme.tooltipBorder}`,
-              borderRadius: 10,
-              fontSize: 13,
-            }}
-            formatter={(value) => formatMoney(value)}
-            labelStyle={{ color: '#e2e8f0' }}
-          />
-          <Legend content={() => null} />
-          <Line
-            type="monotone"
-            dataKey="totalAssets"
-            name={t('dashboard.charts.netWorth.seriesAssets')}
-            stroke={COLORS.totalAssets}
-            strokeWidth={2}
-            strokeDasharray="6 4"
-            dot={false}
-            connectNulls
-          />
-          <Line
-            type="monotone"
-            dataKey="netWorth"
-            name={t('dashboard.charts.netWorth.seriesNetWorth')}
-            stroke={COLORS.netWorth}
-            strokeWidth={2.5}
-            dot={{ r: 4, fill: COLORS.netWorth, strokeWidth: 0 }}
-            activeDot={{ r: 5 }}
-            connectNulls
-          />
-        </LineChart>
-      </ResponsiveContainer>
+      <LineChart data={data} margin={{ top: 8, right: 12, left: 4, bottom: 4 }}>
+        <CartesianGrid
+          stroke={chartTheme.grid}
+          strokeDasharray="3 3"
+          vertical={false}
+        />
+        <XAxis
+          dataKey="month"
+          tick={{ fill: chartTheme.tick, fontSize: 11 }}
+          axisLine={{ stroke: chartTheme.grid }}
+          tickLine={false}
+        />
+        <YAxis
+          tick={{ fill: chartTheme.tick, fontSize: 11 }}
+          tickFormatter={(v) => formatMoneyCompact(v)}
+          width={56}
+          axisLine={false}
+          tickLine={false}
+        />
+        <Tooltip
+          contentStyle={{
+            background: chartTheme.tooltipBg,
+            border: `0.5px solid ${chartTheme.tooltipBorder}`,
+            borderRadius: 12,
+            fontSize: 13,
+          }}
+          formatter={(value) => formatMoney(value)}
+          labelStyle={{ color: '#C5D0DC' }}
+        />
+        <Legend content={() => null} />
+        <Line
+          type="monotone"
+          dataKey="totalAssets"
+          name={t('dashboard.charts.netWorth.seriesAssets')}
+          stroke={COLORS.totalAssets}
+          strokeWidth={2}
+          strokeDasharray="6 4"
+          dot={false}
+          connectNulls
+        />
+        <Line
+          type="monotone"
+          dataKey="netWorth"
+          name={t('dashboard.charts.netWorth.seriesNetWorth')}
+          stroke={COLORS.netWorth}
+          strokeWidth={2.5}
+          dot={{ r: 4, fill: COLORS.netWorth, strokeWidth: 0 }}
+          activeDot={{ r: 5 }}
+          connectNulls
+        />
+      </LineChart>
+    </ResponsiveContainer>
   );
 
   if (embedded) {

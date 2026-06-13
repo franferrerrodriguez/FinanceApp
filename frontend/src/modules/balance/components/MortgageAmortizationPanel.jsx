@@ -39,7 +39,7 @@ export function MortgageAmortizationPanel() {
         <p className={`text-sm ${ui.text}`}>{t('balance.amortization.empty')}</p>
         <Link
           to={balancePath(BALANCE_TAB.PATRIMONY)}
-          className={`mt-4 inline-block text-sm font-medium text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400`}
+          className={`mt-4 inline-block text-sm font-medium text-[var(--accent)] underline-offset-2 hover:underline`}
         >
           {t('balance.amortization.goToPatrimony')}
         </Link>

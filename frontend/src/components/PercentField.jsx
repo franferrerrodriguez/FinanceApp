@@ -64,7 +64,7 @@ export function PercentField({
         <span className={`${ui.inputSuffixAdornment} ${ui.textMuted}`}>%</span>
       </div>
       {error && errorMessage ? (
-        <p className="mt-2 text-sm text-red-500" role="alert">
+        <p className="mt-2 text-sm text-[var(--color-negative)]" role="alert">
           {errorMessage}
         </p>
       ) : null}

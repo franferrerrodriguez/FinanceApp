@@ -39,7 +39,7 @@ export function PasswordField({
         <button
           type="button"
           tabIndex={-1}
-          className="absolute right-2 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 disabled:opacity-40 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+          className="absolute right-2 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-[var(--text-muted)] transition hover:bg-[var(--bg-hover)] hover:text-[var(--text-secondary)] disabled:opacity-40"
           aria-label={visible ? t('auth.hidePassword') : t('auth.showPassword')}
           aria-pressed={visible}
           disabled={disabled}

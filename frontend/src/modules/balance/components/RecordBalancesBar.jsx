@@ -10,7 +10,7 @@ function PendingBalancesNotice({ detail, t }) {
   if (count === 0) return null;
 
   return (
-    <p className="text-xs leading-snug text-amber-700 dark:text-amber-300 lg:text-right">
+    <p className="text-xs leading-snug text-[var(--color-warning)] lg:text-right">
       {t('balance.recordBalancesPendingShort', {
         count,
         month: detail.month,
@@ -65,7 +65,7 @@ export function RecordBalancesBar({
             <button
               type="button"
               onClick={onViewHistory}
-              className="mt-2 text-sm font-medium text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400"
+              className="mt-2 text-sm font-medium text-[var(--accent)] underline-offset-2 hover:underline"
             >
               {t('balance.viewBalanceHistory')}
             </button>
@@ -95,7 +95,7 @@ export function RecordBalancesBar({
           </button>
           {showPendingBadge && hasAccounts && (pendingDetail?.missingItems?.length ?? 0) > 0 ? (
             <span
-              className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 px-1 text-[0.65rem] font-bold text-white"
+              className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--color-warning)] px-1 text-[0.65rem] font-bold text-white"
               aria-hidden
             >
               {pendingDetail.missingItems.length}
@@ -119,7 +119,7 @@ export function RecordBalancesBar({
           <div
             id="record-balances-blocked"
             role="status"
-            className="rounded-xl border border-amber-500/35 bg-amber-500/10 px-3 py-2.5 text-left text-xs leading-snug text-amber-950 dark:border-amber-500/40 dark:bg-amber-500/15 dark:text-amber-100 lg:text-right"
+            className="rounded-xl [border:0.5px_solid_rgba(239,159,39,0.35)] bg-[rgba(239,159,39,0.10)] px-3 py-2.5 text-left text-xs leading-snug text-[var(--color-warning)] lg:text-right"
           >
             <p>{t('balance.patrimony.recordBalancesBlocked')}</p>
             <button

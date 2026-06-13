@@ -49,7 +49,7 @@ export function ProjectionSettingsPanel() {
           })}{' '}
           <Link
             to={balancePath(BALANCE_TAB.PATRIMONY)}
-            className="font-medium text-emerald-600 hover:underline dark:text-emerald-400"
+            className="font-medium text-[var(--accent)] hover:underline"
           >
             {t('projection.settings.goPatrimony')}
           </Link>
@@ -93,7 +93,7 @@ export function ProjectionSettingsPanel() {
               {t('projection.settings.noPatrimonyClose')}{' '}
               <Link
                 to={balancePath(BALANCE_TAB.PATRIMONY)}
-                className="font-medium text-emerald-600 hover:underline dark:text-emerald-400"
+                className="font-medium text-[var(--accent)] hover:underline"
               >
                 {t('projection.settings.goPatrimony')}
               </Link>
@@ -125,7 +125,7 @@ export function ProjectionSettingsPanel() {
         {t('projection.settings.assetReturnsHint')}{' '}
         <Link
           to={balancePath(BALANCE_TAB.PATRIMONY)}
-          className="font-medium text-emerald-600 hover:underline dark:text-emerald-400"
+          className="font-medium text-[var(--accent)] hover:underline"
         >
           {t('projection.settings.goPatrimony')}
         </Link>

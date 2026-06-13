@@ -62,7 +62,7 @@ function CloseSection({ title, subtitle, children }) {
   return (
     <FormSection className="space-y-4">
       <FormSectionHeader title={title} hint={subtitle} />
-      <ul className="divide-y divide-slate-200 dark:divide-slate-600/80">{children}</ul>
+      <ul className="divide-y divide-[rgba(255,255,255,0.08)]">{children}</ul>
     </FormSection>
   );
 }
@@ -558,8 +558,8 @@ export function MonthlyCloseModal({
             />
           </div>
           {showEmptyConfirm ? (
-            <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
-              <p className="text-sm leading-snug text-amber-950 dark:text-amber-100">
+            <div className="rounded-xl [border:0.5px_solid_rgba(239,159,39,0.30)] bg-[rgba(239,159,39,0.10)] px-4 py-3">
+              <p className="text-sm leading-snug text-[var(--color-warning)]">
                 {t('balance.patrimony.closeEmptyFieldsConfirm', {
                   count: emptyFieldCount,
                 })}
@@ -619,7 +619,7 @@ export function MonthlyCloseModal({
           {quickSaveAvailable ? (
             <button
               type="button"
-              className={`w-full rounded-xl border border-emerald-500/25 bg-emerald-500/10 px-5 py-4 text-left text-sm font-medium text-emerald-800 transition hover:bg-emerald-500/15 dark:text-emerald-200`}
+              className="w-full rounded-xl [border:0.5px_solid_rgba(29,158,117,0.25)] bg-[rgba(29,158,117,0.10)] px-5 py-4 text-left text-sm font-medium text-[var(--color-positive)] transition hover:bg-[rgba(29,158,117,0.15)]"
               onClick={handleSubmit}
             >
               {t('balance.patrimony.closeQuickSaveSame')}
@@ -688,8 +688,8 @@ export function MonthlyCloseModal({
                   <p
                     className={`text-sm font-semibold ${
                       netWorthDelta > 0
-                        ? 'text-emerald-600 dark:text-emerald-400'
-                        : 'text-red-600 dark:text-red-400'
+                        ? 'text-[var(--color-positive)]'
+                        : 'text-[var(--color-negative)]'
                     }`}
                   >
                     {t('balance.patrimony.closeSummaryDelta', {

@@ -27,12 +27,12 @@ export function TopHoldingsTable({ topAssets, topLiabilities }) {
         <HoldingsList
           title={t('dashboard.charts.holdings.topAssets')}
           items={topAssets}
-          valueClass="text-emerald-400"
+          valueClass="text-[var(--color-positive)]"
         />
         <HoldingsList
           title={t('dashboard.charts.holdings.topLiabilities')}
           items={topLiabilities}
-          valueClass="text-red-400"
+          valueClass="text-[var(--color-negative)]"
         />
       </div>
     </div>

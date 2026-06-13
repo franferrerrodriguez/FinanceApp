@@ -5,11 +5,11 @@ import { formatMoney } from '../utils/formatters';
 
 const severityStyles = {
   danger:
-    'border-red-500/30 bg-red-500/10 text-red-900 dark:border-red-500/35 dark:text-red-100',
+    'rounded-xl [border:0.5px_solid_rgba(226,75,74,0.25)] bg-[rgba(226,75,74,0.10)] text-[var(--color-negative)]',
   warn:
-    'border-amber-500/30 bg-amber-500/10 text-amber-950 dark:border-amber-500/35 dark:text-amber-100',
+    'rounded-xl [border:0.5px_solid_rgba(239,159,39,0.25)] bg-[rgba(239,159,39,0.10)] text-[var(--color-warning)]',
   info:
-    'border-sky-500/30 bg-sky-500/10 text-sky-950 dark:border-sky-500/35 dark:text-sky-100',
+    'rounded-xl [border:0.5px_solid_rgba(55,138,221,0.25)] bg-[rgba(55,138,221,0.10)] text-[var(--color-info)]',
 };
 
 function formatAlertParams(params = {}) {
@@ -48,7 +48,7 @@ export function FinanceAlerts({ alerts, title, className = '', onAction }) {
             <li
               key={alert.id}
               role="alert"
-              className={`rounded-xl border px-4 py-3 text-sm leading-snug ${severityStyles[alert.severity] ?? severityStyles.warn}`}
+              className={`px-4 py-3 text-sm leading-snug ${severityStyles[alert.severity] ?? severityStyles.warn}`}
             >
               <p>{message}</p>
               {alert.href ? (

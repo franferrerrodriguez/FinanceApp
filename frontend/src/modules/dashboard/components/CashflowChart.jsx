@@ -15,10 +15,10 @@ import { ChartCard } from './ChartCard';
 const SEGMENT_ORDER = ['fixed', 'variable', 'investment', 'free'];
 
 const SEGMENT_COLORS = {
-  fixed: '#f97316',
-  variable: '#eab308',
-  investment: '#3b82f6',
-  free: '#34d399',
+  fixed: '#E24B4A',
+  variable: '#EF9F27',
+  investment: '#378ADD',
+  free: '#5DCAA5',
 };
 
 export function CashflowChart({ segments, income }) {
@@ -52,9 +52,9 @@ export function CashflowChart({ segments, income }) {
           <Tooltip
             cursor={{ fill: 'transparent' }}
             contentStyle={{
-              background: '#0f172a',
-              border: '1px solid #334155',
-              borderRadius: 10,
+              background: '#1A2030',
+              border: '0.5px solid rgba(255,255,255,0.14)',
+              borderRadius: 12,
               fontSize: 13,
             }}
             formatter={(value, key) => {
@@ -90,7 +90,7 @@ export function CashflowChart({ segments, income }) {
 
       <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <LegendItem
-          color="#22c55e"
+          color="#1D9E75"
           label={t('dashboard.charts.cashflow.income')}
           amount={formatMoney(income)}
         />

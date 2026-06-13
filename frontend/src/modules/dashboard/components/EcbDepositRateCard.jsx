@@ -34,7 +34,7 @@ export function EcbDepositRateCard() {
           href={ECB_DEPOSIT_RATE_SOURCE_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs font-medium text-emerald-600 hover:underline dark:text-emerald-400"
+          className="text-xs font-medium text-[var(--accent)] hover:underline"
         >
           {t('dashboard.charts.depositRate.source')}
         </a>

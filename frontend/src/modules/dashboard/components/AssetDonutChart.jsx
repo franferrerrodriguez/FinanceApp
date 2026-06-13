@@ -4,12 +4,12 @@ import { ui } from '../../../lib/uiClasses';
 import { formatMoney } from '../../../utils/formatters';
 
 const COLORS = [
-  '#34d399',
-  '#60a5fa',
-  '#a78bfa',
-  '#fbbf24',
-  '#f472b6',
-  '#94a3b8',
+  '#1D9E75',
+  '#378ADD',
+  '#EF9F27',
+  '#E24B4A',
+  '#5DCAA5',
+  '#8A9AAD',
 ];
 
 export function AssetDonutChart({ distribution }) {
@@ -57,9 +57,9 @@ export function AssetDonutChart({ distribution }) {
           </Pie>
           <Tooltip
             contentStyle={{
-              background: '#0f172a',
-              border: '1px solid #334155',
-              borderRadius: 8,
+              background: '#1A2030',
+              border: '0.5px solid rgba(255,255,255,0.14)',
+              borderRadius: 12,
             }}
             formatter={(value) => formatMoney(value)}
           />

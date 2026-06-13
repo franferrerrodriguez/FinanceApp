@@ -72,7 +72,7 @@ export function AccountPage() {
     <div className="mx-auto max-w-2xl pb-10">
       <Link
         to="/dashboard"
-        className={`mb-6 inline-flex items-center gap-1 text-sm font-medium ${ui.textMuted} transition hover:text-emerald-600 dark:hover:text-emerald-400`}
+        className={`mb-6 inline-flex items-center gap-1 text-sm font-medium ${ui.textMuted} transition hover:text-[var(--accent)]`}
       >
         <span aria-hidden>←</span>
         {t('account.back')}

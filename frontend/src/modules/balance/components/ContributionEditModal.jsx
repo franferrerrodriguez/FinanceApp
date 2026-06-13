@@ -109,7 +109,7 @@ export function ContributionEditModal({
         )}
 
         {draft.assetId && !linkedAsset ? (
-          <p className="text-xs text-amber-600 dark:text-amber-400">
+          <p className="text-xs text-[var(--color-warning)]">
             {t('balance.contributions.assetDeleted')}
           </p>
         ) : null}

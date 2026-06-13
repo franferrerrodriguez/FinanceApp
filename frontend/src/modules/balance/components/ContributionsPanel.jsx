@@ -179,7 +179,7 @@ export function ContributionsPanel() {
           <div
             className={`rounded-xl border px-4 py-3 text-sm ${
               exceedsSavings
-                ? 'border-amber-300 bg-amber-50/90 text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/35 dark:text-amber-100'
+                ? '[border:0.5px_solid_rgba(239,159,39,0.35)] bg-[rgba(239,159,39,0.10)] text-[var(--color-warning)]'
                 : ui.cardMuted
             }`}
           >
@@ -193,7 +193,7 @@ export function ContributionsPanel() {
               })}
             </p>
             {exceedsSavings ? (
-              <p className="mt-2 text-amber-800 dark:text-amber-200">
+              <p className="mt-2 text-[var(--color-warning)]">
                 {t('balance.contributions.allocationOverBudget')}
               </p>
             ) : (

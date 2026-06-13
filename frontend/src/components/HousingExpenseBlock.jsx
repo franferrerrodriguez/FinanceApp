@@ -128,8 +128,8 @@ export function HousingExpenseBlock({
                   type="button"
                   className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
                     active
-                      ? 'border-emerald-500 bg-emerald-500/15 text-emerald-800 dark:text-emerald-200'
-                      : `border-slate-300 bg-transparent ${ui.textMuted} hover:border-slate-400 dark:border-slate-600`
+                      ? '[border-color:var(--accent)] bg-[var(--accent-muted)] text-[var(--accent)]'
+                      : `[border:0.5px_solid_rgba(255,255,255,0.12)] bg-transparent ${ui.textMuted} hover:[border-color:rgba(255,255,255,0.20)]`
                   }`}
                   aria-pressed={active}
                   onClick={() => setHousing(type)}
@@ -193,7 +193,7 @@ export function HousingExpenseBlock({
           </p>
           {fullTotal != null ? (
             <>
-              <p className="mt-1 text-lg font-semibold tabular-nums text-red-600 dark:text-red-400">
+              <p className="mt-1 text-lg font-semibold tabular-nums text-[var(--color-negative)]">
                 {formatMoney(fullTotal)}
               </p>
               {balanceShare ? (
@@ -212,7 +212,7 @@ export function HousingExpenseBlock({
           )}
           <Link
             to={balancePath(BALANCE_TAB.PATRIMONY)}
-            className="mt-2 inline-block text-sm font-semibold text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400"
+            className="mt-2 inline-block text-sm font-semibold text-[var(--accent)] underline-offset-2 hover:underline"
           >
             {t('balance.cashflow.housingDebtAction')}
           </Link>
@@ -227,7 +227,7 @@ export function HousingExpenseBlock({
       ) : !inOnboarding ? (
         <button
           type="button"
-          className="text-left text-sm font-medium text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400"
+          className="text-left text-sm font-medium text-[var(--accent)] underline-offset-2 hover:underline"
           onClick={enableMortgageTracking}
         >
           {t('balance.cashflow.housingEnableTracking')}

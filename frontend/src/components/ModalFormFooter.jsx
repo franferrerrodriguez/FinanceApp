@@ -34,7 +34,7 @@ export function ModalFormFooter({
       {secondarySave ? (
         <button
           type="button"
-          className={`${ui.btnSecondary} order-1 w-full border-emerald-500/35 text-emerald-800 hover:bg-emerald-500/10 sm:order-none sm:w-auto dark:text-emerald-200`}
+          className={`${ui.btnSecondary} order-1 w-full [border-color:rgba(29,158,117,0.35)] text-[var(--accent)] hover:bg-[var(--accent-muted)] sm:order-none sm:w-auto`}
           onClick={secondarySave.onClick}
         >
           {secondarySave.label}

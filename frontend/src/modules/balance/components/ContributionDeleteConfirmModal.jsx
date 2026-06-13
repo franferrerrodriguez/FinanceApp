@@ -22,7 +22,7 @@ export function ContributionDeleteConfirmModal({
           </button>
           <button
             type="button"
-            className={`${ui.btnSecondary} border-red-300 text-red-700 hover:border-red-400 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/40`}
+            className={`${ui.btnSecondary} [border-color:rgba(226,75,74,0.40)] text-[var(--color-negative)] hover:[border-color:rgba(226,75,74,0.60)] hover:bg-[rgba(226,75,74,0.10)]`}
             onClick={onConfirm}
           >
             {t('balance.contributions.deleteConfirmAction')}

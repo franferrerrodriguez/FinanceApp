@@ -3,7 +3,7 @@ import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 function ScrollHintIcon() {
   return (
     <svg
-      className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400"
+      className="h-4 w-4 shrink-0 text-[var(--accent)]"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -54,7 +54,7 @@ export function ScrollHintBanner({ hint, show }) {
   if (!hint || !show) return null;
 
   return (
-    <p className="mb-0 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/90 px-3 py-2 text-xs font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300 md:hidden">
+    <p className="mb-0 flex items-center gap-2 rounded-lg [border:0.5px_solid_rgba(255,255,255,0.10)] bg-[var(--bg-tertiary)] px-3 py-2 text-xs font-medium text-[var(--text-secondary)] md:hidden">
       <ScrollHintIcon />
       <span>{hint}</span>
     </p>
@@ -91,7 +91,7 @@ export const HorizontalScrollRegion = forwardRef(function HorizontalScrollRegion
       <div className="relative overflow-hidden rounded-[inherit]">
         {right ? (
           <div
-            className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-white via-white/90 to-transparent dark:from-slate-900 dark:via-slate-900/90 md:hidden"
+            className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-[var(--bg-secondary)] via-[var(--bg-secondary)]/90 to-transparent md:hidden"
             aria-hidden
           />
         ) : null}
