@@ -39,7 +39,7 @@ export function SummaryStep({ onBack, onFinish }) {
 
   return (
     <>
-      <h2 className={`mb-2 text-2xl font-bold ${ui.heading}`}>
+      <h2 className={`mb-2 ${ui.pageTitle}`}>
         {profile?.name
           ? t('onboarding.summary.titleWithName', { name: profile.name })
           : t('onboarding.summary.title')}

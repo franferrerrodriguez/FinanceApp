@@ -64,7 +64,7 @@ export function OnboardingStepper() {
 
   return (
     <div className="mx-auto max-w-lg">
-      <StepHeader stepIndex={allowedStep} />
+      {allowedStep > 0 && <StepHeader stepIndex={allowedStep} />}
       {allowedStep === 0 && <WelcomeStep onNext={() => goForward(1)} />}
       {allowedStep === 1 && (
         <IncomeStep onBack={goBack} onNext={() => goForward(2)} />

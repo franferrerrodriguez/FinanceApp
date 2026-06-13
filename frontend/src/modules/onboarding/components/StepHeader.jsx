@@ -9,12 +9,9 @@ export function StepHeader({ stepIndex }) {
 
   return (
     <div className="mb-8">
-      <div className="mb-3 flex items-center justify-between text-sm">
-        <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 font-medium text-emerald-600 dark:text-emerald-400">
+      <div className="mb-3 text-sm">
+        <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[0.8125rem] font-medium tracking-[-0.01em] text-emerald-600 dark:text-emerald-400">
           {t('onboarding.stepProgress', { current: stepIndex + 1, total })}
-        </span>
-        <span className={ui.textMuted}>
-          {t(`onboarding.steps.${stepIndex}.title`)}
         </span>
       </div>
       <div className={ui.progressTrack}>
@@ -27,12 +24,12 @@ export function StepHeader({ stepIndex }) {
         {ONBOARDING_STEP_IDS.map((id, i) => (
           <span
             key={id}
-            className={`flex-1 truncate text-center text-[0.65rem] sm:text-xs ${
+            className={`flex-1 truncate text-center text-[0.6875rem] font-medium tracking-[-0.01em] sm:text-xs ${
               i === stepIndex
                 ? 'font-semibold text-emerald-600 dark:text-emerald-400'
                 : i < stepIndex
                   ? 'text-emerald-600/70 dark:text-emerald-400/70'
-                  : 'text-slate-400 dark:text-slate-600'
+                  : 'font-normal text-slate-400 dark:text-slate-600'
             }`}
           >
             {t(`onboarding.steps.${id}.short`)}

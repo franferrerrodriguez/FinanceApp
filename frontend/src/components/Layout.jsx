@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { isStandalonePwa } from '../lib/platform';
 import { ui } from '../lib/uiClasses';
 import { useOnboardingState } from '../store/hooks';
@@ -14,6 +14,10 @@ const MOBILE_NAV = '(max-width: 767px)';
 export function Layout() {
   const { t, i18n } = useTranslation();
   const { completed: onboardingCompleted } = useOnboardingState();
+  const location = useLocation();
+  const isWelcomeOnboarding =
+    !onboardingCompleted &&
+    (location.pathname === '/onboarding' || location.pathname.endsWith('/onboarding'));
   const [narrowViewport, setNarrowViewport] = useState(() =>
     typeof window !== 'undefined' ? window.matchMedia(MOBILE_NAV).matches : false,
   );
@@ -41,13 +45,17 @@ export function Layout() {
     <div className={`financia-ui min-w-0 overflow-x-hidden ${shellClass}`}>
       {onboardingCompleted ? (
         <AppHeader compact={useBottomNav} />
+      ) : isWelcomeOnboarding ? (
+        <header className="mb-2 flex justify-end">
+          <AppMenu className="shrink-0" />
+        </header>
       ) : (
         <header className="mb-8 flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1 pt-0.5">
             <p className={`text-xs font-medium uppercase tracking-widest ${ui.accent}`}>
               {t('app.tagline')}
             </p>
-            <h1 className={`truncate text-2xl font-bold ${ui.heading}`}>
+            <h1 className={`truncate ${ui.pageTitle}`}>
               {t('app.name')}
             </h1>
           </div>

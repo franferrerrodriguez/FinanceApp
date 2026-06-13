@@ -1,8 +1,13 @@
 /** Tailwind classes with light/dark support (html.dark). */
 export const ui = {
   page: 'min-h-screen bg-slate-100 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100',
-  heading: 'text-slate-900 dark:text-white',
-  text: 'text-slate-600 dark:text-slate-400',
+  heading: 'tracking-[-0.02em] text-slate-900 dark:text-white',
+  pageTitle: 'text-2xl font-semibold tracking-[-0.024em] leading-tight text-slate-900 dark:text-white',
+  displayTitle:
+    'text-[2.125rem] font-semibold leading-[1.08] tracking-[-0.028em] text-slate-900 sm:text-[2.375rem] dark:text-white',
+  displaySubtitle:
+    'text-[1.0625rem] font-normal leading-[1.47] tracking-[-0.011em] text-slate-500 dark:text-slate-400',
+  text: 'text-[1.0625rem] leading-[1.47] tracking-[-0.011em] text-slate-600 dark:text-slate-400',
   textMuted: 'text-slate-500 dark:text-slate-500',
   textLabel: 'text-slate-700 dark:text-slate-300',
   accent: 'text-emerald-600 dark:text-emerald-400',
@@ -47,13 +52,13 @@ export const ui = {
   bannerGuestLater:
     'inline-flex items-center justify-center rounded-lg px-4 py-2.5 text-sm font-medium text-emerald-800/90 transition hover:bg-emerald-200/60 hover:text-emerald-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 dark:text-emerald-300/90 dark:hover:bg-emerald-900/60 dark:hover:text-emerald-100',
   input:
-    'w-full min-h-[2.75rem] rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-600',
+    'w-full min-h-[2.75rem] rounded-xl border border-slate-300 bg-white px-4 py-3 text-[1.0625rem] tracking-[-0.011em] text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-600',
   inputMoney: 'pr-9',
   inputSuffixAdornment:
     'pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm',
   /** 0–100 % — fixed width (Tu parte, tasas, etc.) */
   inputPercent:
-    'min-h-[2.75rem] w-[5.5rem] max-w-[36vw] shrink-0 rounded-xl border border-slate-300 bg-white px-4 py-3 text-base tabular-nums text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white',
+    'min-h-[2.75rem] w-[5.5rem] max-w-[36vw] shrink-0 rounded-xl border border-slate-300 bg-white px-4 py-3 text-[1.0625rem] tabular-nums tracking-[-0.011em] text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white',
   /** € amounts, patrimonio, cuotas — not full panel width on desktop */
   inputAmount: 'max-w-[12rem]',
   /** Age, pagas, small integers */
@@ -61,7 +66,7 @@ export const ui = {
   /** Short labels / names in forms */
   inputMedium: 'max-w-md',
   inputError:
-    'w-full min-h-[2.75rem] rounded-xl border border-red-400 bg-white px-4 py-3 text-base text-slate-900 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500/50 dark:border-red-500/70 dark:bg-slate-900 dark:text-white',
+    'w-full min-h-[2.75rem] rounded-xl border border-red-400 bg-white px-4 py-3 text-[1.0625rem] tracking-[-0.011em] text-slate-900 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500/50 dark:border-red-500/70 dark:bg-slate-900 dark:text-white',
   btnSecondary:
     'inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-300 px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800',
   /** Text-only control (enlace de acción) */
@@ -92,7 +97,7 @@ export const ui = {
   choiceChipIdle:
     'border-slate-200/90 bg-slate-100/90 text-slate-700 hover:border-slate-300 dark:border-slate-600 dark:bg-slate-800/55 dark:text-slate-300',
   /** Label + hint typography (stacked forms). */
-  formFieldLabel: 'block text-sm font-medium leading-snug',
+  formFieldLabel: 'block text-sm font-medium leading-snug tracking-[-0.01em]',
   formFieldHint: 'block text-xs leading-snug',
   /** Gap label → hint, and hint → control. */
   formFieldHintGap: 'mt-0.5',
@@ -112,7 +117,7 @@ export const ui = {
   select:
     'rounded-lg border border-slate-300 bg-white py-1.5 pl-3 pr-11 text-sm text-slate-800 appearance-none focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200',
   selectField:
-    'w-full min-h-[2.75rem] cursor-pointer appearance-none rounded-xl border border-slate-300 bg-white py-2.5 pl-4 pr-12 text-base text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white',
+    'w-full min-h-[2.75rem] cursor-pointer appearance-none rounded-xl border border-slate-300 bg-white py-2.5 pl-4 pr-12 text-[1.0625rem] tracking-[-0.011em] text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white',
   /** Pair with SelectField overlay chevron (hides native arrow, reserves right space). */
   selectWithChevron:
     'cursor-pointer appearance-none !pr-12',

@@ -95,17 +95,22 @@ ALTER TABLE assets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE liabilities ENABLE ROW LEVEL SECURITY;
 ALTER TABLE monthly_snapshots ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "profiles_own" ON profiles;
 CREATE POLICY "profiles_own" ON profiles
   FOR ALL USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
 
+DROP POLICY IF EXISTS "user_settings_own" ON user_settings;
 CREATE POLICY "user_settings_own" ON user_settings
   FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "assets_own" ON assets;
 CREATE POLICY "assets_own" ON assets
   FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "liabilities_own" ON liabilities;
 CREATE POLICY "liabilities_own" ON liabilities
   FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "monthly_snapshots_own" ON monthly_snapshots;
 CREATE POLICY "monthly_snapshots_own" ON monthly_snapshots
   FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);

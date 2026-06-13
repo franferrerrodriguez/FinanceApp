@@ -1045,8 +1045,9 @@
       "3": { "title": "Summary", "short": "Summary" }
     },
     "welcome": {
-      "title": "Welcome to FinanciaApp",
-      "subtitle": "In a few minutes you will have a clear view of your cashflow and saving capacity. Everything is stored on this device.",
+      "title": "Your finances, clear",
+      "subtitle": "What comes in, what goes out, and what you own. Four steps to see the full picture and project where you're headed.",
+      "scopes": "Cashflow · Net worth · Projections",
       "name": "Name",
       "namePlaceholder": "Your name",
       "age": "Age",

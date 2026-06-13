@@ -88,7 +88,7 @@ export function DiagnosticoPage() {
   return (
     <div className={ui.stackPage}>
       <div>
-        <h2 className={`mb-2 text-2xl font-bold tracking-tight ${ui.heading}`}>
+        <h2 className={`mb-2 ${ui.pageTitle}`}>
           {t('diagnostics.page.title')}
         </h2>
         <p className={`text-sm ${ui.textMuted}`}>{t('diagnostics.page.subtitle')}</p>

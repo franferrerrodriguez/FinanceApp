@@ -68,7 +68,7 @@ export function KpiCard({
     : '';
   const valueSize = compact
     ? 'text-lg font-semibold'
-    : 'text-2xl font-bold tracking-tight sm:text-[1.65rem]';
+    : 'text-2xl font-semibold tracking-[-0.024em] sm:text-[1.65rem]';
 
   return (
     <article

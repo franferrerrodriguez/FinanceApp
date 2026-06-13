@@ -1045,8 +1045,9 @@
       "3": { "title": "Resumen", "short": "Resumen" }
     },
     "welcome": {
-      "title": "Bienvenido a FinanciaApp",
-      "subtitle": "En unos minutos tendrás una visión clara de tu cashflow y tu capacidad de ahorro. Todo se guarda en este dispositivo.",
+      "title": "Tu situación financiera, clara",
+      "subtitle": "Lo que entra, lo que sale y lo que tienes. Cuatro pasos para ver el cuadro completo y proyectar hacia dónde vas.",
+      "scopes": "Cashflow · Patrimonio · Proyección",
       "name": "Nombre",
       "namePlaceholder": "Tu nombre",
       "age": "Edad",

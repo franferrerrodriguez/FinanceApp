@@ -49,7 +49,7 @@ export function BalancePage() {
     <RecordBalancesProvider>
       <div className={ui.stackPage}>
         <div>
-          <h2 className={`mb-2 text-2xl font-bold tracking-tight ${ui.heading}`}>
+          <h2 className={`mb-2 ${ui.pageTitle}`}>
             {t('balance.title')}
           </h2>
           <p className={`max-w-3xl text-sm leading-relaxed ${ui.text}`}>

@@ -6,7 +6,9 @@
  *   SUPABASE_ACCESS_TOKEN='sbp_...' npm run auth:no-email-confirm
  */
 
-const PROJECT_REF = process.env.SUPABASE_PROJECT_REF ?? 'ceduxgxizgkyiexkdyqp';
+import { resolveSupabaseProjectRef } from './lib/resolve-supabase-project.mjs';
+
+const PROJECT_REF = resolveSupabaseProjectRef();
 const token = process.env.SUPABASE_ACCESS_TOKEN;
 
 if (!token?.trim()) {

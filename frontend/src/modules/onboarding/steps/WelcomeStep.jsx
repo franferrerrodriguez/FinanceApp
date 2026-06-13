@@ -8,8 +8,8 @@ import {
   validateProfileForm,
 } from '../../../lib/profileValidation';
 import { useProfile } from '../../../store/hooks';
+import { ui } from '../../../lib/uiClasses';
 import { OnboardingActions } from '../components/OnboardingActions';
-import { OnboardingStepHeader } from '../components/OnboardingStepHeader';
 
 export function WelcomeStep({ onNext }) {
   const { t } = useTranslation();
@@ -40,11 +40,15 @@ export function WelcomeStep({ onNext }) {
   };
 
   return (
-    <>
-      <OnboardingStepHeader
-        title={t('onboarding.welcome.title')}
-        subtitle={t('onboarding.welcome.subtitle')}
-      />
+    <div className="pt-2 sm:pt-6">
+      <header className="mb-10">
+        <p className={`mb-5 text-sm font-medium ${ui.accent}`}>{t('app.name')}</p>
+        <h2 className={ui.displayTitle}>{t('onboarding.welcome.title')}</h2>
+        <p className={`mt-4 max-w-[26em] ${ui.displaySubtitle}`}>
+          {t('onboarding.welcome.subtitle')}
+        </p>
+        <p className={`mt-5 text-sm ${ui.textMuted}`}>{t('onboarding.welcome.scopes')}</p>
+      </header>
 
       <div className="space-y-4">
         <TextField
@@ -55,6 +59,7 @@ export function WelcomeStep({ onNext }) {
           placeholder={t('onboarding.welcome.namePlaceholder')}
           autoComplete="name"
           required
+          compact
           error={showNameError}
           errorMessage={
             showNameError ? t('onboarding.welcome.nameErrorRequired') : undefined
@@ -64,7 +69,6 @@ export function WelcomeStep({ onNext }) {
         <TextField
           id="onboarding-age"
           label={t('onboarding.welcome.age')}
-          hint={t('onboarding.welcome.ageHint')}
           value={age}
           onChange={setAge}
           type="number"
@@ -74,6 +78,7 @@ export function WelcomeStep({ onNext }) {
           placeholder={t('onboarding.welcome.agePlaceholder')}
           narrow
           required
+          compact
           error={showAgeError}
           errorMessage={
             showAgeError && validation.ageErrorKey
@@ -97,6 +102,10 @@ export function WelcomeStep({ onNext }) {
         onNext={handleNext}
         nextLabel={t('common.start')}
       />
-    </>
+
+      <p className={`mt-6 text-center text-xs ${ui.textMuted}`}>
+        {t('onboarding.stepProgress', { current: 1, total: 4 })}
+      </p>
+    </div>
   );
 }

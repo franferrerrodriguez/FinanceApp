@@ -16,7 +16,7 @@ export function AppFooter() {
         <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-gray-600 dark:text-gray-400">
           {t('footer.poweredBy')}
         </p>
-        <p className="font-serif text-sm font-bold bg-gradient-to-r from-gray-700 to-gray-500 bg-clip-text text-transparent dark:from-gray-200 dark:to-gray-400">
+        <p className="text-sm font-semibold tracking-[-0.015em] bg-gradient-to-r from-gray-700 to-gray-500 bg-clip-text text-transparent dark:from-gray-200 dark:to-gray-400">
           {t('footer.brand')}
         </p>
         <p className="mt-2 text-[10px] font-medium tracking-[0.12em] text-gray-600 dark:text-gray-400">

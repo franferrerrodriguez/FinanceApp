@@ -10,7 +10,7 @@ export function ProjectionPage() {
   return (
     <div className="min-w-0 space-y-6">
       <div className="space-y-3">
-        <h2 className={`text-2xl font-bold tracking-tight ${ui.heading}`}>
+        <h2 className={ui.pageTitle}>
           {t('projection.title')}
         </h2>
         <p className={`text-sm leading-relaxed ${ui.textMuted}`}>
