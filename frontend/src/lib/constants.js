@@ -43,7 +43,7 @@ export const DEFAULT_SETTINGS = {
   useRealReturn: true,
   expectedInflation: 0.02,
   pensionPlanReturn: 0.035,
-  savingsAccountReturn: 0,
+  savingsAccountReturn: 0.025,
 
   projectionYears: 20,
   annualSalaryIncrease: 0,
