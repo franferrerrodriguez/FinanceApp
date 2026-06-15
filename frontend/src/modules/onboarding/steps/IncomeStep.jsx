@@ -26,8 +26,9 @@ export function IncomeStep({ onBack, onNext }) {
         />
       </p>
 
-      <div className="space-y-5">
-        <div className="grid gap-5 sm:grid-cols-2 sm:items-start">
+      <div className="space-y-6">
+        {/* Salary + pagas grouped together */}
+        <div className="space-y-4">
           <MoneyField
             id="onboarding-monthly-salary"
             label={t('balance.cashflow.salaryNormalLabel')}
@@ -37,22 +38,25 @@ export function IncomeStep({ onBack, onNext }) {
             fullWidth
             layout="grid"
           />
-          <MoneyField
-            id="other-monthly-income"
-            label={t('onboarding.income.otherIncome')}
-            hint={t('onboarding.income.otherIncomeHint')}
-            value={settings.otherMonthlyIncome}
-            onChange={(v) => setSettings({ otherMonthlyIncome: v })}
-            fullWidth
-            layout="grid"
+          <SalaryFields
+            settings={settings}
+            setSettings={setSettings}
+            idPrefix="onboarding"
+            includeSalaryInput={false}
           />
         </div>
-        <SalaryFields
-          settings={settings}
-          setSettings={setSettings}
-          idPrefix="onboarding"
-          includeSalaryInput={false}
+
+        {/* Other income — separate section */}
+        <MoneyField
+          id="other-monthly-income"
+          label={t('onboarding.income.otherIncome')}
+          hint={t('onboarding.income.otherIncomeHint')}
+          value={settings.otherMonthlyIncome}
+          onChange={(v) => setSettings({ otherMonthlyIncome: v })}
+          fullWidth
+          layout="grid"
         />
+
         <LiveTotal
           label={t('onboarding.income.totalIncome')}
           amount={total}

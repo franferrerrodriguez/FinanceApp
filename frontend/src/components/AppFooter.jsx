@@ -1,23 +1,29 @@
-import { useTranslation } from 'react-i18next';
+import { BRAND_NAME, BRAND_URL } from '../lib/brand';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
 export function AppFooter() {
-  const { t } = useTranslation();
+  const brand = BRAND_URL ? (
+    <a
+      href={BRAND_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="font-semibold text-[var(--text-secondary)] transition-colors hover:text-[var(--accent)]"
+    >
+      {BRAND_NAME}
+    </a>
+  ) : (
+    <span className="font-semibold text-[var(--text-secondary)]">{BRAND_NAME}</span>
+  );
 
   return (
     <footer className="mt-12 py-8 pb-12 text-center">
-      <div className="flex flex-col items-center justify-center gap-1">
-        <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-[var(--text-muted)]">
-          {t('footer.poweredBy')}
-        </p>
-        <p className="text-sm font-semibold tracking-[-0.015em] text-[var(--text-secondary)]">
-          {t('footer.brand')}
-        </p>
-        <p className="mt-2 text-[10px] font-medium tracking-[0.12em] text-[var(--text-muted)]">
-          {t('footer.copyright', { year: CURRENT_YEAR })}
-        </p>
-      </div>
+      <p className="text-sm tracking-[-0.01em] text-[var(--text-muted)]">
+        By {brand}
+      </p>
+      <p className="mt-1 text-[10px] text-[var(--text-muted)] opacity-60">
+        © {CURRENT_YEAR}
+      </p>
     </footer>
   );
 }

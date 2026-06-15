@@ -20,7 +20,7 @@ registerRoute(
 );
 
 self.addEventListener('push', (event) => {
-  let payload = { title: 'FinanciaApp', body: '', url: '/' };
+  let payload = { title: 'Financapp', body: '', url: '/' };
   try {
     if (event.data) {
       payload = { ...payload, ...event.data.json() };

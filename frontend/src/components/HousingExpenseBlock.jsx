@@ -34,6 +34,7 @@ export function HousingExpenseBlock({
   setSettings,
   snapshots,
   inOnboarding = false,
+  showCapitalError = false,
 }) {
   const { t } = useTranslation();
   const {
@@ -41,6 +42,7 @@ export function HousingExpenseBlock({
     tracksMortgageCapital,
     enableMortgageTracking,
     disableMortgageTracking,
+    setNoHousing,
   } = useHousingLiability();
   const { liabilities, setLiabilityOutstandingBalance, updateLiability } =
     useFinanceData();
@@ -92,6 +94,7 @@ export function HousingExpenseBlock({
 
   const setHousing = (type) => {
     if (type === HOUSING_TYPE.MORTGAGE) enableMortgageTracking();
+    else if (type === HOUSING_TYPE.NONE) setNoHousing();
     else disableMortgageTracking();
   };
 
@@ -120,7 +123,7 @@ export function HousingExpenseBlock({
             role="group"
             aria-label={t('onboarding.expenses.housingTypeLabel')}
           >
-            {[HOUSING_TYPE.MORTGAGE, HOUSING_TYPE.RENT].map((type) => {
+            {[HOUSING_TYPE.NONE, HOUSING_TYPE.MORTGAGE, HOUSING_TYPE.RENT].map((type) => {
               const active = housingType === type;
               return (
                 <button
@@ -142,48 +145,66 @@ export function HousingExpenseBlock({
         </FormFieldFrame>
       ) : null}
 
-      <SharedExpenseBlock
-        embedded
-        id="balance-housing-payment"
-        label={t('balance.cashflow.housingPayment')}
-        hint={t('balance.cashflow.housingPaymentHint')}
-        total={getMortgageRentTotal(settings)}
-        yourShare={getEffectiveMortgageRent(settings)}
-        shared={settings.mortgageRentShared ?? false}
-        percent={settings.mortgageRentYourSharePercent ?? 50}
-        onTotalChange={(v) =>
-          setSettings({ mortgageRentTotal: v, mortgageRent: v })
-        }
-        onSharedChange={(v) => setSettings({ mortgageRentShared: v })}
-        onPercentChange={(v) =>
-          setSettings({ mortgageRentYourSharePercent: v })
-        }
-        sharePreviewKey="balance.cashflow.housingSharePreview"
-      />
-
-      {inOnboarding && housingType === HOUSING_TYPE.MORTGAGE ? (
-        <MoneyField
-          id="onboarding-housing-outstanding"
+      {housingType !== HOUSING_TYPE.NONE && (
+        <SharedExpenseBlock
+          embedded
+          id="balance-housing-payment"
           label={
-            isMortgageCapitalShared(settings, linkedLiability)
-              ? t('balance.patrimony.outstandingBalanceTotal')
-              : t('balance.cashflow.housingDebtTitle')
+            housingType === HOUSING_TYPE.MORTGAGE
+              ? t('balance.cashflow.housingPaymentMortgage')
+              : t('balance.cashflow.housingPaymentRent')
           }
           hint={
-            outstandingSharePreview
-              ? t('balance.patrimony.outstandingBalanceSharePreview', {
-                  share: formatMoney(outstandingSharePreview.yourShare),
-                  percent: outstandingSharePreview.percent,
-                })
-              : isMortgageCapitalShared(settings, linkedLiability)
-                ? t('balance.patrimony.outstandingBalanceSharedConfigHint')
-                : t('balance.patrimony.outstandingBalanceHint')
+            housingType === HOUSING_TYPE.MORTGAGE
+              ? t('balance.cashflow.housingPaymentHintMortgage')
+              : t('balance.cashflow.housingPaymentHintRent')
           }
-          value={outstandingTotal}
-          onChange={handleOutstandingChange}
-          fullWidth
-          reserveHintSpace={false}
+          total={getMortgageRentTotal(settings)}
+          yourShare={getEffectiveMortgageRent(settings)}
+          shared={settings.mortgageRentShared ?? false}
+          percent={settings.mortgageRentYourSharePercent ?? 50}
+          onTotalChange={(v) =>
+            setSettings({ mortgageRentTotal: v, mortgageRent: v })
+          }
+          onSharedChange={(v) => setSettings({ mortgageRentShared: v })}
+          onPercentChange={(v) =>
+            setSettings({ mortgageRentYourSharePercent: v })
+          }
+          sharePreviewKey="balance.cashflow.housingSharePreview"
         />
+      )}
+
+      {inOnboarding && housingType === HOUSING_TYPE.MORTGAGE ? (
+        <div>
+          <MoneyField
+            id="onboarding-housing-outstanding"
+            label={
+              isMortgageCapitalShared(settings, linkedLiability)
+                ? t('balance.patrimony.outstandingBalanceTotal')
+                : t('balance.cashflow.housingDebtTitle')
+            }
+            hint={
+              outstandingSharePreview
+                ? t('balance.patrimony.outstandingBalanceSharePreview', {
+                    share: formatMoney(outstandingSharePreview.yourShare),
+                    percent: outstandingSharePreview.percent,
+                  })
+                : isMortgageCapitalShared(settings, linkedLiability)
+                  ? t('balance.patrimony.outstandingBalanceSharedConfigHint')
+                  : t('balance.cashflow.housingDebtHintOnboarding')
+            }
+            value={outstandingTotal}
+            onChange={handleOutstandingChange}
+            fullWidth
+            reserveHintSpace={false}
+            error={showCapitalError && !(outstandingTotal > 0)}
+          />
+          {showCapitalError && !(outstandingTotal > 0) && (
+            <p className="mt-1.5 text-xs text-[var(--color-negative)]">
+              {t('onboarding.expenses.mortgageCapitalRequired')}
+            </p>
+          )}
+        </div>
       ) : null}
 
       {!inOnboarding && tracksMortgageCapital ? (

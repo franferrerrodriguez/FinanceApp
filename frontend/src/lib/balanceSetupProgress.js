@@ -5,13 +5,23 @@ import {
   calcTotalVariableExpenses,
 } from './calculations.js';
 import { hasActiveLiquidAssets } from './emergencyFund.js';
-import { hasPatrimonyAccounts } from './monthlyClose.js';
+import { getCloseableAssets, hasPatrimonyAccounts } from './monthlyClose.js';
 import { getCurrentPatrimonySummary } from './patrimony.js';
 
 export const BALANCE_SETUP_STEP = {
+  ADD_ASSETS: 'addAssets',
   ACCOUNTS: 'accounts',
   LIQUID: 'liquid',
 };
+
+/** User has at least one savable asset in their catalog. */
+export function hasCloseableAssets(assets) {
+  return getCloseableAssets(assets).length > 0;
+}
+
+export function needsAddAssetsSetup(assets) {
+  return !hasCloseableAssets(assets);
+}
 
 /** User has saved at least one balance for the current month. */
 export function hasRecordedAccountBalances(snapshots) {
@@ -34,15 +44,19 @@ export function getBalanceSetupSteps({
   liabilities = [],
   snapshots = [],
 }) {
-  const accountsComplete = !needsAccountBalancesSetup(
-    assets,
-    liabilities,
-    snapshots,
-  );
+  const addAssetsComplete = hasCloseableAssets(assets);
+  const accountsComplete =
+    addAssetsComplete &&
+    !needsAccountBalancesSetup(assets, liabilities, snapshots);
   const liquidComplete =
     accountsComplete &&
     !needsLiquidAccountsSetup(assets, liabilities, snapshots);
   const steps = [
+    {
+      id: BALANCE_SETUP_STEP.ADD_ASSETS,
+      optional: false,
+      complete: addAssetsComplete,
+    },
     {
       id: BALANCE_SETUP_STEP.ACCOUNTS,
       optional: false,
@@ -79,6 +93,7 @@ export function getBalanceSetupPendingSteps(data) {
 export function filterFinanceAlerts(alerts, pendingSteps = []) {
   const coversEmergencySetup = pendingSteps.some(
     (step) =>
+      step.id === BALANCE_SETUP_STEP.ADD_ASSETS ||
       step.id === BALANCE_SETUP_STEP.ACCOUNTS ||
       step.id === BALANCE_SETUP_STEP.LIQUID,
   );

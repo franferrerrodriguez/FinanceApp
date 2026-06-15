@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppModal } from '../../../components/AppModal';
 import { EffectiveMonthSelect } from '../../../components/EffectiveMonthSelect';
-import { FormCheckboxField } from '../../../components/FormCheckboxField';
 import { FormFieldFrame } from '../../../components/FormFieldFrame';
 import { FormSection } from '../../../components/FormSection';
 import { FormSectionHeader } from '../../../components/FormSectionHeader';
@@ -31,12 +30,10 @@ import {
   buildMonthlyCloseDrafts,
 } from '../../../lib/patrimony';
 import {
-  assetTracksGainLoss,
   CLOSE_ASSET_GROUP,
   allCloseRowsFilled,
   canQuickSaveAllSame,
   computeDraftNetWorth,
-  computeGainLossBreakdown,
   estimateMortgageMonthlyDrop,
   fillEmptyCloseRows,
   getReferenceMonthNetWorth,
@@ -46,7 +43,6 @@ import {
   sumDraftGroupAssets,
   sumDraftLiabilities,
 } from '../../../lib/monthlyCloseForm';
-import { parseSignedMoneyEuros } from '../../../lib/money';
 import { useFinanceData, usePreferences } from '../../../store/hooks';
 import { formatInstitutionLabel } from '../../../lib/institutions';
 import { formatConjunctionList } from '../../../utils/listLabel';
@@ -86,58 +82,6 @@ function CloseBalanceRow({ name, meta, help, children, below }) {
         <div className={`space-y-3 border-t pt-4 ${ui.divider}`}>{below}</div>
       ) : null}
     </li>
-  );
-}
-
-function GainLossField({ row, assetId, t, onChange }) {
-  const breakdown = computeGainLossBreakdown(row.value, row.gainLossEuros);
-
-  return (
-    <div className="space-y-2">
-      <FormCheckboxField
-        id={`gain-toggle-${assetId}`}
-        checked={row.showGainLoss}
-        onChange={(checked) =>
-          onChange(assetId, {
-            showGainLoss: checked,
-            gainLossEuros: checked ? row.gainLossEuros : null,
-          })
-        }
-        label={t('balance.patrimony.closeGainLossToggle')}
-        hint={row.showGainLoss ? t('balance.patrimony.closeGainLossHint') : undefined}
-      />
-      {row.showGainLoss ? (
-        <div className="pl-8">
-          <input
-            id={`gain-${assetId}`}
-            type="text"
-            inputMode="decimal"
-            aria-label={t('balance.patrimony.closeGainLossLabel')}
-            placeholder={t('balance.patrimony.closeGainLossPlaceholder')}
-            value={row.gainLossEuros == null ? '' : String(row.gainLossEuros)}
-            onChange={(e) => {
-              const raw = e.target.value.replace(/[^\d.,+-]/g, '');
-              onChange(assetId, {
-                gainLossEuros: raw === '' ? null : parseSignedMoneyEuros(raw),
-              });
-            }}
-            className={`${ui.input} w-full max-w-none text-sm`}
-          />
-          {breakdown ? (
-            <p className={`mt-1.5 text-xs leading-snug ${ui.textMuted}`}>
-              {t('balance.patrimony.closeGainLossBreakdown', {
-                contributed: formatMoney(breakdown.contributed),
-                market: formatMoney(breakdown.gain),
-                pct:
-                  breakdown.pct == null
-                    ? '—'
-                    : `${breakdown.pct >= 0 ? '+' : ''}${breakdown.pct.toFixed(1)}%`,
-              })}
-            </p>
-          ) : null}
-        </div>
-      ) : null}
-    </div>
   );
 }
 
@@ -385,8 +329,6 @@ export function MonthlyCloseModal({
       row.prefillSource === 'empty' &&
       !row.modified &&
       (row.value == null || Number(row.value) === 0);
-    const tracksGainLoss = assetTracksGainLoss(asset);
-
     const meta = [
       t(`categories.asset.${asset.category}`),
       asset.provider
@@ -414,18 +356,6 @@ export function MonthlyCloseModal({
         </p>,
       );
     }
-    if (tracksGainLoss) {
-      below.push(
-        <GainLossField
-          key="gain"
-          row={row}
-          assetId={asset.id}
-          t={t}
-          onChange={updateAssetRow}
-        />,
-      );
-    }
-
     return (
       <CloseBalanceRow
         key={asset.id}

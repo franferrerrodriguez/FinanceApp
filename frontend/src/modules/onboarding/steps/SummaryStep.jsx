@@ -15,15 +15,14 @@ import {
 import { sumEuros } from '../../../lib/money';
 import { DEFAULT_SETTINGS } from '../../../lib/constants';
 import { ui } from '../../../lib/uiClasses';
-import { useProfile, useSettings } from '../../../store/hooks';
+import { useSettings } from '../../../store/hooks';
 import { formatMoney, formatPercent } from '../../../utils/formatters';
 import { OnboardingActions } from '../components/OnboardingActions';
 
-export function SummaryStep({ onBack, onFinish }) {
+export function SummaryStep({ onBack, onFinish, onGoToStep }) {
   const { t } = useTranslation();
   const { openRegister } = useAuthModal();
   const { settings } = useSettings();
-  const { profile } = useProfile();
   const income = calcTotalIncome(settings);
   const fixed = calcTotalFixedExpenses(settings);
   const leisure = calcTotalVariableExpenses(settings);
@@ -40,25 +39,30 @@ export function SummaryStep({ onBack, onFinish }) {
   return (
     <>
       <h2 className={`mb-2 ${ui.pageTitle}`}>
-        {profile?.name
-          ? t('onboarding.summary.titleWithName', { name: profile.name })
-          : t('onboarding.summary.title')}
+        {t('onboarding.summary.title')}
       </h2>
       <p className={`mb-6 ${ui.text}`}>{t('onboarding.summary.subtitle')}</p>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <SummaryCard label={t('onboarding.summary.income')} value={formatMoney(income)} />
+        <SummaryCard
+          label={t('onboarding.summary.income')}
+          value={formatMoney(income)}
+          onEdit={() => onGoToStep?.(1)}
+        />
         <SummaryCard
           label={t('onboarding.expenses.subtotalMortgage')}
           value={formatMoney(mortgage)}
+          onEdit={() => onGoToStep?.(2)}
         />
         <SummaryCard
           label={t('onboarding.expenses.subtotalHousehold')}
           value={formatMoney(household)}
+          onEdit={() => onGoToStep?.(2)}
         />
         <SummaryCard
           label={t('onboarding.expenses.subtotalLeisure')}
           value={formatMoney(leisure)}
+          onEdit={() => onGoToStep?.(2)}
         />
         <SummaryCard
           label={t('onboarding.summary.freeCashflow')}
@@ -99,23 +103,31 @@ export function SummaryStep({ onBack, onFinish }) {
         </div>
       </div>
 
-      <OnboardingActions
-        onBack={onBack}
-        onNext={onFinish}
-        nextLabel={t('common.start')}
-      />
+      <OnboardingActions onBack={onBack} onNext={onFinish} showNext={false} />
     </>
   );
 }
 
-function SummaryCard({ label, value, highlight, colorClass, className = '' }) {
+function SummaryCard({ label, value, highlight, colorClass, className = '', onEdit }) {
+  const { t } = useTranslation();
   const valueStyle = highlight
     ? 'text-[var(--color-negative)]'
     : colorClass ?? ui.heading;
 
   return (
     <div className={`p-4 ${ui.card} ${className}`.trim()}>
-      <p className={`text-xs ${ui.textMuted}`}>{label}</p>
+      <div className="flex items-center justify-between gap-2">
+        <p className={`text-xs ${ui.textMuted}`}>{label}</p>
+        {onEdit && (
+          <button
+            type="button"
+            onClick={onEdit}
+            className={`shrink-0 text-xs ${ui.accent} underline-offset-2 hover:underline`}
+          >
+            {t('common.edit')}
+          </button>
+        )}
+      </div>
       <p className={`mt-1 text-xl font-bold ${valueStyle}`}>{value}</p>
     </div>
   );

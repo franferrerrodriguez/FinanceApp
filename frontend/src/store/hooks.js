@@ -1,4 +1,5 @@
 import { useShallow } from 'zustand/react/shallow';
+import { computeAgeFromBirthDate } from '../lib/profileValidation';
 import { useAppStore } from './appStore';
 
 export function useOnboardingState() {
@@ -14,10 +15,16 @@ export function useOnboardingState() {
 
 export function useProfile() {
   return useAppStore(
-    useShallow((s) => ({
-      profile: s.profile,
-      setProfile: s.setProfile,
-    })),
+    useShallow((s) => {
+      const profile = s.profile;
+      // Always derive the current age from birthDate when available so it
+      // updates automatically across years without any user action.
+      const profileAge =
+        profile?.birthDate != null
+          ? (computeAgeFromBirthDate(profile.birthDate) ?? profile?.age ?? null)
+          : (profile?.age ?? null);
+      return { profile, setProfile: s.setProfile, profileAge };
+    }),
   );
 }
 

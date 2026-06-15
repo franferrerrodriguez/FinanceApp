@@ -7,13 +7,15 @@ import { ui } from '../lib/uiClasses';
 import { useFinanceData } from '../store/hooks';
 
 const STEP_TAB = {
+  [BALANCE_SETUP_STEP.ADD_ASSETS]: BALANCE_TAB.PATRIMONY,
   [BALANCE_SETUP_STEP.ACCOUNTS]: BALANCE_TAB.PATRIMONY,
   [BALANCE_SETUP_STEP.LIQUID]: BALANCE_TAB.PATRIMONY,
 };
 
 const STEP_NUMBER = {
-  [BALANCE_SETUP_STEP.ACCOUNTS]: 1,
-  [BALANCE_SETUP_STEP.LIQUID]: 2,
+  [BALANCE_SETUP_STEP.ADD_ASSETS]: 1,
+  [BALANCE_SETUP_STEP.ACCOUNTS]: 2,
+  [BALANCE_SETUP_STEP.LIQUID]: 3,
 };
 
 function getHintKey(stepId, hasAccounts) {
@@ -68,15 +70,26 @@ function SetupStepRow({
         </div>
       </div>
       {!complete ? (
-        <Link
-          to={to}
-          onClick={onAction}
-          className={`shrink-0 text-sm ${
-            optional ? ui.btnSecondary : ui.btnPrimary
-          }`}
-        >
-          {actionLabel}
-        </Link>
+        onAction ? (
+          <button
+            type="button"
+            onClick={onAction}
+            className={`shrink-0 text-sm ${
+              optional ? ui.btnSecondary : ui.btnPrimary
+            }`}
+          >
+            {actionLabel}
+          </button>
+        ) : (
+          <Link
+            to={to}
+            className={`shrink-0 text-sm ${
+              optional ? ui.btnSecondary : ui.btnPrimary
+            }`}
+          >
+            {actionLabel}
+          </Link>
+        )
       ) : null}
     </li>
   );
@@ -91,6 +104,7 @@ export function FinancePendingTasks({
   showSubtitle = true,
   className = '',
   onAction,
+  onStepAction,
 }) {
   const { t } = useTranslation();
   const { assets, liabilities } = useFinanceData();
@@ -141,7 +155,13 @@ export function FinancePendingTasks({
                   : 'balance.setup.action',
               )}
               to={balancePath(STEP_TAB[step.id])}
-              onAction={onAction}
+              onAction={
+                onStepAction
+                  ? () => onStepAction(step.id)
+                  : onAction
+                    ? () => onAction(step.id)
+                    : undefined
+              }
             />
           );
         })}

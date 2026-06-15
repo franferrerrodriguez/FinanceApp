@@ -19,6 +19,7 @@ export function MoneyField({
   layout = 'stacked',
   fullWidth = false,
   disabled = false,
+  error = false,
   reserveHintSpace,
 }) {
   const fieldId =
@@ -44,6 +45,7 @@ export function MoneyField({
       disabled={disabled}
       compact={compact}
       fullWidth={fullWidth}
+      error={error}
     />
   );
 

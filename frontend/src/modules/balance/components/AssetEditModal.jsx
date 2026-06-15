@@ -6,13 +6,13 @@ import { FormFieldFrame } from '../../../components/FormFieldFrame';
 import { FormSection } from '../../../components/FormSection';
 import { InstitutionSelect } from '../../../components/InstitutionSelect';
 import { ModalFormFooter } from '../../../components/ModalFormFooter';
+import { MoneyInput } from '../../../components/MoneyInput';
 import { PercentField } from '../../../components/PercentField';
 import { SelectFormField } from '../../../components/SelectFormField';
 import { TextField } from '../../../components/TextField';
 import { getAssetCategories } from '../../../lib/categoryLabels';
 import { isSavableAssetCatalog } from '../../../lib/patrimonyNames';
 import { getDefaultReturnForAssetCategory } from '../../../lib/projectionReturns';
-import { defaultTracksGainLossForCategory } from '../../../lib/monthlyCloseForm';
 import {
   SPANISH_BANK_IDS,
   SPANISH_BANK_LEGACY_LABELS,
@@ -48,7 +48,6 @@ export function AssetEditModal({
     patch({
       category,
       customAnnualReturn: getDefaultReturnForAssetCategory(category, settings),
-      tracksGainLoss: defaultTracksGainLossForCategory(category),
     });
   };
 
@@ -105,31 +104,31 @@ export function AssetEditModal({
           ))}
         </SelectFormField>
 
+        {mode === 'create' ? (
+          <FormFieldFrame
+            label={t('balance.patrimony.initialBalance')}
+            hint={t('balance.patrimony.initialBalanceHint')}
+            reserveHintSpace={false}
+          >
+            <MoneyInput
+              id="asset-initial-balance"
+              value={draft.initialBalance ?? null}
+              onChange={(initialBalance) => patch({ initialBalance })}
+            />
+          </FormFieldFrame>
+        ) : null}
+
         {showReturn ? (
           <PercentField
             id="asset-return"
             label={t('balance.patrimony.assetReturnLabel')}
             hint={t('balance.patrimony.assetReturnHint')}
-            value={
-              draft.customAnnualReturn ??
-              getDefaultReturnForAssetCategory(draft.category, settings)
-            }
+            value={draft.customAnnualReturn}
             onChange={(customAnnualReturn) => patch({ customAnnualReturn })}
             nullable
             reserveHintSpace={false}
           />
         ) : null}
-
-        <FormCheckboxField
-          id="asset-tracks-gain-loss"
-          checked={
-            draft.tracksGainLoss ??
-            defaultTracksGainLossForCategory(draft.category)
-          }
-          onChange={(tracksGainLoss) => patch({ tracksGainLoss })}
-          label={t('balance.patrimony.tracksGainLossLabel')}
-          hint={t('balance.patrimony.tracksGainLossHint')}
-        />
 
         <TextField
           id="asset-notes"

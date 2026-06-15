@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "FinanciaApp",
+    "name": "Financapp",
     "tagline": "Finanzas personales",
     "loading": "Cargando tus datos…"
   },
@@ -26,11 +26,6 @@
     "defaultsRestored": "Valores restaurados",
     "ineInflationApplied": "Inflación actualizada con el dato del INE",
     "settingsSaved": "Ajuste guardado"
-  },
-  "footer": {
-    "poweredBy": "Powered by",
-    "brand": "Cartia Solutions",
-    "copyright": "© {{year}} Cartia Solutions. Todos los derechos reservados."
   },
   "alerts": {
     "sectionAria": "Alertas financieras",
@@ -202,6 +197,7 @@
     "back": "Atrás",
     "cancel": "Cancelar",
     "save": "Guardar",
+    "edit": "Editar",
     "continue": "Continuar",
     "start": "Empezar",
     "optional": "(opcional)",
@@ -392,10 +388,14 @@
       "actionOptional": "Configurar",
       "optional": "Opcional",
       "steps": {
+        "addAssets": {
+          "label": "Añade tus activos",
+          "hint": "Registra tus cuentas bancarias, fondos de inversión, pensiones y otros activos."
+        },
         "accounts": {
-          "label": "Activos y pasivos",
-          "hint": "Registra tus cuentas y deudas, y actualiza los saldos del mes.",
-          "hintBalances": "Actualiza los saldos de tus cuentas y deudas para calcular el patrimonio."
+          "label": "Actualiza saldos del mes",
+          "hint": "Introduce los saldos actuales de todas tus cuentas para calcular tu patrimonio.",
+          "hintBalances": "Introduce los saldos actuales de todas tus cuentas para calcular tu patrimonio."
         },
         "liquid": {
           "label": "Cuenta líquida",
@@ -432,16 +432,20 @@
       "investmentsTagline": "Págate a ti mismo primero",
       "investmentsTitle": "Inversiones",
       "investmentsAmount": "Cantidad al mes",
+      "investmentsAmountInline": "Cantidad que invierto al mes",
       "investmentsHint": "Lo que te comprometes a invertir cada mes, antes del resto de gastos.",
       "investmentsCountForCushion": "Incluir en el cálculo del colchón",
       "investmentsCountForCushionHint": "Si quieres seguir invirtiendo sin empleo, el objetivo de emergencia tendrá en cuenta este gasto.",
-      "housingPayment": "Vivienda (cuota total)",
-      "housingPaymentHint": "Alquiler o hipoteca. Importe completo, aunque lo paguéis entre varios.",
+      "housingPaymentMortgage": "Cuota de hipoteca",
+      "housingPaymentRent": "Alquiler mensual",
+      "housingPaymentHintMortgage": "Cuota íntegra. Si la pagáis entre varios, escribe el total y ajusta tu parte abajo.",
+      "housingPaymentHintRent": "Alquiler íntegro. Si lo pagáis entre varios, escribe el total y ajusta tu parte abajo.",
       "housingSharePreview": "Tu parte: {{yours}}/mes · Cuota íntegra: {{total}}",
       "housingEnableTracking": "Tengo hipoteca — registrar también el capital pendiente",
       "housingDisableTracking": "Solo llevo la cuota, no el capital pendiente",
       "housingMortgageName": "Hipoteca",
       "housingDebtTitle": "Capital pendiente de la hipoteca",
+      "housingDebtHintOnboarding": "Lo que debes al banco en total hoy.",
       "housingDebtMissing": "Pendiente — actualiza saldos",
       "housingDebtShareHint": "Tu parte: {{share}} ({{percent}}%)",
       "housingDebtAction": "Actualizar saldos",
@@ -507,8 +511,8 @@
       "emergencyFundTargetLabel": "Tu objetivo de colchón",
       "emergencyFundTargetBreakdown": "{{months}} meses × {{monthly}}/mes de gastos totales",
       "emergencyFundStatusLabel": "Tu colchón hoy",
-      "emergencyFundNoAccounts": "Aún no hay cuentas Banco o Efectivo. Añádelas en Patrimonio e indica su saldo para saber si cubres el objetivo.",
-      "emergencyFundNoBalances": "Tienes cuentas registradas pero faltan los saldos del mes. Usa «Actualizar saldos» arriba en esta página.",
+      "emergencyFundNoAccounts": "Añade una cuenta Banco o Efectivo para ver si alcanzas tu objetivo de colchón.",
+      "emergencyFundNoBalances": "Actualiza los saldos del mes para ver tu colchón actual.",
       "emergencyFundOnTrack": "Objetivo cubierto.",
       "emergencyFundShortfall": "Te faltan {{amount}} para llegar al objetivo.",
       "emergencyFundLiquidHint": "Liquidez = suma de activos Banco y Efectivo del mes actual.",
@@ -652,6 +656,8 @@
       "tableCategory": "Tipo",
       "tableReturn": "Rentab. anual",
       "tableReturnAssetHint": "Rentabilidad anual definida en este activo",
+      "initialBalance": "Saldo actual",
+      "initialBalanceHint": "Opcional. Si lo indicas, se registra como saldo de este mes y no tendrás que actualizar saldos ahora.",
       "assetReturnLabel": "Rentabilidad anual en proyección",
       "assetReturnHint": "Se rellena según el tipo al elegir categoría; ajústala si este producto es distinto (p. ej. otro fondo o cuenta remunerada).",
       "tracksGainLossLabel": "Pedir rentabilidad acumulada al actualizar saldos",
@@ -1045,11 +1051,13 @@
       "3": { "title": "Resumen", "short": "Resumen" }
     },
     "welcome": {
-      "title": "Tu situación financiera, clara",
-      "subtitle": "Lo que entra, lo que sale y lo que tienes. Cuatro pasos para ver el cuadro completo y proyectar hacia dónde vas.",
+      "title": "Tu dinero, en orden.",
+      "subtitle": "Toma el control. Planifica lo que viene.",
       "scopes": "Cashflow · Patrimonio · Proyección",
       "name": "Nombre",
       "namePlaceholder": "Tu nombre",
+      "birthDate": "Fecha de nacimiento",
+      "birthDateErrorRequired": "Indica tu fecha de nacimiento para continuar.",
       "age": "Edad",
       "agePlaceholder": "Ej. 32",
       "ageHint": "Para proyecciones y jubilación; no afecta al cashflow mensual.",
@@ -1079,9 +1087,11 @@
       "housingTypeLabel": "Tipo de vivienda",
       "housingType": {
         "mortgage": "Hipoteca",
-        "rent": "Alquiler"
+        "rent": "Alquiler",
+        "none": "Ninguna"
       },
       "rentOnlyHint": "Alquiler: solo cuota en Vivienda arriba, sin capital pendiente.",
+      "mortgageCapitalRequired": "Introduce el capital pendiente de la hipoteca para continuar.",
       "addLiability": "Añadir deuda",
       "addAnotherLiability": "Añadir otra deuda",
       "household": "Gastos del hogar",
@@ -1094,9 +1104,9 @@
       "useSimpleView": "Volver a la vista simple",
       "detailedIntro": "Opcional: indica tú cada partida (luz, seguros…). No rellenamos importes automáticamente.",
       "subtotalInvestments": "Inversiones",
-      "subtotalMortgage": "Hipoteca / alquiler",
-      "subtotalHousehold": "Gastos del hogar y supermercado",
-      "subtotalLeisure": "Gastos de ocio",
+      "subtotalMortgage": "Vivienda",
+      "subtotalHousehold": "Hogar y alimentación",
+      "subtotalLeisure": "Ocio",
       "mortgageRent": "Hipoteca o alquiler",
       "mortgageRentTotal": "Hipoteca o alquiler (cuota total)",
       "mortgageRentTotalHint": "Cuota completa, aunque la paguéis entre varios.",
@@ -1111,18 +1121,18 @@
       "otherFixed": "Otros gastos fijos"
     },
     "summary": {
-      "title": "Resumen",
+      "title": "Tu resumen",
       "titleWithName": "{{name}}, resumen",
-      "subtitle": "Revisa lo que has indicado. No hay nada más que rellenar aquí.",
-      "income": "Ingresos / mes",
-      "fixedExpenses": "Gastos fijos / mes",
-      "leisure": "Ocio / mes",
-      "freeCashflow": "Disponible tras gastos / mes",
-      "savingsRate": "Margen tras gastos",
+      "subtitle": "Revisa los datos antes de empezar. Puedes editar cualquier sección.",
+      "income": "Ingresos netos",
+      "fixedExpenses": "Gastos fijos",
+      "leisure": "Ocio",
+      "freeCashflow": "Dinero libre al mes",
+      "savingsRate": "Tasa de ahorro",
       "hint": "Patrimonio, cuentas e inversión los configurarás en Patrimonio. Puedes cambiar ingresos y gastos cuando quieras.",
       "registerPrompt": "¿Quieres guardar este progreso en la nube?",
       "registerCta": "Registrarme",
-      "registerLater": "Más tarde, empezar sin cuenta"
+      "registerLater": "Empezar sin cuenta"
     }
   },
   "categories": {

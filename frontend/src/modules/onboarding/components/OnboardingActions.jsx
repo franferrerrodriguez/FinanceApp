@@ -7,6 +7,7 @@ export function OnboardingActions({
   nextLabel,
   nextDisabled = false,
   showBack = true,
+  showNext = true,
 }) {
   const { t } = useTranslation();
   const primaryLabel = nextLabel ?? t('common.continue');
@@ -22,14 +23,16 @@ export function OnboardingActions({
           {t('common.back')}
         </button>
       )}
-      <button
-        type="button"
-        onClick={onNext}
-        disabled={nextDisabled}
-        className={`flex-[2] ${ui.btnPrimary}`}
-      >
-        {primaryLabel}
-      </button>
+      {showNext && (
+        <button
+          type="button"
+          onClick={onNext}
+          disabled={nextDisabled}
+          className={`flex-[2] ${ui.btnPrimary}`}
+        >
+          {primaryLabel}
+        </button>
+      )}
     </div>
   );
 }

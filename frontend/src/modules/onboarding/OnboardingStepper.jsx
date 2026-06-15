@@ -57,6 +57,11 @@ export function OnboardingStepper() {
     navigate(onboardingPathForStep(prev));
   };
 
+  const goToStep = (n) => {
+    setStep(n);
+    navigate(onboardingPathForStep(n));
+  };
+
   const handleFinish = () => {
     complete();
     navigate('/dashboard', { replace: true });
@@ -73,7 +78,7 @@ export function OnboardingStepper() {
         <FixedExpensesStep onBack={goBack} onNext={() => goForward(3)} />
       )}
       {allowedStep === 3 && (
-        <SummaryStep onBack={goBack} onFinish={handleFinish} />
+        <SummaryStep onBack={goBack} onFinish={handleFinish} onGoToStep={goToStep} />
       )}
     </div>
   );

@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { usePrunePatrimonyDrafts } from '../../../hooks/usePrunePatrimonyDrafts';
 import { usePatrimonySave } from '../../../hooks/usePatrimonySave';
 import { useTranslation } from 'react-i18next';
@@ -47,7 +48,7 @@ import { LiabilityEditModal } from './LiabilityEditModal';
 import { PatrimonyDeleteConfirmModal } from './PatrimonyDeleteConfirmModal';
 import { BalanceSetupStepBanner } from './BalanceSetupStepBanner';
 import { useRecordBalances } from './RecordBalancesProvider';
-import { BALANCE_SETUP_STEP } from '../../../lib/balanceSetupProgress';
+import { BALANCE_SETUP_STEP, needsAddAssetsSetup } from '../../../lib/balanceSetupProgress';
 import {
   getLiabilityMonthlyPaymentDisplay,
   getMortgageBalanceShareInfo,
@@ -69,8 +70,22 @@ export function PatrimonyPanel() {
   const { t } = useTranslation();
   const { locale } = usePreferences();
   const { alerts } = useFinanceAlerts();
+  const location = useLocation();
+  const navigate = useNavigate();
   const { openRecordBalances, goToPatrimonyCatalog, hasAccounts } =
     useRecordBalances();
+
+  const autoOpenAsset = location.state?.openAddAsset === true;
+  const autoOpenRecordBalances = location.state?.openRecordBalances === true;
+
+  useEffect(() => {
+    if (!autoOpenAsset && !autoOpenRecordBalances) return;
+    navigate(location.pathname + location.search, { replace: true, state: {} });
+    if (autoOpenRecordBalances && hasAccounts) {
+      openRecordBalances();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const patrimonyAlerts = useMemo(
     () => alerts.filter((alert) => !isMonthlyCloseAlert(alert)),
     [alerts],
@@ -83,6 +98,7 @@ export function PatrimonyPanel() {
     addAsset,
     updateAsset,
     removeAsset,
+    addSnapshot,
     addLiability,
     updateLiability,
     removeLiability,
@@ -150,16 +166,25 @@ export function PatrimonyPanel() {
         <FinanceAlerts alerts={patrimonyAlerts} className={ui.chartCard} />
       ) : null}
 
-      <BalanceSetupStepBanner
-        stepId={BALANCE_SETUP_STEP.ACCOUNTS}
-        onAction={
-          hasAccounts ? () => openRecordBalances() : scrollToPatrimonyCatalog
-        }
-      />
-      <BalanceSetupStepBanner
-        stepId={BALANCE_SETUP_STEP.LIQUID}
-        onAction={scrollToPatrimonyCatalog}
-      />
+      {needsAddAssetsSetup(assets) ? (
+        <BalanceSetupStepBanner
+          stepId={BALANCE_SETUP_STEP.ADD_ASSETS}
+          onAction={scrollToPatrimonyCatalog}
+        />
+      ) : (
+        <>
+          <BalanceSetupStepBanner
+            stepId={BALANCE_SETUP_STEP.ACCOUNTS}
+            onAction={
+              hasAccounts ? () => openRecordBalances() : scrollToPatrimonyCatalog
+            }
+          />
+          <BalanceSetupStepBanner
+            stepId={BALANCE_SETUP_STEP.LIQUID}
+            onAction={scrollToPatrimonyCatalog}
+          />
+        </>
+      )}
 
       <div className={`${ui.chartCard} ${ui.stackSection}`}>
         <div>
@@ -224,10 +249,12 @@ export function PatrimonyPanel() {
         addAsset={addAsset}
         updateAsset={updateAsset}
         removeAsset={removeAsset}
+        addSnapshot={addSnapshot}
         saveToCloud={saveToCloud}
         asOfLabel={asOfLabel}
         hasAnyBalance={hasAnyBalance}
         onViewHistory={hasAnyBalance ? scrollToPatrimonyHistory : undefined}
+        autoOpen={autoOpenAsset}
       />
 
       <PatrimonyLiabilitiesSection
@@ -297,10 +324,12 @@ function PatrimonyAssetsSection({
   addAsset,
   updateAsset,
   removeAsset,
+  addSnapshot,
   saveToCloud,
   asOfLabel,
   hasAnyBalance,
   onViewHistory,
+  autoOpen = false,
 }) {
   const { t } = useTranslation();
   const toast = useToast();
@@ -309,6 +338,7 @@ function PatrimonyAssetsSection({
     categories.find((c) => c.value === cat)?.label ?? cat;
   const [modal, setModal] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const autoOpenedRef = useRef(false);
 
   const assetBaseLabel = (asset) =>
     getAssetBaseLabel(
@@ -373,14 +403,36 @@ function PatrimonyAssetsSection({
     setModal({ mode: 'edit', id: asset.id, draft: { ...asset } });
   const closeModal = () => setModal(null);
 
+  useEffect(() => {
+    if (autoOpen && !autoOpenedRef.current) {
+      autoOpenedRef.current = true;
+      openCreate();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoOpen]);
+
   const handleModalSave = async (draft) => {
-    const merged =
-      modal?.mode === 'create'
-        ? [...assets, createAsset({ ...draft, name: '' })]
-        : assets.map((a) =>
-            a.id === modal.id ? { ...a, ...draft, name: a.name } : a,
-          );
+    let newAssetId = null;
+    let merged;
+    if (modal?.mode === 'create') {
+      const newAsset = createAsset({ ...draft, name: '' });
+      newAssetId = newAsset.id;
+      merged = [...assets, newAsset];
+    } else {
+      merged = assets.map((a) =>
+        a.id === modal.id ? { ...a, ...draft, name: a.name } : a,
+      );
+    }
     applyAssetList(syncAutoNames(merged));
+    if (newAssetId && draft.initialBalance > 0) {
+      const today = new Date().toISOString().slice(0, 10);
+      addSnapshot({
+        id: crypto.randomUUID(),
+        assetId: newAssetId,
+        snapshotDate: today,
+        value: draft.initialBalance,
+      });
+    }
     closeModal();
     await notifyAfterSave({
       toast,

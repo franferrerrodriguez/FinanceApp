@@ -183,23 +183,59 @@ See [`frontend/docs/AUTH.md`](frontend/docs/AUTH.md).
 
 ## Deployment
 
-Static build from `frontend/`:
+### Automatic (GitHub Actions)
+
+Every push to `main` triggers `.github/workflows/deploy.yml`:
+
+1. **Test & Build** — `npm ci` → `npm test` → `npm run build` (Vite, output to `frontend/dist/`)
+2. **Deploy** — uploads `dist/` to the server via SCP/SFTP using `appleboy/scp-action`
+
+The deploy job only runs if tests and build pass. It targets the GitHub environment `production` (optional: enable protection rules in **Settings → Environments** to require manual approval).
+
+#### Required GitHub Secrets
+
+Configure in **Settings → Secrets and variables → Actions**:
+
+| Secret | Description |
+|--------|-------------|
+| `SERVER_HOST` | Hostname or IP of the web server |
+| `SERVER_USER` | SSH/SFTP username |
+| `SERVER_PASSWORD` | SSH/SFTP password |
+| `SERVER_PORT` | SSH port (typically `22`) |
+| `REMOTE_PATH` | `/domains/info.frandiabolo.es/public_html/applications/financapp` |
+
+#### Optional secrets (Vite build vars)
+
+Add these to include Supabase and push in the production build:
+
+| Secret | Description |
+|--------|-------------|
+| `VITE_SUPABASE_URL` | `https://rzvtrvpcsttgtqcqarmh.supabase.co` |
+| `VITE_SUPABASE_ANON_KEY` | Publishable anon key |
+| `VITE_VAPID_PUBLIC_KEY` | VAPID public key for Web Push |
+
+Without these the build still succeeds but Supabase auth and push notifications won't work.
+
+#### Post-deploy checklist
+
+- Add the production domain to Supabase **Authentication → URL Configuration**.
+- Configure your web server to serve `index.html` for all routes (SPA fallback).
+
+### Manual build
 
 ```bash
 cd frontend && npm run build
 ```
 
-Deploy `frontend/dist/` to Vercel, Netlify, Hostinger, etc.
-
-Set the same `VITE_SUPABASE_*` and `VITE_VAPID_PUBLIC_KEY` in the hosting panel. Add the production URL to Supabase **Authentication → URL Configuration**.
-
-Skills in [`.agents/skills/`](.agents/skills/) cover Vercel deploy with tokens if needed.
+Output in `frontend/dist/`. Can be deployed to Vercel, Netlify, Hostinger, or any static host.
 
 ---
 
 ## CI
 
-GitHub Actions (`.github/workflows/ci.yml`) on `main`: `npm ci`, `npm test`, `npm run build` in `frontend/`.
+GitHub Actions (`.github/workflows/ci.yml`) runs on **pull requests** to `main`: `npm ci`, `npm test`, `npm run build`.
+
+Pushes to `main` are handled by the deploy workflow above (tests + build + deploy).
 
 ---
 

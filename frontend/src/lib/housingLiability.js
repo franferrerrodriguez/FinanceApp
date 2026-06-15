@@ -10,13 +10,15 @@ import { SNAPSHOT_ITEM_TYPE } from './snapshotItemTypes.js';
 export const HOUSING_TYPE = {
   RENT: 'rent',
   MORTGAGE: 'mortgage',
+  NONE: 'none',
 };
 
 export function inferHousingType(settings, liabilities = []) {
   const linked = getLinkedMortgageLiability(liabilities, settings);
   if (linked) return HOUSING_TYPE.MORTGAGE;
   if (settings?.housingType === HOUSING_TYPE.MORTGAGE) return HOUSING_TYPE.MORTGAGE;
-  return HOUSING_TYPE.RENT;
+  if (settings?.housingType === HOUSING_TYPE.RENT) return HOUSING_TYPE.RENT;
+  return HOUSING_TYPE.NONE;
 }
 
 /** Keeps housingType and linkedMortgageLiabilityId aligned with liabilities after merge/rehydrate. */

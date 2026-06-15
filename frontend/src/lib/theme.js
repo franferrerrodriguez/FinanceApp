@@ -3,8 +3,12 @@ export const THEMES = ['light', 'dark', 'system'];
 export const DEFAULT_THEME = 'dark';
 
 /** @returns {'light' | 'dark'} */
-export function resolveTheme(_theme) {
-  // App is dark-only per DESIGN_SYSTEM.md
+export function resolveTheme(theme) {
+  if (theme === 'dark') return 'dark';
+  if (theme === 'light') return 'light';
+  if (typeof window !== 'undefined' && window.matchMedia) {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
   return 'dark';
 }
 

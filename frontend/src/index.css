@@ -9,8 +9,43 @@
   --font-display: var(--font-sans);
 }
 
-/* ── Design System color tokens (dark-only palette) ─────────────── */
+/* ── Design System color tokens ──────────────────────────────────── */
+/* Light mode (default) */
 :root {
+  --bg-primary:    #F7F9FC;
+  --bg-secondary:  #FFFFFF;
+  --bg-tertiary:   #EEF1F5;
+  --bg-hover:      #E5E9EF;
+
+  --accent:        #1D9E75;
+  --accent-light:  #5DCAA5;
+  --accent-muted:  rgba(29, 158, 117, 0.10);
+  --accent-border: rgba(29, 158, 117, 0.30);
+
+  --text-primary:   #0D1117;
+  --text-secondary: #374151;
+  --text-muted:     #6B7280;
+  --text-disabled:  #9CA3AF;
+
+  --border-subtle:  rgba(0, 0, 0, 0.05);
+  --border-default: rgba(0, 0, 0, 0.10);
+  --border-strong:  rgba(0, 0, 0, 0.18);
+
+  --color-positive: #1D9E75;
+  --color-negative: #E24B4A;
+  --color-warning:  #D97706;
+  --color-info:     #2563EB;
+
+  --border-default-rule: 0.5px solid rgba(0, 0, 0, 0.10);
+  --border-subtle-rule:  0.5px solid rgba(0, 0, 0, 0.05);
+  --border-strong-rule:  0.5px solid rgba(0, 0, 0, 0.18);
+  --border-accent-rule:  0.5px solid rgba(29, 158, 117, 0.30);
+  --border-error-rule:   0.5px solid rgba(226, 75, 74, 0.50);
+  --border-focus-rule:   0.5px solid rgba(29, 158, 117, 0.50);
+}
+
+/* Dark mode — DS palette */
+.dark {
   --bg-primary:    #0D1117;
   --bg-secondary:  #161C24;
   --bg-tertiary:   #1E2530;
@@ -35,7 +70,6 @@
   --color-warning:  #EF9F27;
   --color-info:     #378ADD;
 
-  /* Border shorthand helpers (for [border:var(--...)] pattern) */
   --border-default-rule: 0.5px solid rgba(255, 255, 255, 0.10);
   --border-subtle-rule:  0.5px solid rgba(255, 255, 255, 0.06);
   --border-strong-rule:  0.5px solid rgba(255, 255, 255, 0.18);
@@ -97,13 +131,13 @@ h4 {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: stretch;
-  border-top: 0.5px solid rgba(255, 255, 255, 0.08);
-  background: rgba(22, 28, 36, 0.96);
+  border-top: 0.5px solid var(--border-default);
+  background: color-mix(in srgb, var(--bg-secondary) 96%, transparent);
   padding-bottom: env(safe-area-inset-bottom);
   backdrop-filter: blur(12px);
 }
 
-html.dark .financia-bottom-nav {
+.dark .financia-bottom-nav {
   border-top-color: rgba(255, 255, 255, 0.08);
   background: rgba(22, 28, 36, 0.96);
 }
@@ -121,24 +155,16 @@ html.dark .financia-bottom-nav {
   min-height: 3.25rem;
   padding: 0.35rem 0.15rem 0.5rem;
   text-decoration: none;
-  color: #3D4F61;
+  color: var(--text-muted);
   font-size: 0.625rem;
   font-weight: 500;
   letter-spacing: -0.01em;
   -webkit-tap-highlight-color: transparent;
 }
 
-html.dark .financia-bottom-nav__item {
-  color: #3D4F61;
-}
-
 .financia-bottom-nav__item--active {
-  color: #1D9E75;
+  color: var(--accent);
   font-weight: 600;
-}
-
-html.dark .financia-bottom-nav__item--active {
-  color: #1D9E75;
 }
 
 .financia-bottom-nav__icon {

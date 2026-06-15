@@ -13,6 +13,7 @@ export function MoneyInput({
   fullWidth = false,
   prefilled = false,
   pending = false,
+  error = false,
   hint,
   className = '',
   'aria-label': ariaLabel,
@@ -37,9 +38,11 @@ export function MoneyInput({
   const widthClass = fullWidth ? 'w-full max-w-none' : `w-full ${ui.inputAmount}`;
   const inputClass = pending
     ? `${ui.input} ${ui.inputMoney} w-full max-w-none [border-color:rgba(29,158,117,0.40)] bg-[rgba(29,158,117,0.04)] ring-1 ring-[rgba(29,158,117,0.15)] focus:[border-color:var(--accent)]`
-    : prefilled
-      ? `${ui.input} ${ui.inputMoney} w-full max-w-none [border-color:rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-[var(--text-muted)]`
-      : `${ui.input} ${ui.inputMoney} w-full max-w-none`;
+    : error
+      ? `${ui.inputError} ${ui.inputMoney} w-full max-w-none`
+      : prefilled
+        ? `${ui.input} ${ui.inputMoney} w-full max-w-none [border-color:rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-[var(--text-muted)]`
+        : `${ui.input} ${ui.inputMoney} w-full max-w-none`;
 
   return (
     <div className={`relative ${widthClass} ${className}`.trim()}>

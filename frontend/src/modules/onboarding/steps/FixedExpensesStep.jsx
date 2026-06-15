@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   getEffectiveGroceries,
@@ -8,6 +9,9 @@ import {
   getLeisureTotal,
 } from '../../../lib/calculations';
 import { patchExpenseViewMode } from '../../../lib/expenseViewMode';
+import { getMortgageFullOutstandingBalance } from '../../../lib/housingLiability';
+import { getCurrentMonthKey } from '../../../lib/dashboardMetrics';
+import { useHousingLiability } from '../../../hooks/useHousingLiability';
 import { DetailedHouseholdBreakdown } from '../components/DetailedHouseholdBreakdown';
 import { ExpenseViewToggle } from '../components/ExpenseViewToggle';
 import { ui } from '../../../lib/uiClasses';
@@ -24,6 +28,20 @@ export function FixedExpensesStep({ onBack, onNext }) {
   const { t } = useTranslation();
   const { settings, setSettings } = useSettings();
   const { snapshots } = useFinanceData();
+  const { linkedLiability, tracksMortgageCapital } = useHousingLiability();
+
+  const monthKey = getCurrentMonthKey();
+  const mortgageOutstanding = tracksMortgageCapital
+    ? (getMortgageFullOutstandingBalance(settings, snapshots, linkedLiability, monthKey) ?? 0)
+    : null;
+  const mortgageCapitalMissing = tracksMortgageCapital && !(mortgageOutstanding > 0);
+
+  const [showErrors, setShowErrors] = useState(false);
+
+  const handleNext = () => {
+    if (mortgageCapitalMissing) { setShowErrors(true); return; }
+    onNext();
+  };
 
   const detailed = settings.useDetailedExpenses ?? false;
 
@@ -46,6 +64,7 @@ export function FixedExpensesStep({ onBack, onNext }) {
           setSettings={setSettings}
           snapshots={snapshots}
           inOnboarding
+          showCapitalError={showErrors && mortgageCapitalMissing}
         />
 
         <OnboardingLiabilitiesSection />
@@ -134,7 +153,7 @@ export function FixedExpensesStep({ onBack, onNext }) {
         </div>
       </div>
 
-      <OnboardingActions onBack={onBack} onNext={onNext} />
+      <OnboardingActions onBack={onBack} onNext={handleNext} />
     </>
   );
 }

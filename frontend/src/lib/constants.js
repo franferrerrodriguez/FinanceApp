@@ -10,7 +10,7 @@ export const DEFAULT_SETTINGS = {
   mortgageRentShared: false,
   mortgageRentYourSharePercent: 50,
   mortgageRentIsEstimate: true,
-  housingType: 'rent',
+  housingType: 'none',
   linkedMortgageLiabilityId: null,
   householdFixedEstimate: 0,
   householdFixedIsEstimate: true,
@@ -43,7 +43,7 @@ export const DEFAULT_SETTINGS = {
   useRealReturn: true,
   expectedInflation: 0.02,
   pensionPlanReturn: 0.035,
-  savingsAccountReturn: 0.025,
+  savingsAccountReturn: 0,
 
   projectionYears: 20,
   annualSalaryIncrease: 0,

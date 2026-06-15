@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import {
   BALANCE_SETUP_STEP,
   needsAccountBalancesSetup,
+  needsAddAssetsSetup,
   needsLiquidAccountsSetup,
 } from '../../../lib/balanceSetupProgress';
 import { hasPatrimonyAccounts } from '../../../lib/monthlyClose';
@@ -13,11 +14,13 @@ export function BalanceSetupStepBanner({ stepId, onAction }) {
   const { assets, liabilities, snapshots } = useFinanceData();
 
   const show =
-    stepId === BALANCE_SETUP_STEP.ACCOUNTS
-      ? needsAccountBalancesSetup(assets, liabilities, snapshots)
-      : stepId === BALANCE_SETUP_STEP.LIQUID
-        ? needsLiquidAccountsSetup(assets, liabilities, snapshots)
-        : false;
+    stepId === BALANCE_SETUP_STEP.ADD_ASSETS
+      ? needsAddAssetsSetup(assets)
+      : stepId === BALANCE_SETUP_STEP.ACCOUNTS
+        ? needsAccountBalancesSetup(assets, liabilities, snapshots)
+        : stepId === BALANCE_SETUP_STEP.LIQUID
+          ? needsLiquidAccountsSetup(assets, liabilities, snapshots)
+          : false;
 
   if (!show) return null;
 

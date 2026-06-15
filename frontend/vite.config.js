@@ -15,8 +15,8 @@ export default defineConfig({
       injectRegister: 'auto',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'favicon.svg'],
       manifest: {
-        name: 'FinanciaApp',
-        short_name: 'FinanciaApp',
+        name: 'Financapp',
+        short_name: 'Financapp',
         description: 'Gestión de tus finanzas personales',
         theme_color: '#1A3A5C',
         background_color: '#0f1117',

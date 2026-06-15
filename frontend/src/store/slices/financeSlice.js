@@ -70,7 +70,7 @@ export const createFinanceSlice = (set, get) => ({
 
   applyHousingType: (nextType, { mortgageName = 'Hipoteca' } = {}) =>
     set((state) => {
-      if (nextType === HOUSING_TYPE.RENT) {
+      if (nextType === HOUSING_TYPE.RENT || nextType === HOUSING_TYPE.NONE) {
         const linked = getLinkedMortgageLiability(
           state.liabilities,
           state.settings,
@@ -88,7 +88,7 @@ export const createFinanceSlice = (set, get) => ({
             : state.liabilities,
           settings: {
             ...state.settings,
-            housingType: HOUSING_TYPE.RENT,
+            housingType: nextType,
             linkedMortgageLiabilityId: null,
           },
         };

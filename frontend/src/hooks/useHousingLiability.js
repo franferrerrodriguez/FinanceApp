@@ -23,10 +23,15 @@ export function useHousingLiability() {
     applyHousingType(HOUSING_TYPE.RENT);
   }, [applyHousingType]);
 
+  const setNoHousing = useCallback(() => {
+    applyHousingType(HOUSING_TYPE.NONE);
+  }, [applyHousingType]);
+
   return {
     linkedLiability,
     tracksMortgageCapital,
     enableMortgageTracking,
     disableMortgageTracking,
+    setNoHousing,
   };
 }

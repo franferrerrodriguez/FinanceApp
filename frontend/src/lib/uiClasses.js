@@ -41,7 +41,7 @@ export const ui = {
   /** Inside a section card */
   stackSection: 'space-y-4',
   /** Between nested blocks */
-  stackBlocks: 'space-y-3',
+  stackBlocks: 'space-y-4',
 
   // ── Navigation ──────────────────────────────────────────────────
   navTab:

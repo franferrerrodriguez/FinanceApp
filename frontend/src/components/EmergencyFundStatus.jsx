@@ -44,26 +44,10 @@ export function EmergencyFundStatus({ metrics, variant = 'card' }) {
       ? 'balance.cashflow.emergencyFundNoBalances'
       : 'balance.cashflow.emergencyFundNoAccounts';
 
-    if (variant === 'card') {
-      return (
-        <article className={ui.kpiCard}>
-          <h3 className={`text-sm font-medium ${ui.textMuted}`}>
-            {t('dashboard.emergencyFund.title')}
-          </h3>
-          <p className={`mt-3 text-sm ${ui.text}`}>{t(messageKey)}</p>
-          <PatrimonyLink className="mt-3" />
-        </article>
-      );
-    }
+    if (variant === 'card') return null;
 
     return (
-      <div className={`rounded-xl border px-4 py-4 ${STATUS_BOX.unavailable}`}>
-        <p className={`text-xs font-semibold uppercase tracking-wide ${ui.textMuted}`}>
-          {t('balance.cashflow.emergencyFundStatusLabel')}
-        </p>
-        <p className={`mt-2 text-sm ${ui.text}`}>{t(messageKey)}</p>
-        <PatrimonyLink className="mt-3" />
-      </div>
+      <p className={`text-sm ${ui.textMuted}`}>{t(messageKey)}</p>
     );
   }
 

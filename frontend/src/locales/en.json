@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "FinanciaApp",
+    "name": "Financapp",
     "tagline": "Personal finance",
     "loading": "Loading your data…"
   },
@@ -26,11 +26,6 @@
     "defaultsRestored": "Defaults restored",
     "ineInflationApplied": "Inflation updated from INE data",
     "settingsSaved": "Setting saved"
-  },
-  "footer": {
-    "poweredBy": "Powered by",
-    "brand": "Cartia Solutions",
-    "copyright": "© {{year}} Cartia Solutions. All rights reserved."
   },
   "alerts": {
     "sectionAria": "Financial alerts",
@@ -202,6 +197,7 @@
     "back": "Back",
     "cancel": "Cancel",
     "save": "Save",
+    "edit": "Edit",
     "continue": "Continue",
     "start": "Get started",
     "optional": "(optional)",
@@ -392,10 +388,14 @@
       "actionOptional": "Set up",
       "optional": "Optional",
       "steps": {
+        "addAssets": {
+          "label": "Add your assets",
+          "hint": "Register your bank accounts, investment funds, pensions and other assets."
+        },
         "accounts": {
-          "label": "Assets & liabilities",
-          "hint": "Register your accounts and debts, and update monthly balances.",
-          "hintBalances": "Update balances for your accounts and debts to calculate net worth."
+          "label": "Update monthly balances",
+          "hint": "Enter the current balances of all your accounts to calculate your net worth.",
+          "hintBalances": "Enter the current balances of all your accounts to calculate your net worth."
         },
         "liquid": {
           "label": "Liquid account",
@@ -432,16 +432,20 @@
       "investmentsTagline": "Pay yourself first",
       "investmentsTitle": "Investments",
       "investmentsAmount": "Monthly amount",
+      "investmentsAmountInline": "Amount I invest each month",
       "investmentsHint": "What you commit to invest each month, before other spending.",
       "investmentsCountForCushion": "Include in emergency fund calculation",
       "investmentsCountForCushionHint": "If you'd keep investing without a job, your emergency goal will count this expense.",
-      "housingPayment": "Housing (full payment)",
-      "housingPaymentHint": "Rent or mortgage. Full amount, even if you split it with others.",
+      "housingPaymentMortgage": "Mortgage payment",
+      "housingPaymentRent": "Monthly rent",
+      "housingPaymentHintMortgage": "Full mortgage payment. If you split it, enter the total and set your share below.",
+      "housingPaymentHintRent": "Full rent amount. If you split it, enter the total and set your share below.",
       "housingSharePreview": "Your share: {{yours}}/mo · Full payment: {{total}}",
       "housingEnableTracking": "I have a mortgage — also track outstanding principal",
       "housingDisableTracking": "Only track the payment, not outstanding principal",
       "housingMortgageName": "Mortgage",
       "housingDebtTitle": "Outstanding mortgage principal",
+      "housingDebtHintOnboarding": "Total amount you owe the bank today.",
       "housingDebtMissing": "Pending — update balances",
       "housingDebtShareHint": "Your share: {{share}} ({{percent}}%)",
       "housingDebtAction": "Update balances",
@@ -507,8 +511,8 @@
       "emergencyFundTargetLabel": "Your emergency fund goal",
       "emergencyFundTargetBreakdown": "{{months}} months × {{monthly}}/month total expenses",
       "emergencyFundStatusLabel": "Your cushion today",
-      "emergencyFundNoAccounts": "No Bank or Cash assets yet. Add them in Net worth and enter balances to see if you meet your goal.",
-      "emergencyFundNoBalances": "You have accounts but no balances for this month. Use «Update balances» at the top of this page.",
+      "emergencyFundNoAccounts": "Add a Bank or Cash account to see if you're meeting your emergency fund target.",
+      "emergencyFundNoBalances": "Update this month's balances to see your current emergency fund.",
       "emergencyFundOnTrack": "Goal covered.",
       "emergencyFundShortfall": "You are short {{amount}} to reach your goal.",
       "emergencyFundLiquidHint": "Liquidity = sum of Bank and Cash assets for the current month.",
@@ -652,6 +656,8 @@
       "tableCategory": "Type",
       "tableReturn": "Annual return",
       "tableReturnAssetHint": "Annual return defined on this asset",
+      "initialBalance": "Current balance",
+      "initialBalanceHint": "Optional. If provided, it's recorded as this month's balance so you won't need to update balances right away.",
       "assetReturnLabel": "Annual return in projection",
       "assetReturnHint": "Prefilled from category; adjust if this product differs (e.g. another fund or savings rate).",
       "tracksGainLossLabel": "Ask for accumulated return when updating balances",
@@ -1045,11 +1051,13 @@
       "3": { "title": "Summary", "short": "Summary" }
     },
     "welcome": {
-      "title": "Your finances, clear",
-      "subtitle": "What comes in, what goes out, and what you own. Four steps to see the full picture and project where you're headed.",
+      "title": "Your money, in order.",
+      "subtitle": "Take control. Plan what's ahead.",
       "scopes": "Cashflow · Net worth · Projections",
       "name": "Name",
       "namePlaceholder": "Your name",
+      "birthDate": "Date of birth",
+      "birthDateErrorRequired": "Enter your date of birth to continue.",
       "age": "Age",
       "agePlaceholder": "e.g. 32",
       "ageHint": "For projections and retirement; does not affect monthly cashflow.",
@@ -1079,9 +1087,11 @@
       "housingTypeLabel": "Housing type",
       "housingType": {
         "mortgage": "Mortgage",
-        "rent": "Rent"
+        "rent": "Rent",
+        "none": "None"
       },
       "rentOnlyHint": "Rent: payment only in Housing above, no outstanding balance.",
+      "mortgageCapitalRequired": "Enter the outstanding mortgage principal to continue.",
       "addLiability": "Add debt",
       "addAnotherLiability": "Add another debt",
       "household": "Household expenses",
@@ -1094,9 +1104,9 @@
       "useSimpleView": "Back to simple view",
       "detailedIntro": "Optional: enter each line yourself (utilities, insurance…). We never auto-fill amounts.",
       "subtotalInvestments": "Investments",
-      "subtotalMortgage": "Mortgage / rent",
-      "subtotalHousehold": "Household & groceries",
-      "subtotalLeisure": "Leisure expenses",
+      "subtotalMortgage": "Housing",
+      "subtotalHousehold": "Household & food",
+      "subtotalLeisure": "Leisure",
       "mortgageRent": "Mortgage or rent",
       "mortgageRentTotal": "Mortgage or rent (full payment)",
       "mortgageRentTotalHint": "Full payment, even if you split it with others.",
@@ -1111,18 +1121,18 @@
       "otherFixed": "Other fixed expenses"
     },
     "summary": {
-      "title": "Summary",
+      "title": "Your summary",
       "titleWithName": "{{name}}, summary",
-      "subtitle": "Review what you entered. There is nothing else to fill in here.",
-      "income": "Income / month",
-      "fixedExpenses": "Fixed expenses / month",
-      "leisure": "Leisure / month",
-      "freeCashflow": "Available after expenses / month",
-      "savingsRate": "Margin after expenses",
+      "subtitle": "Review your data before starting. You can edit any section.",
+      "income": "Net income",
+      "fixedExpenses": "Fixed expenses",
+      "leisure": "Leisure",
+      "freeCashflow": "Free money per month",
+      "savingsRate": "Savings rate",
       "hint": "Net worth, accounts and investments will be set up under Net worth. You can change income and expenses anytime.",
       "registerPrompt": "Save this progress to the cloud?",
       "registerCta": "Register",
-      "registerLater": "Later — start without an account"
+      "registerLater": "Start without an account"
     }
   },
   "categories": {

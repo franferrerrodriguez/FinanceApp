@@ -37,16 +37,26 @@ export function Layout() {
     document.documentElement.lang = i18n.language;
   }, [t, i18n.language]);
 
-  const shellClass = useBottomNav
-    ? `mx-auto flex min-h-screen max-w-6xl flex-col px-4 pt-4 sm:px-6 ${ui.page} pb-[calc(3.75rem+env(safe-area-inset-bottom,0px))]`
-    : `mx-auto flex min-h-screen max-w-6xl flex-col px-4 pb-6 pt-5 sm:px-6 ${ui.page}`;
+  // On the welcome onboarding screen the form card bleeds to screen edges:
+  // override the shell bg to match the card and strip the bottom padding so
+  // no dark strip is visible when scrolling to the bottom.
+  const base = `financia-ui min-w-0 overflow-x-hidden mx-auto flex min-h-screen max-w-6xl flex-col px-4 sm:px-6 ${ui.page}`;
+  let shellClass;
+  if (isWelcomeOnboarding) {
+    shellClass = `${base} pt-4 pb-0 bg-[var(--bg-secondary)]`;
+  } else if (useBottomNav) {
+    shellClass = `${base} pt-4 pb-[calc(3.75rem+env(safe-area-inset-bottom,0px))]`;
+  } else {
+    shellClass = `${base} pt-5 pb-6`;
+  }
 
   return (
-    <div className={`financia-ui min-w-0 overflow-x-hidden ${shellClass}`}>
+    <div className={shellClass}>
       {onboardingCompleted ? (
         <AppHeader compact={useBottomNav} />
       ) : isWelcomeOnboarding ? (
-        <header className="mb-2 flex justify-end">
+        <header className="mb-2 flex items-center justify-between">
+          <p className="text-lg font-bold tracking-tight text-[var(--accent)]">{t('app.name')}</p>
           <AppMenu className="shrink-0" />
         </header>
       ) : (
