@@ -3,6 +3,9 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// Change this to '/' for root deployments, or '/your/subpath/' for subdirectories.
+const APP_BASE = '/applications/financapp/';
+
 export default defineConfig({
   plugins: [
     react(),
@@ -22,8 +25,8 @@ export default defineConfig({
         background_color: '#0f1117',
         display: 'standalone',
         orientation: 'portrait',
-        start_url: '/',
-        scope: '/',
+        start_url: APP_BASE,
+        scope: APP_BASE,
         icons: [
           {
             src: 'pwa-192x192.png',
@@ -63,7 +66,7 @@ export default defineConfig({
       },
     }),
   ],
-  base: '/',
+  base: APP_BASE,
   build: {
     outDir: 'dist',
   },
