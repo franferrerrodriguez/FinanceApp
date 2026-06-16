@@ -7,13 +7,10 @@ import {
   notifyAfterSave,
   useToast,
 } from '../../../context/ToastContext';
-import { FinanceAlerts } from '../../../components/FinanceAlerts';
 import { getNetWorthTone, KpiCard } from '../../../components/KpiCard';
-import { useFinanceAlerts } from '../../../hooks/useFinanceAlerts';
 import { getAssetCategories, getLiabilityCategories } from '../../../lib/categoryLabels';
 import { getMortgageRentTotal } from '../../../lib/calculations';
 import { getCurrentMonthKey } from '../../../lib/dashboardMetrics';
-import { isMonthlyCloseAlert } from '../../../lib/monthlyClose';
 import {
   countSnapshotMonthsForAsset,
   countSnapshotMonthsForLiability,
@@ -69,7 +66,6 @@ import { PatrimonyHistoryTable } from './PatrimonyHistoryTable';
 export function PatrimonyPanel() {
   const { t } = useTranslation();
   const { locale } = usePreferences();
-  const { alerts } = useFinanceAlerts();
   const location = useLocation();
   const navigate = useNavigate();
   const { openRecordBalances, goToPatrimonyCatalog, hasAccounts } =
@@ -86,10 +82,6 @@ export function PatrimonyPanel() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const patrimonyAlerts = useMemo(
-    () => alerts.filter((alert) => !isMonthlyCloseAlert(alert)),
-    [alerts],
-  );
   const {
     settings,
     assets,
@@ -99,6 +91,7 @@ export function PatrimonyPanel() {
     updateAsset,
     removeAsset,
     addSnapshot,
+    upsertSnapshot,
     addLiability,
     updateLiability,
     removeLiability,
@@ -162,10 +155,6 @@ export function PatrimonyPanel() {
 
   return (
     <div className={ui.stackPage}>
-      {patrimonyAlerts.length > 0 ? (
-        <FinanceAlerts alerts={patrimonyAlerts} className={ui.chartCard} />
-      ) : null}
-
       {needsAddAssetsSetup(assets) ? (
         <BalanceSetupStepBanner
           stepId={BALANCE_SETUP_STEP.ADD_ASSETS}
@@ -250,6 +239,7 @@ export function PatrimonyPanel() {
         updateAsset={updateAsset}
         removeAsset={removeAsset}
         addSnapshot={addSnapshot}
+        upsertSnapshot={upsertSnapshot}
         saveToCloud={saveToCloud}
         asOfLabel={asOfLabel}
         hasAnyBalance={hasAnyBalance}
@@ -325,6 +315,7 @@ function PatrimonyAssetsSection({
   updateAsset,
   removeAsset,
   addSnapshot,
+  upsertSnapshot,
   saveToCloud,
   asOfLabel,
   hasAnyBalance,
@@ -399,8 +390,13 @@ function PatrimonyAssetsSection({
 
   const openCreate = () =>
     setModal({ mode: 'create', draft: createAsset({ name: '' }) });
-  const openEdit = (asset) =>
-    setModal({ mode: 'edit', id: asset.id, draft: { ...asset } });
+  const openEdit = (asset) => {
+    const latestSnap = [...snapshots]
+      .filter((s) => s.assetId === asset.id)
+      .sort((a, b) => String(b.snapshotDate ?? '').localeCompare(String(a.snapshotDate ?? '')))[0];
+    const currentBalance = latestSnap?.value ?? null;
+    setModal({ mode: 'edit', id: asset.id, originalBalance: currentBalance, draft: { ...asset, currentBalance } });
+  };
   const closeModal = () => setModal(null);
 
   useEffect(() => {
@@ -426,12 +422,11 @@ function PatrimonyAssetsSection({
     applyAssetList(syncAutoNames(merged));
     if (newAssetId && draft.initialBalance > 0) {
       const today = new Date().toISOString().slice(0, 10);
-      addSnapshot({
-        id: crypto.randomUUID(),
-        assetId: newAssetId,
-        snapshotDate: today,
-        value: draft.initialBalance,
-      });
+      addSnapshot({ id: crypto.randomUUID(), assetId: newAssetId, snapshotDate: today, value: draft.initialBalance });
+    }
+    if (modal?.mode === 'edit' && draft.currentBalance != null && draft.currentBalance !== modal.originalBalance) {
+      const today = new Date().toISOString().slice(0, 10);
+      upsertSnapshot({ id: crypto.randomUUID(), assetId: modal.id, snapshotDate: today, value: draft.currentBalance });
     }
     closeModal();
     await notifyAfterSave({

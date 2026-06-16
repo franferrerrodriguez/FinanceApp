@@ -320,7 +320,12 @@ export function getDashboardAlerts({
   }
 
   if (netWorth < 0) {
-    alerts.push({ id: 'negative_net_worth', severity: 'danger' });
+    alerts.push({
+      id: 'negative_net_worth',
+      severity: 'danger',
+      href: '/balance?tab=patrimony',
+      actionKey: 'alerts.reviewLiabilities',
+    });
   }
 
   return alerts;

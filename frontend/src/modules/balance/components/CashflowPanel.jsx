@@ -7,8 +7,6 @@ import { useFinanceData } from '../../../store/hooks';
 import { AnnualExpensesSection } from '../../../components/AnnualExpensesSection';
 import { EmergencyFundSection } from '../../../components/EmergencyFundSection';
 import { CashflowSummaryBreakdown } from '../../../components/CashflowSummaryBreakdown';
-import { FinanceAlerts } from '../../../components/FinanceAlerts';
-import { useFinanceAlerts } from '../../../hooks/useFinanceAlerts';
 import { ExpenseSubtotals } from '../../onboarding/components/ExpenseSubtotals';
 import { HousingExpenseBlock } from '../../../components/HousingExpenseBlock';
 import { PayYourselfFirstBlock } from '../../../components/PayYourselfFirstBlock';
@@ -45,8 +43,6 @@ export function CashflowPanel() {
     updateCashflowHistoryEntry,
     removeCashflowHistoryEntry,
   } = useFinanceData();
-  const { alerts } = useFinanceAlerts();
-
   const totals = useMemo(
     () => getCashflowTotalsForDate(settings, cashflowHistory, new Date()),
     [settings, cashflowHistory],
@@ -66,10 +62,6 @@ export function CashflowPanel() {
 
   return (
     <div className={ui.stackPage}>
-      {alerts.length > 0 ? (
-        <FinanceAlerts alerts={alerts} className={ui.chartCard} />
-      ) : null}
-
       <div className={`${ui.chartCard} ${ui.stackSection}`}>
         <p className={`text-sm ${ui.textMuted}`}>{t('balance.cashflow.summaryHint')}</p>
         <CashflowSummaryBreakdown totals={totals} />

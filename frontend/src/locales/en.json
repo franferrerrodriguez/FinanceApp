@@ -39,6 +39,7 @@
     "noticesTitle": "Notices",
     "empty": "All clear. You have no pending alerts right now.",
     "viewAction": "View in Net worth",
+    "reviewLiabilities": "Review liabilities →",
     "monthlyCloseAction": "Update balances",
     "emergency_fund_below_target": "Your liquidity ({{liquid}}) is below your emergency fund goal ({{target}}, {{months}} months of expenses). You are short {{shortfall}}; you cover {{monthsCovered}} months.",
     "emergency_fund_critical": "Critical liquidity: only {{liquid}} in cash vs a {{target}} goal. Short by {{shortfall}} ({{monthsCovered}} months covered vs {{months}} target).",
@@ -85,7 +86,11 @@
     "logout": "Log out",
     "cloudSynced": "Data synced to the cloud",
     "cloudSyncing": "Syncing to the cloud…",
-    "cloudSyncError": "Sync failed. Will retry when you save."
+    "cloudSyncError": "Sync failed. Will retry when you save.",
+    "about": "About"
+  },
+  "profile": {
+    "madeBy": "Made by"
   },
   "account": {
     "title": "My account",
@@ -145,7 +150,8 @@
     "main": "Main navigation",
     "dashboard": "Dashboard",
     "balance": "Net worth",
-    "projection": "Projection"
+    "projection": "Projection",
+    "profile": "Profile"
   },
   "auth": {
     "close": "Close",
@@ -658,6 +664,7 @@
       "tableReturnAssetHint": "Annual return defined on this asset",
       "initialBalance": "Current balance",
       "initialBalanceHint": "Optional. If provided, it's recorded as this month's balance so you won't need to update balances right away.",
+      "currentBalanceEditHint": "Update the current balance. It will be recorded as this month's balance.",
       "assetReturnLabel": "Annual return in projection",
       "assetReturnHint": "Prefilled from category; adjust if this product differs (e.g. another fund or savings rate).",
       "tracksGainLossLabel": "Ask for accumulated return when updating balances",
@@ -1331,5 +1338,12 @@
       },
       "action": "View projection →"
     }
+  },
+  "pwa": {
+    "installTitle": "Install the app",
+    "installSubtitle": "Add it to your home screen for faster access.",
+    "installButton": "Install",
+    "installStep1": "Tap",
+    "installStep2": "and choose «Add to Home Screen»"
   }
 }

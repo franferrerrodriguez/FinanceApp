@@ -58,13 +58,13 @@ export const ui = {
 
   // ── Inputs ──────────────────────────────────────────────────────
   input:
-    'w-full min-h-[2.75rem] rounded-xl [border:var(--border-default-rule)] bg-[var(--bg-tertiary)] px-4 py-3 text-[1.0625rem] tracking-[-0.011em] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[rgba(29,158,117,0.5)]',
+    'w-full h-12 rounded-xl [border:var(--border-default-rule)] bg-[var(--bg-tertiary)] px-4 py-0 text-[1.0625rem] tracking-[-0.011em] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[rgba(29,158,117,0.5)]',
   inputMoney: 'pr-9',
   inputSuffixAdornment:
     'pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-[var(--text-muted)]',
   /** Fixed-width percentage input (share, rates) */
   inputPercent:
-    'min-h-[2.75rem] w-[5.5rem] max-w-[36vw] shrink-0 rounded-xl [border:var(--border-default-rule)] bg-[var(--bg-tertiary)] px-4 py-3 text-[1.0625rem] tabular-nums tracking-[-0.011em] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[rgba(29,158,117,0.5)]',
+    'h-12 w-[5.5rem] max-w-[36vw] shrink-0 rounded-xl [border:var(--border-default-rule)] bg-[var(--bg-tertiary)] px-4 py-0 text-[1.0625rem] tabular-nums tracking-[-0.011em] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[rgba(29,158,117,0.5)]',
   /** € amounts — not full width on desktop */
   inputAmount: 'max-w-[12rem]',
   /** Age, pagas, small integers */
@@ -72,8 +72,8 @@ export const ui = {
   /** Short labels / names */
   inputMedium: 'max-w-md',
   inputError:
-    'w-full min-h-[2.75rem] rounded-xl [border:var(--border-error-rule)] bg-[var(--bg-tertiary)] px-4 py-3 text-[1.0625rem] tracking-[-0.011em] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[rgba(226,75,74,0.5)]',
-  inputCompact: '!min-h-0 py-2 text-sm',
+    'w-full h-12 rounded-xl [border:var(--border-error-rule)] bg-[var(--bg-tertiary)] px-4 py-0 text-[1.0625rem] tracking-[-0.011em] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[rgba(226,75,74,0.5)]',
+  inputCompact: '!h-auto !py-2 text-sm',
 
   // ── Buttons ─────────────────────────────────────────────────────
   btnPrimary:

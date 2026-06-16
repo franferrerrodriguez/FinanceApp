@@ -133,7 +133,7 @@ export function WelcomeStep({ onNext }) {
   };
 
   const inputBase =
-    'w-full rounded-xl bg-[rgba(255,255,255,0.06)] px-4 py-3 text-base text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none transition-colors';
+    'w-full h-12 rounded-xl bg-[rgba(255,255,255,0.06)] px-4 py-0 text-base text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none transition-colors';
   const borderNormal = '[border:0.5px_solid_rgba(255,255,255,0.10)]';
   const borderFocus  = 'focus:[border-color:var(--accent)]';
   const borderError  = '[border-color:var(--color-negative)]';

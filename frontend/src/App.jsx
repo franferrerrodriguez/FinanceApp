@@ -4,6 +4,7 @@ import { Layout } from './components/Layout';
 import { RequireAuth } from './components/RequireAuth';
 import { RequireOnboarding } from './components/RequireOnboarding';
 import { AccountPage } from './modules/account/AccountPage';
+import { ProfilePage } from './modules/profile/ProfilePage';
 import { AuthModalProvider } from './context/AuthModalContext';
 import { ToastProvider } from './context/ToastContext';
 import { useAppPreferencesSync } from './hooks/useAppPreferencesSync';
@@ -13,7 +14,6 @@ import { useIneInflationSync } from './hooks/useIneInflationSync';
 import { BalancePage } from './modules/balance/BalancePage';
 import { DashboardPage } from './modules/dashboard/DashboardPage';
 import { OnboardingGate } from './modules/onboarding/OnboardingGate';
-import { DiagnosticoPage } from './modules/diagnostics/DiagnosticoPage';
 import { ProjectionPage } from './modules/projection/ProjectionPage';
 import { getOnboardingEntryPath } from './lib/onboardingAccess';
 import { useOnboardingState, useProfile, useSettings } from './store/hooks';
@@ -60,18 +60,18 @@ function AppRoutes() {
           }
         />
         <Route
-          path="diagnostico"
-          element={
-            <RequireOnboarding>
-              <DiagnosticoPage />
-            </RequireOnboarding>
-          }
-        />
-        <Route
           path="projection"
           element={
             <RequireOnboarding>
               <ProjectionPage />
+            </RequireOnboarding>
+          }
+        />
+        <Route
+          path="profile"
+          element={
+            <RequireOnboarding>
+              <ProfilePage />
             </RequireOnboarding>
           }
         />

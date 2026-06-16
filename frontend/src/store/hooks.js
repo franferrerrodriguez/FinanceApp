@@ -69,6 +69,7 @@ export function useFinanceData() {
       setLiabilityActive: s.setLiabilityActive,
       removeLiability: s.removeLiability,
       addSnapshot: s.addSnapshot,
+      upsertSnapshot: s.upsertSnapshot,
       closeMonthSnapshots: s.closeMonthSnapshots,
       setLiabilityOutstandingBalance: s.setLiabilityOutstandingBalance,
     })),

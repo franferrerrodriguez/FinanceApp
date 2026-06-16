@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppModal } from '../../../components/AppModal';
-import { FormCheckboxField } from '../../../components/FormCheckboxField';
 import { FormFieldFrame } from '../../../components/FormFieldFrame';
-import { FormSection } from '../../../components/FormSection';
 import { InstitutionSelect } from '../../../components/InstitutionSelect';
 import { ModalFormFooter } from '../../../components/ModalFormFooter';
 import { MoneyInput } from '../../../components/MoneyInput';
@@ -116,7 +114,19 @@ export function AssetEditModal({
               onChange={(initialBalance) => patch({ initialBalance })}
             />
           </FormFieldFrame>
-        ) : null}
+        ) : (
+          <FormFieldFrame
+            label={t('balance.patrimony.initialBalance')}
+            hint={t('balance.patrimony.currentBalanceEditHint')}
+            reserveHintSpace={false}
+          >
+            <MoneyInput
+              id="asset-current-balance"
+              value={draft.currentBalance ?? null}
+              onChange={(currentBalance) => patch({ currentBalance })}
+            />
+          </FormFieldFrame>
+        )}
 
         {showReturn ? (
           <PercentField
@@ -140,17 +150,6 @@ export function AssetEditModal({
           reserveHintSpace={false}
         />
 
-        {mode === 'edit' ? (
-          <FormSection>
-            <FormCheckboxField
-              id="asset-active-in-close"
-              checked={draft.isActive !== false}
-              onChange={(isActive) => patch({ isActive })}
-              label={t('balance.patrimony.activeInClose')}
-              hint={t('balance.patrimony.activeInCloseHint')}
-            />
-          </FormSection>
-        ) : null}
       </div>
     </AppModal>
   );

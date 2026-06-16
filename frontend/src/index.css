@@ -107,6 +107,23 @@ h4 {
   }
 }
 
+/* Date inputs: enforce the same fixed height as other inputs and set color-scheme
+   so iOS Safari shows the correct picker chrome for light/dark mode.
+   Attribute selector [0,1,1] beats Tailwind utilities [0,0,1] so no !important needed. */
+input[type="date"],
+input[type="datetime-local"] {
+  height: 3rem; /* matches h-12 from ui.input */
+  padding-top: 0;
+  padding-bottom: 0;
+  box-sizing: border-box;
+  color-scheme: light;
+}
+
+.dark input[type="date"],
+.dark input[type="datetime-local"] {
+  color-scheme: dark;
+}
+
 .financia-profile-trigger {
   border-radius: 9999px !important;
   overflow: hidden;
@@ -129,7 +146,7 @@ h4 {
   z-index: 200;
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: stretch;
   border-top: 0.5px solid var(--border-default);
   background: color-mix(in srgb, var(--bg-secondary) 96%, transparent);

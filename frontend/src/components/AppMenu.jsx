@@ -10,6 +10,8 @@ import { SelectField } from './SelectField';
 import { ui } from '../lib/uiClasses';
 import { getDisplayName, getInitials } from '../lib/userDisplay';
 import { usePreferences, useProfile, useSessionMeta } from '../store/hooks';
+import { BRAND_NAME, BRAND_URL } from '../lib/brand';
+import { APP_VERSION } from './AppFooter';
 
 export function AppMenu({ className = '' }) {
   const { t } = useTranslation();
@@ -67,6 +69,172 @@ export function AppMenu({ className = '' }) {
     navigate('/cuenta');
   };
 
+  const menuPortal = open
+    ? createPortal(
+        <div className="fixed inset-0 z-[200]">
+          <button
+            type="button"
+            className={ui.menuBackdrop}
+            aria-label={t('menu.close')}
+            onClick={close}
+          />
+
+          <div
+            ref={panelRef}
+            id={menuId}
+            role="dialog"
+            aria-modal="true"
+            aria-label={t('menu.title')}
+            className={ui.menuPanel}
+          >
+            <div className="relative [border-bottom:0.5px_solid_rgba(255,255,255,0.08)] px-4 py-4">
+              {isAuthenticated ? (
+                <div className="flex items-center gap-3 pr-8">
+                  <span
+                    className={`financia-profile-avatar flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-sm font-bold ${ui.profileAvatar}`}
+                    aria-hidden
+                  >
+                    {initials}
+                  </span>
+                  <div className="min-w-0">
+                    <p className={`truncate text-base font-semibold ${ui.heading}`}>
+                      {displayName}
+                    </p>
+                    {user.email ? (
+                      <p className={`truncate text-sm ${ui.textMuted}`}>{user.email}</p>
+                    ) : null}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3 pr-8">
+                  <span
+                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${ui.profileAvatar}`}
+                    aria-hidden
+                  >
+                    <User size={22} />
+                  </span>
+                  <div className="min-w-0">
+                    <p className={`text-base font-semibold ${ui.heading}`}>
+                      {t('menu.guestTitle')}
+                    </p>
+                    <p className={`text-sm ${ui.textMuted}`}>{t('menu.guestHint')}</p>
+                  </div>
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={close}
+                className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-muted)] transition hover:bg-[var(--bg-hover)] hover:text-[var(--text-secondary)]"
+                aria-label={t('menu.close')}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="max-h-[min(70vh,calc(100dvh-6rem))] overflow-y-auto p-2">
+              {isAuthenticated && cloudSyncStatus !== 'idle' && (
+                <p
+                  className={`mx-3 mb-2 text-xs ${
+                    cloudSyncStatus === 'error'
+                      ? 'text-[var(--color-negative)]'
+                      : ui.textMuted
+                  }`}
+                  role="status"
+                  aria-live="polite"
+                >
+                  {cloudSyncStatus === 'syncing'
+                    ? t('menu.cloudSyncing')
+                    : cloudSyncStatus === 'error'
+                      ? t('menu.cloudSyncError')
+                      : t('menu.cloudSynced')}
+                </p>
+              )}
+
+              {isAuthenticated && (
+                <MenuSection title={t('menu.account')} first>
+                  <MenuButton onClick={handleAccount}>
+                    {t('menu.accountSettings')}
+                  </MenuButton>
+                  <MenuButton onClick={handleLogout} variant="danger">
+                    {t('menu.logout')}
+                  </MenuButton>
+                </MenuSection>
+              )}
+
+              {!isAuthenticated && (
+                <MenuSection title={t('menu.session')} first>
+                  <MenuButton onClick={handleRegister} variant="primary">
+                    {t('menu.register')}
+                  </MenuButton>
+                  <MenuButton onClick={handleLogin}>
+                    {t('menu.login')}
+                  </MenuButton>
+                </MenuSection>
+              )}
+
+              <MenuSection title={t('menu.preferences')} first={!isAuthenticated}>
+                <MenuRow label={t('menu.language')}>
+                  <SelectField
+                    id="app-menu-locale"
+                    variant="menu"
+                    value={locale}
+                    onChange={(e) => setLocale(e.target.value)}
+                  >
+                    {SUPPORTED_LOCALES.map((code) => (
+                      <option key={code} value={code}>
+                        {LOCALE_LABELS[code]}
+                      </option>
+                    ))}
+                  </SelectField>
+                </MenuRow>
+
+                <MenuRow label={t('menu.theme')}>
+                  <div
+                    className="grid grid-cols-3 gap-1.5 rounded-lg [border:0.5px_solid_rgba(255,255,255,0.08)] bg-[var(--bg-tertiary)] p-1"
+                    role="group"
+                    aria-label={t('menu.theme')}
+                  >
+                    <ThemeOption
+                      active={theme === 'system'}
+                      label={t('menu.themeSystem')}
+                      onClick={() => setTheme('system')}
+                    />
+                    <ThemeOption
+                      active={theme === 'light'}
+                      label={t('menu.themeLight')}
+                      onClick={() => setTheme('light')}
+                    />
+                    <ThemeOption
+                      active={theme === 'dark'}
+                      label={t('menu.themeDark')}
+                      onClick={() => setTheme('dark')}
+                    />
+                  </div>
+                </MenuRow>
+              </MenuSection>
+
+              <div className="px-3 pb-3 pt-2 [border-top:0.5px_solid_rgba(255,255,255,0.06)]">
+                <p className={`text-[11px] leading-tight ${ui.textMuted} opacity-60`}>
+                  {t('app.name')}
+                  {APP_VERSION ? ` · v${APP_VERSION}` : ''}
+                </p>
+                {BRAND_NAME ? (
+                  <p className={`text-[11px] leading-tight ${ui.textMuted} opacity-40`}>
+                    {BRAND_URL ? (
+                      <a href={BRAND_URL} target="_blank" rel="noopener noreferrer" className="hover:opacity-80">
+                        {BRAND_NAME}
+                      </a>
+                    ) : BRAND_NAME}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body,
+      )
+    : null;
+
   return (
     <>
       <div className={className}>
@@ -98,155 +266,7 @@ export function AppMenu({ className = '' }) {
           </span>
         </button>
       </div>
-
-      {open &&
-        createPortal(
-          <div className="fixed inset-0 z-[200]">
-            <button
-              type="button"
-              className={ui.menuBackdrop}
-              aria-label={t('menu.close')}
-              onClick={close}
-            />
-
-            <div
-              ref={panelRef}
-              id={menuId}
-              role="dialog"
-              aria-modal="true"
-              aria-label={t('menu.title')}
-              className={ui.menuPanel}
-            >
-              <div className="relative [border-bottom:0.5px_solid_rgba(255,255,255,0.08)] px-4 py-4">
-                {isAuthenticated ? (
-                  <div className="flex items-center gap-3 pr-8">
-                    <span
-                      className={`financia-profile-avatar flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-sm font-bold ${ui.profileAvatar}`}
-                      aria-hidden
-                    >
-                      {initials}
-                    </span>
-                    <div className="min-w-0">
-                      <p className={`truncate text-base font-semibold ${ui.heading}`}>
-                        {displayName}
-                      </p>
-                      {user.email ? (
-                        <p className={`truncate text-sm ${ui.textMuted}`}>{user.email}</p>
-                      ) : null}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-3 pr-8">
-                    <span
-                      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${ui.profileAvatar}`}
-                      aria-hidden
-                    >
-                      <User size={22} />
-                    </span>
-                    <div className="min-w-0">
-                      <p className={`text-base font-semibold ${ui.heading}`}>
-                        {t('menu.guestTitle')}
-                      </p>
-                      <p className={`text-sm ${ui.textMuted}`}>{t('menu.guestHint')}</p>
-                    </div>
-                  </div>
-                )}
-                <button
-                  type="button"
-                  onClick={close}
-                  className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-muted)] transition hover:bg-[var(--bg-hover)] hover:text-[var(--text-secondary)]"
-                  aria-label={t('menu.close')}
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              <div className="max-h-[min(70vh,calc(100dvh-6rem))] overflow-y-auto p-2">
-                {isAuthenticated && cloudSyncStatus !== 'idle' && (
-                  <p
-                    className={`mx-3 mb-2 text-xs ${
-                      cloudSyncStatus === 'error'
-                        ? 'text-[var(--color-negative)]'
-                        : ui.textMuted
-                    }`}
-                    role="status"
-                    aria-live="polite"
-                  >
-                    {cloudSyncStatus === 'syncing'
-                      ? t('menu.cloudSyncing')
-                      : cloudSyncStatus === 'error'
-                        ? t('menu.cloudSyncError')
-                        : t('menu.cloudSynced')}
-                  </p>
-                )}
-
-                {isAuthenticated && (
-                  <MenuSection title={t('menu.account')} first>
-                    <MenuButton onClick={handleAccount}>
-                      {t('menu.accountSettings')}
-                    </MenuButton>
-                    <MenuButton onClick={handleLogout} variant="danger">
-                      {t('menu.logout')}
-                    </MenuButton>
-                  </MenuSection>
-                )}
-
-                {!isAuthenticated && (
-                  <MenuSection title={t('menu.session')} first>
-                    <MenuButton onClick={handleRegister} variant="primary">
-                      {t('menu.register')}
-                    </MenuButton>
-                    <MenuButton onClick={handleLogin}>
-                      {t('menu.login')}
-                    </MenuButton>
-                  </MenuSection>
-                )}
-
-                <MenuSection title={t('menu.preferences')} first={!isAuthenticated}>
-                  <MenuRow label={t('menu.language')}>
-                    <SelectField
-                      id="app-menu-locale"
-                      variant="menu"
-                      value={locale}
-                      onChange={(e) => setLocale(e.target.value)}
-                    >
-                      {SUPPORTED_LOCALES.map((code) => (
-                        <option key={code} value={code}>
-                          {LOCALE_LABELS[code]}
-                        </option>
-                      ))}
-                    </SelectField>
-                  </MenuRow>
-
-                  <MenuRow label={t('menu.theme')}>
-                    <div
-                      className="grid grid-cols-3 gap-1.5 rounded-lg [border:0.5px_solid_rgba(255,255,255,0.08)] bg-[var(--bg-tertiary)] p-1"
-                      role="group"
-                      aria-label={t('menu.theme')}
-                    >
-                      <ThemeOption
-                        active={theme === 'system'}
-                        label={t('menu.themeSystem')}
-                        onClick={() => setTheme('system')}
-                      />
-                      <ThemeOption
-                        active={theme === 'light'}
-                        label={t('menu.themeLight')}
-                        onClick={() => setTheme('light')}
-                      />
-                      <ThemeOption
-                        active={theme === 'dark'}
-                        label={t('menu.themeDark')}
-                        onClick={() => setTheme('dark')}
-                      />
-                    </div>
-                  </MenuRow>
-                </MenuSection>
-              </div>
-            </div>
-          </div>,
-          document.body,
-        )}
+      {menuPortal}
     </>
   );
 }

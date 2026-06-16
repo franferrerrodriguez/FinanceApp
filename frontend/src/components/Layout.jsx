@@ -8,6 +8,7 @@ import { AppFooter } from './AppFooter';
 import { AppHeader } from './AppHeader';
 import { AppMenu } from './AppMenu';
 import { BottomNavBar } from './BottomNavBar';
+import { IosPwaInstallBanner } from './IosPwaInstallBanner';
 
 const MOBILE_NAV = '(max-width: 767px)';
 
@@ -80,6 +81,8 @@ export function Layout() {
       {!useBottomNav && <AppFooter />}
 
       {onboardingCompleted && useBottomNav && <BottomNavBar />}
+
+      {onboardingCompleted && <IosPwaInstallBanner />}
     </div>
   );
 }

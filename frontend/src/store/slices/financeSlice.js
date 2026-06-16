@@ -282,6 +282,19 @@ export const createFinanceSlice = (set, get) => ({
       snapshots: [...state.snapshots, snapshot],
     })),
 
+  // Replace any existing snapshot for the same month + asset/liability, then append.
+  upsertSnapshot: (snapshot) =>
+    set((state) => {
+      const monthKey = String(snapshot.snapshotDate ?? '').slice(0, 7);
+      const filtered = state.snapshots.filter((s) => {
+        if (String(s.snapshotDate ?? '').slice(0, 7) !== monthKey) return true;
+        if (snapshot.assetId) return s.assetId !== snapshot.assetId;
+        if (snapshot.liabilityId) return s.liabilityId !== snapshot.liabilityId;
+        return true;
+      });
+      return { snapshots: [...filtered, snapshot] };
+    }),
+
   updateAsset: (id, patch) =>
     set((state) => ({
       assets: state.assets.map((a) => (a.id === id ? { ...a, ...patch } : a)),

@@ -7,6 +7,7 @@ import { AppMenu } from './AppMenu';
 
 export function AppHeader({ compact = false, navItems = MAIN_NAV_ITEMS }) {
   const { t } = useTranslation();
+  const desktopNavItems = navItems.filter((item) => !item.bottomNavOnly);
 
   if (compact) {
     return (
@@ -15,14 +16,11 @@ export function AppHeader({ compact = false, navItems = MAIN_NAV_ITEMS }) {
       >
         <Link
           to="/dashboard"
-          className={`group truncate text-base font-semibold transition hover:text-[var(--accent)] ${ui.heading}`}
+          className={`group flex h-11 items-center truncate text-base font-semibold transition hover:text-[var(--accent)] ${ui.heading}`}
         >
           {t('app.name')}
         </Link>
-        <div className="flex shrink-0 items-center gap-2">
-          <AppAlertsButton />
-          <AppMenu />
-        </div>
+        <AppAlertsButton />
       </header>
     );
   }
@@ -41,7 +39,7 @@ export function AppHeader({ compact = false, navItems = MAIN_NAV_ITEMS }) {
           className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 md:flex"
           aria-label={t('nav.main')}
         >
-          {navItems.map(({ to, key }) => (
+          {desktopNavItems.map(({ to, key }) => (
             <NavLink
               key={to}
               to={to}
@@ -64,7 +62,7 @@ export function AppHeader({ compact = false, navItems = MAIN_NAV_ITEMS }) {
         className="mt-4 flex flex-wrap gap-2 md:hidden"
         aria-label={t('nav.main')}
       >
-        {navItems.map(({ to, key }) => (
+        {desktopNavItems.map(({ to, key }) => (
           <NavLink
             key={to}
             to={to}

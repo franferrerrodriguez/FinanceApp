@@ -10,8 +10,6 @@ import {
   calcMonthlySavingsFromSettings,
 } from '../../../lib/balanceSetupProgress';
 import { getCurrentMonthKey } from '../../../lib/cashflowHistory';
-import { FinanceAlerts } from '../../../components/FinanceAlerts';
-import { useFinanceAlerts } from '../../../hooks/useFinanceAlerts';
 import { filterDraftAssets } from '../../../lib/patrimonyDrafts';
 import {
   createContributionEntry,
@@ -44,8 +42,6 @@ export function ContributionsPanel() {
     updateContributionEntry,
     removeContributionEntry,
   } = useFinanceData();
-
-  const { alerts } = useFinanceAlerts();
 
   const [modal, setModal] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -140,10 +136,6 @@ export function ContributionsPanel() {
 
   return (
     <div className={ui.stackPage}>
-      {alerts.length > 0 ? (
-        <FinanceAlerts alerts={alerts} className={ui.chartCard} />
-      ) : null}
-
       <BalanceSetupStepBanner
         stepId={BALANCE_SETUP_STEP.INVEST}
         onAction={canAdd ? openCreate : undefined}

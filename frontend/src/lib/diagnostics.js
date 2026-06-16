@@ -2,9 +2,7 @@ import { BALANCE_TAB, balancePath } from './balanceTabs.js';
 import {
   buildProjectionTable,
   calcFIREYear,
-  calcTotalFixedExpenses,
   calcTotalIncome,
-  calcTotalVariableExpenses,
   getEffectiveBudgetInvestment,
 } from './calculations.js';
 import { computeEmergencyFundMetrics, calcMonthlyExpenseBaseline } from './emergencyFund.js';
@@ -129,13 +127,21 @@ function computeFireHorizon({
   return { reachable: false, extraNeeded: null };
 }
 
-function computeInvestmentRateYearsSaved(settings, currentRate, targetRate = 0.2) {
+function computeInvestmentRateYearsSaved(
+  { settings, assets, liabilities, snapshots, annualExpenses: annualExpensesArr },
+  currentRate,
+  targetRate = 0.2,
+) {
   if (currentRate >= targetRate) return null;
-  const patrimony = settings?.initialPatrimony ?? 0;
+  // Use real patrimony from snapshots (same source as the FIRE projection page)
+  const patrimony = getProjectionStartingPatrimony({ settings, assets, liabilities, snapshots });
   const income = calcTotalIncome(settings);
   const currentContrib = getEffectiveBudgetInvestment(settings);
   const targetContrib = income * targetRate;
   const annualRate = getProjectionAnnualRate(settings);
+  // Use same expense baseline as FIRE projection (reads cashflow history if available)
+  const annualExpenses = calcMonthlyExpenseBaseline(settings, annualExpensesArr) * 12;
+  if (annualExpenses <= 0) return null;
 
   const tableCurrent = buildProjectionTable({
     initialPatrimony: patrimony,
@@ -150,8 +156,6 @@ function computeInvestmentRateYearsSaved(settings, currentRate, targetRate = 0.2
     years: 50,
   });
 
-  const annualExpenses =
-    (calcTotalFixedExpenses(settings) + calcTotalVariableExpenses(settings)) * 12;
   const fireCurrent = calcFIREYear(tableCurrent, annualExpenses, annualRate);
   const fireTarget = calcFIREYear(tableTarget, annualExpenses, annualRate);
   if (fireCurrent == null || fireTarget == null) return null;
@@ -233,7 +237,11 @@ export function computeDiagnostics({
         }),
       );
     } else if (rate >= 0.1) {
-      const yearsSavedRaw = computeInvestmentRateYearsSaved(settings, rate, 0.2);
+      const yearsSavedRaw = computeInvestmentRateYearsSaved(
+        { settings, assets, liabilities, snapshots, annualExpenses },
+        rate,
+        0.2,
+      );
       let bodyKey = 'diagnostics.investmentRate.mid.body';
       const params = { rate };
       if (yearsSavedRaw == null) {

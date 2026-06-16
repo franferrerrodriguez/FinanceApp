@@ -39,6 +39,7 @@
     "noticesTitle": "Avisos",
     "empty": "Todo en orden. No tienes alertas pendientes ahora mismo.",
     "viewAction": "Ver en Patrimonio",
+    "reviewLiabilities": "Revisar pasivos →",
     "monthlyCloseAction": "Actualizar saldos",
     "emergency_fund_below_target": "Tu liquidez ({{liquid}}) está por debajo del objetivo de fondo de emergencia ({{target}}, {{months}} meses de gastos). Te faltan {{shortfall}}; cubres {{monthsCovered}} meses.",
     "emergency_fund_critical": "Liquidez crítica: solo {{liquid}} en efectivo y objetivo {{target}}. Faltan {{shortfall}} ({{monthsCovered}} meses cubiertos frente a {{months}} objetivo).",
@@ -85,7 +86,11 @@
     "logout": "Cerrar sesión",
     "cloudSynced": "Datos sincronizados con la nube",
     "cloudSyncing": "Sincronizando con la nube…",
-    "cloudSyncError": "No se pudo sincronizar. Se reintentará al guardar."
+    "cloudSyncError": "No se pudo sincronizar. Se reintentará al guardar.",
+    "about": "Acerca de"
+  },
+  "profile": {
+    "madeBy": "Hecho por"
   },
   "account": {
     "title": "Mi cuenta",
@@ -145,7 +150,8 @@
     "main": "Navegación principal",
     "dashboard": "Dashboard",
     "balance": "Patrimonio",
-    "projection": "Proyección"
+    "projection": "Proyección",
+    "profile": "Perfil"
   },
   "auth": {
     "close": "Cerrar",
@@ -658,6 +664,7 @@
       "tableReturnAssetHint": "Rentabilidad anual definida en este activo",
       "initialBalance": "Saldo actual",
       "initialBalanceHint": "Opcional. Si lo indicas, se registra como saldo de este mes y no tendrás que actualizar saldos ahora.",
+      "currentBalanceEditHint": "Actualiza el saldo actual. Se registrará como saldo de este mes.",
       "assetReturnLabel": "Rentabilidad anual en proyección",
       "assetReturnHint": "Se rellena según el tipo al elegir categoría; ajústala si este producto es distinto (p. ej. otro fondo o cuenta remunerada).",
       "tracksGainLossLabel": "Pedir rentabilidad acumulada al actualizar saldos",
@@ -1331,5 +1338,12 @@
       },
       "action": "Ver proyección →"
     }
+  },
+  "pwa": {
+    "installTitle": "Instala la app",
+    "installSubtitle": "Añádela a tu pantalla de inicio para acceder más rápido.",
+    "installButton": "Instalar",
+    "installStep1": "Pulsa",
+    "installStep2": "y elige «Añadir a pantalla de inicio»"
   }
 }

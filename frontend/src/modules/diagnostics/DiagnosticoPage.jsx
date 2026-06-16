@@ -4,7 +4,6 @@ import { CheckCircle, AlertTriangle, Lightbulb } from 'lucide-react';
 import { ui } from '../../lib/uiClasses';
 import {
   computeDiagnostics,
-  groupDiagnosticsByStatus,
   sortDiagnosticsByUrgency,
 } from '../../lib/diagnostics';
 import { useFinanceData } from '../../store/hooks';
@@ -66,16 +65,11 @@ export function DiagnosticCard() {
 
   return (
     <section className={`${ui.chartCard} ${ui.stackSection}`}>
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h2 className={`text-base font-semibold ${ui.heading}`}>
-            {t('diagnostics.card.title')}
-          </h2>
-          <p className={`mt-1 text-sm ${ui.textMuted}`}>{t('diagnostics.card.subtitle')}</p>
-        </div>
-        <Link to="/diagnostico" className={ui.btnLink}>
-          {t('diagnostics.card.viewAll')}
-        </Link>
+      <div>
+        <h2 className={`text-base font-semibold ${ui.heading}`}>
+          {t('diagnostics.card.title')}
+        </h2>
+        <p className={`mt-1 text-sm ${ui.textMuted}`}>{t('diagnostics.card.subtitle')}</p>
       </div>
       <ul className={ui.stackBlocks}>
         {top.map((item) => (
@@ -86,66 +80,3 @@ export function DiagnosticCard() {
   );
 }
 
-export function DiagnosticoPage() {
-  const { t } = useTranslation();
-  const finance = useFinanceData();
-  const all = computeDiagnostics(finance);
-  const groups = groupDiagnosticsByStatus(all);
-
-  return (
-    <div className={ui.stackPage}>
-      <div>
-        <h2 className={`mb-2 ${ui.pageTitle}`}>
-          {t('diagnostics.page.title')}
-        </h2>
-        <p className={`text-sm ${ui.textMuted}`}>{t('diagnostics.page.subtitle')}</p>
-        <p className={`mt-1 text-xs ${ui.textMuted}`}>{t('diagnostics.page.updated')}</p>
-      </div>
-
-      {!all.length ? (
-        <div className={`${ui.chartCard} py-12 text-center`}>
-          <p className={`text-sm ${ui.text}`}>{t('diagnostics.page.empty')}</p>
-          <Link to="/balance" className={`mt-4 inline-block ${ui.actionLink}`}>
-            {t('diagnostics.page.emptyAction')}
-          </Link>
-        </div>
-      ) : (
-        <>
-          {groups.ok.length ? (
-            <DiagnosticSection
-              title={t('diagnostics.page.sectionOk')}
-              items={groups.ok}
-            />
-          ) : null}
-          {groups.warn.length ? (
-            <DiagnosticSection
-              title={t('diagnostics.page.sectionWarn')}
-              items={groups.warn}
-            />
-          ) : null}
-          {groups.opportunity.length ? (
-            <DiagnosticSection
-              title={t('diagnostics.page.sectionOpportunity')}
-              items={groups.opportunity}
-            />
-          ) : null}
-        </>
-      )}
-    </div>
-  );
-}
-
-function DiagnosticSection({ title, items }) {
-  return (
-    <section className={ui.stackSection}>
-      <h3 className={`text-sm font-semibold uppercase tracking-wider ${ui.textMuted}`}>
-        {title}
-      </h3>
-      <ul className={ui.stackBlocks}>
-        {items.map((item) => (
-          <DiagnosticItem key={item.id} item={item} />
-        ))}
-      </ul>
-    </section>
-  );
-}

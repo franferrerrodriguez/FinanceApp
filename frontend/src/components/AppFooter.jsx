@@ -2,6 +2,11 @@ import { BRAND_NAME, BRAND_URL } from '../lib/brand';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
+/* eslint-disable no-undef */
+const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : null;
+
+export { APP_VERSION };
+
 export function AppFooter() {
   const brand = BRAND_URL ? (
     <a
@@ -17,13 +22,19 @@ export function AppFooter() {
   );
 
   return (
-    <footer className="mt-12 py-8 pb-12 text-center">
+    <footer className="mt-12 border-t py-8 pb-12 text-center [border-color:rgba(255,255,255,0.06)]">
       <p className="text-sm tracking-[-0.01em] text-[var(--text-muted)]">
         By {brand}
       </p>
-      <p className="mt-1 text-[10px] text-[var(--text-muted)] opacity-60">
-        © {CURRENT_YEAR}
-      </p>
+      {APP_VERSION ? (
+        <p className="mt-1 text-[11px] text-[var(--text-muted)] opacity-50">
+          v{APP_VERSION} · © {CURRENT_YEAR}
+        </p>
+      ) : (
+        <p className="mt-1 text-[11px] text-[var(--text-muted)] opacity-50">
+          © {CURRENT_YEAR}
+        </p>
+      )}
     </footer>
   );
 }
