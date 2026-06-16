@@ -441,7 +441,7 @@
       "investmentsAmountInline": "Amount I invest each month",
       "investmentsHint": "What you commit to invest each month, before other spending.",
       "investmentsCountForCushion": "Include in emergency fund calculation",
-      "investmentsCountForCushionHint": "If you'd keep investing without a job, your emergency goal will count this expense.",
+      "investmentsCountForCushionHint": "Your emergency goal will count this expense.",
       "housingPaymentMortgage": "Mortgage payment",
       "housingPaymentRent": "Monthly rent",
       "housingPaymentHintMortgage": "Full mortgage payment. If you split it, enter the total and set your share below.",

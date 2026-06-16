@@ -441,7 +441,7 @@
       "investmentsAmountInline": "Cantidad que invierto al mes",
       "investmentsHint": "Lo que te comprometes a invertir cada mes, antes del resto de gastos.",
       "investmentsCountForCushion": "Incluir en el cálculo del colchón",
-      "investmentsCountForCushionHint": "Si quieres seguir invirtiendo sin empleo, el objetivo de emergencia tendrá en cuenta este gasto.",
+      "investmentsCountForCushionHint": "El objetivo de emergencia tendrá en cuenta este gasto.",
       "housingPaymentMortgage": "Cuota de hipoteca",
       "housingPaymentRent": "Alquiler mensual",
       "housingPaymentHintMortgage": "Cuota íntegra. Si la pagáis entre varios, escribe el total y ajusta tu parte abajo.",

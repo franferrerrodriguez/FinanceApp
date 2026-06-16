@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 
 /** Lifts modals above the software keyboard on mobile browsers. */
 export function useModalKeyboardInset(open) {
-  const [inset, setInset] = useState(0);
+  const [state, setState] = useState({ keyboard: 0, viewportHeight: 0 });
 
   useEffect(() => {
     const viewport = window.visualViewport;
     if (!open || !viewport) {
-      setInset(0);
+      setState({ keyboard: 0, viewportHeight: 0 });
       return undefined;
     }
 
@@ -16,7 +16,10 @@ export function useModalKeyboardInset(open) {
         0,
         window.innerHeight - viewport.height - viewport.offsetTop,
       );
-      setInset(keyboard > 50 ? keyboard : 0);
+      setState({
+        keyboard: keyboard > 50 ? keyboard : 0,
+        viewportHeight: viewport.height,
+      });
     };
 
     viewport.addEventListener('resize', update);
@@ -26,9 +29,9 @@ export function useModalKeyboardInset(open) {
     return () => {
       viewport.removeEventListener('resize', update);
       viewport.removeEventListener('scroll', update);
-      setInset(0);
+      setState({ keyboard: 0, viewportHeight: 0 });
     };
   }, [open]);
 
-  return inset;
+  return state;
 }

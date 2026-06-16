@@ -16,7 +16,7 @@ export function AppModal({
   maxHeightClass = 'max-h-[min(92dvh,720px)] sm:max-h-[85dvh]',
   ariaLabelledBy = 'app-modal-title',
 }) {
-  const keyboardInset = useModalKeyboardInset(open);
+  const { keyboard: keyboardInset, viewportHeight } = useModalKeyboardInset(open);
   const standalone = isStandalonePwa();
 
   useEffect(() => {
@@ -50,7 +50,8 @@ export function AppModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={ariaLabelledBy}
-        className={`relative z-10 flex ${maxHeightClass} w-full max-w-lg flex-col overflow-hidden rounded-t-[20px] [border:0.5px_solid_rgba(255,255,255,0.12)] shadow-xl sm:rounded-[20px] bg-[var(--bg-secondary)]`}
+        className={`relative z-10 flex ${keyboardInset ? '' : maxHeightClass} w-full max-w-lg flex-col overflow-hidden rounded-t-[20px] [border:0.5px_solid_rgba(255,255,255,0.12)] shadow-xl sm:rounded-[20px] bg-[var(--bg-secondary)]`}
+        style={keyboardInset && viewportHeight ? { maxHeight: viewportHeight - 8 } : undefined}
       >
         <div
           className="mx-auto mt-2 mb-1 h-1 w-10 shrink-0 rounded-full bg-[rgba(255,255,255,0.15)] sm:hidden"
