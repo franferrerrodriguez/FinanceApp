@@ -143,7 +143,7 @@ export const ui = {
     'rounded-xl [border:0.5px_solid_rgba(29,158,117,0.4)] bg-[var(--bg-secondary)] text-[var(--accent)] ring-2 ring-[rgba(29,158,117,0.20)]',
   menuBackdrop: 'absolute inset-0 bg-black/60 backdrop-blur-[2px]',
   menuPanel:
-    'absolute right-4 top-4 z-[201] flex w-[min(20rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl [border:0.5px_solid_rgba(255,255,255,0.12)] bg-[var(--bg-secondary)] shadow-2xl',
+    'absolute right-4 top-[calc(1rem+env(safe-area-inset-top,0px))] z-[201] flex w-[min(20rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl [border:0.5px_solid_rgba(255,255,255,0.12)] bg-[var(--bg-secondary)] shadow-2xl',
   menuInnerBorder: '[border:0.5px_solid_rgba(255,255,255,0.08)] bg-[var(--bg-tertiary)]',
 
   // ── Modals ──────────────────────────────────────────────────────
