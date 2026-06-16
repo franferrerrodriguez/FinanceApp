@@ -7,7 +7,8 @@ const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : n
 
 export { APP_VERSION };
 
-export function AppFooter() {
+export function BrandCredit() {
+  if (!BRAND_NAME) return null;
   const brand = BRAND_URL ? (
     <a
       href={BRAND_URL}
@@ -20,12 +21,17 @@ export function AppFooter() {
   ) : (
     <span className="font-semibold text-[var(--text-secondary)]">{BRAND_NAME}</span>
   );
+  return (
+    <p className="text-sm tracking-[-0.01em] text-[var(--text-muted)]">
+      By {brand}
+    </p>
+  );
+}
 
+export function AppFooter() {
   return (
     <footer className="mt-12 border-t py-8 pb-12 text-center [border-color:rgba(255,255,255,0.06)]">
-      <p className="text-sm tracking-[-0.01em] text-[var(--text-muted)]">
-        By {brand}
-      </p>
+      <BrandCredit />
       {APP_VERSION ? (
         <p className="mt-1 text-[11px] text-[var(--text-muted)] opacity-50">
           v{APP_VERSION} · © {CURRENT_YEAR}

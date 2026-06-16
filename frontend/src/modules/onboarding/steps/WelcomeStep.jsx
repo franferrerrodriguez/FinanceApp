@@ -1,7 +1,7 @@
 import { Compass, TrendingUp, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BRAND_NAME } from '../../../lib/brand';
+import { BrandCredit } from '../../../components/AppFooter';
 import {
   PROFILE_AGE_ERROR_KEYS,
   PROFILE_MAX_AGE,
@@ -248,9 +248,9 @@ export function WelcomeStep({ onNext }) {
         </div>
 
         {/* Brand */}
-        <p className="text-center text-xs text-[var(--text-muted)] opacity-50">
-          By {BRAND_NAME}
-        </p>
+        <div className="text-center">
+          <BrandCredit />
+        </div>
       </div>
 
     </div>

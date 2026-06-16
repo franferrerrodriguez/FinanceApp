@@ -4,8 +4,7 @@ import { User } from 'lucide-react';
 import { useAuthModal } from '../../context/AuthModalContext';
 import { LOCALE_LABELS, SUPPORTED_LOCALES } from '../../i18n/config';
 import { isAuthAvailable, signOutFromSupabase } from '../../lib/auth';
-import { BRAND_NAME, BRAND_URL } from '../../lib/brand';
-import { APP_VERSION } from '../../components/AppFooter';
+import { APP_VERSION, BrandCredit } from '../../components/AppFooter';
 import { SelectField } from '../../components/SelectField';
 import { ui } from '../../lib/uiClasses';
 import { getDisplayName, getInitials } from '../../lib/userDisplay';
@@ -181,23 +180,7 @@ export function ProfilePage() {
             <span className={`ml-2 text-xs font-normal ${ui.textMuted}`}>v{APP_VERSION}</span>
           ) : null}
         </p>
-        {BRAND_NAME ? (
-          <p className={`mt-1 text-sm ${ui.textMuted}`}>
-            {t('profile.madeBy')}{' '}
-            {BRAND_URL ? (
-              <a
-                href={BRAND_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-medium text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors"
-              >
-                {BRAND_NAME}
-              </a>
-            ) : (
-              <span className="font-medium text-[var(--text-secondary)]">{BRAND_NAME}</span>
-            )}
-          </p>
-        ) : null}
+        <BrandCredit />
       </section>
     </div>
   );
