@@ -1,12 +1,12 @@
 {
   "name": "financia-app",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "dev:force": "vite --force",
-    "build": "vite build && cp public/.htaccess dist/.htaccess",
+    "build": "vite build",
     "lint": "eslint .",
     "test": "node src/lib/money.test.js && node src/utils/formatters.test.js && node src/lib/liabilitySnapshots.test.js && node src/lib/deriveContributionsFromSnapshots.test.js && node src/lib/snapshotPersist.test.js && node src/lib/mergeFinanceLists.test.js && node src/lib/patrimonyDrafts.test.js && node src/lib/patrimonyNames.test.js && node src/lib/projectionReturns.test.js && node src/lib/ineInflation.test.js && node src/lib/housingLiability.test.js && node src/lib/institutions.test.js && node src/lib/contributionPlans.test.js && node src/lib/contributionEntries.test.js && node src/lib/contributionPlanLabels.test.js && node src/lib/balanceSetupProgress.test.js && node src/lib/notifications/computeFinanceNotifications.test.js && node src/lib/salary.test.js && node src/lib/salaryHistory.test.js && node src/lib/cashflowHistory.test.js && node src/lib/emergencyFund.test.js && node src/lib/financialDiagnosis.test.js && node src/lib/amortization.test.js && node src/lib/patrimony.test.js && node src/lib/monthlyCloseForm.test.js && node src/lib/patrimonyGrowth.test.js && node src/lib/monthlyClose.test.js && node src/lib/expenseViewMode.test.js && node src/lib/onboardingAccess.test.js && node src/lib/projectionBuckets.test.js && node src/lib/projectionTable.test.js && node src/lib/simpleAuth.test.js && node src/lib/profileValidation.test.js",
     "preview": "vite preview",

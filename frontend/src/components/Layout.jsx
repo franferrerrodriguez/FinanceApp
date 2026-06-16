@@ -78,7 +78,7 @@ export function Layout() {
         <Outlet />
       </main>
 
-      {!useBottomNav && <AppFooter />}
+      <AppFooter />
 
       {onboardingCompleted && useBottomNav && <BottomNavBar />}
 

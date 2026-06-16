@@ -117,6 +117,8 @@ input[type="datetime-local"] {
   padding-bottom: 0;
   box-sizing: border-box;
   color-scheme: light;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .dark input[type="date"],
