@@ -38,7 +38,10 @@ export function AppModal({
   return createPortal(
     <div
       className="fixed inset-0 z-[210] flex items-end justify-center sm:items-center sm:p-4"
-      style={keyboardInset ? { paddingBottom: keyboardInset } : undefined}
+      style={{
+        paddingTop: 'env(safe-area-inset-top, 0px)',
+        ...(keyboardInset ? { paddingBottom: keyboardInset } : {}),
+      }}
     >
       <button
         type="button"
@@ -51,7 +54,7 @@ export function AppModal({
         aria-modal="true"
         aria-labelledby={ariaLabelledBy}
         className={`relative z-10 flex ${keyboardInset ? '' : maxHeightClass} w-full max-w-lg flex-col overflow-hidden rounded-t-[20px] [border:0.5px_solid_rgba(255,255,255,0.12)] shadow-xl sm:rounded-[20px] bg-[var(--bg-secondary)]`}
-        style={keyboardInset && viewportHeight ? { maxHeight: viewportHeight - 8 } : undefined}
+        style={keyboardInset && viewportHeight ? { maxHeight: viewportHeight - 52 } : undefined}
       >
         <div
           className="mx-auto mt-2 mb-1 h-1 w-10 shrink-0 rounded-full bg-[rgba(255,255,255,0.15)] sm:hidden"
