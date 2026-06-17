@@ -2,7 +2,6 @@ import { pauseCloudAutoSync } from './cloudSync';
 import {
   prepareFinanceSessionForUser,
   rememberCloudUserId,
-  shouldSkipCloudPull,
 } from './financeSession';
 import { useAppStore } from '../store/appStore';
 import { loadUserDataFromSupabase } from './loadUserDataFromSupabase';
@@ -70,13 +69,6 @@ export async function syncUserDataOnAuth(userId) {
         const load = await loadUserDataFromSupabase(userId);
         rememberCloudUserId(userId);
         return { ...migration, fallbackLoad: load };
-      }
-
-      if (shouldSkipCloudPull(userId, session)) {
-        rememberCloudUserId(userId);
-        useAppStore.setState({ cloudSyncStatus: 'ready' });
-        pauseCloudAutoSync();
-        return { success: true, skippedPull: true };
       }
 
       const load = await loadUserDataFromSupabase(userId);
