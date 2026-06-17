@@ -177,55 +177,57 @@ export function HousingExpenseBlock({
       )}
 
       {inOnboarding && housingType === HOUSING_TYPE.MORTGAGE ? (
-        <div>
-          <MoneyField
-            id="onboarding-housing-outstanding"
-            label={
-              isMortgageCapitalShared(settings, linkedLiability)
-                ? t('balance.patrimony.outstandingBalanceTotal')
-                : t('balance.cashflow.housingDebtTitle')
-            }
-            hint={
-              outstandingSharePreview
-                ? t('balance.patrimony.outstandingBalanceSharePreview', {
-                    share: formatMoney(outstandingSharePreview.yourShare),
-                    percent: outstandingSharePreview.percent,
-                  })
-                : isMortgageCapitalShared(settings, linkedLiability)
-                  ? t('balance.patrimony.outstandingBalanceSharedConfigHint')
-                  : t('balance.cashflow.housingDebtHintOnboarding')
-            }
-            value={outstandingTotal}
-            onChange={handleOutstandingChange}
-            fullWidth
-            reserveHintSpace={false}
-            error={showCapitalError && !(outstandingTotal > 0)}
-          />
-          {showCapitalError && !(outstandingTotal > 0) && (
-            <p className="mt-1.5 text-xs text-[var(--color-negative)]">
-              {t('onboarding.expenses.mortgageCapitalRequired')}
-            </p>
-          )}
-        </div>
+        <>
+          <div>
+            <MoneyField
+              id="onboarding-housing-outstanding"
+              label={
+                isMortgageCapitalShared(settings, linkedLiability)
+                  ? t('balance.patrimony.outstandingBalanceTotal')
+                  : t('balance.cashflow.housingDebtTitle')
+              }
+              hint={
+                outstandingSharePreview
+                  ? t('balance.patrimony.outstandingBalanceSharePreview', {
+                      share: formatMoney(outstandingSharePreview.yourShare),
+                      percent: outstandingSharePreview.percent,
+                    })
+                  : isMortgageCapitalShared(settings, linkedLiability)
+                    ? t('balance.patrimony.outstandingBalanceSharedConfigHint')
+                    : t('balance.cashflow.housingDebtHintOnboarding')
+              }
+              value={outstandingTotal}
+              onChange={handleOutstandingChange}
+              fullWidth
+              reserveHintSpace={false}
+              error={showCapitalError && !(outstandingTotal > 0)}
+            />
+            {showCapitalError && !(outstandingTotal > 0) && (
+              <p className="mt-1.5 text-xs text-[var(--color-negative)]">
+                {t('onboarding.expenses.mortgageCapitalRequired')}
+              </p>
+            )}
+          </div>
 
-        <PercentField
-          id="onboarding-mortgage-interest-rate"
-          label={t('balance.patrimony.interestRate')}
-          hint={t('balance.patrimony.interestRateHint')}
-          value={linkedLiability?.interestRate ?? null}
-          onChange={(interestRate) => {
-            if (linkedLiability) {
-              updateLiability(linkedLiability.id, {
-                interestRate: normalizeLiabilityInterestRate(interestRate ?? 0),
-              });
-            }
-          }}
-          step={0.01}
-          min={0}
-          layout="stacked"
-          nullable
-          reserveHintSpace={false}
-        />
+          <PercentField
+            id="onboarding-mortgage-interest-rate"
+            label={t('balance.patrimony.interestRate')}
+            hint={t('balance.patrimony.interestRateHint')}
+            value={linkedLiability?.interestRate ?? null}
+            onChange={(interestRate) => {
+              if (linkedLiability) {
+                updateLiability(linkedLiability.id, {
+                  interestRate: normalizeLiabilityInterestRate(interestRate ?? 0),
+                });
+              }
+            }}
+            step={0.01}
+            min={0}
+            layout="stacked"
+            nullable
+            reserveHintSpace={false}
+          />
+        </>
       ) : null}
 
       {!inOnboarding && tracksMortgageCapital ? (
