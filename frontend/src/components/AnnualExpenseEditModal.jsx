@@ -66,7 +66,6 @@ export function AnnualExpenseEditModal({
           onChange={(name) => patch({ name })}
           placeholder={t('balance.cashflow.annualExpenseNamePlaceholder')}
           required
-          autoFocus
           reserveHintSpace={false}
         />
 

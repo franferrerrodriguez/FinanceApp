@@ -24,8 +24,10 @@ import { getLiabilityOutstandingFromSnapshots } from '../lib/liabilitySnapshots'
 import { FormFieldFrame } from './FormFieldFrame';
 import { FormSection } from './FormSection';
 import { MoneyField } from './MoneyField';
+import { PercentField } from './PercentField';
 import { SharedExpenseBlock } from '../modules/onboarding/components/SharedExpenseBlock';
 import { ui } from '../lib/uiClasses';
+import { normalizeLiabilityInterestRate } from '../lib/patrimony';
 import { useFinanceData } from '../store/hooks';
 import { formatMoney } from '../utils/formatters';
 
@@ -205,6 +207,25 @@ export function HousingExpenseBlock({
             </p>
           )}
         </div>
+
+        <PercentField
+          id="onboarding-mortgage-interest-rate"
+          label={t('balance.patrimony.interestRate')}
+          hint={t('balance.patrimony.interestRateHint')}
+          value={linkedLiability?.interestRate ?? null}
+          onChange={(interestRate) => {
+            if (linkedLiability) {
+              updateLiability(linkedLiability.id, {
+                interestRate: normalizeLiabilityInterestRate(interestRate ?? 0),
+              });
+            }
+          }}
+          step={0.01}
+          min={0}
+          layout="stacked"
+          nullable
+          reserveHintSpace={false}
+        />
       ) : null}
 
       {!inOnboarding && tracksMortgageCapital ? (

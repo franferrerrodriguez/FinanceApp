@@ -44,15 +44,15 @@ export function PercentField({
       <div className="relative inline-block w-full max-w-[5.5rem] shrink-0">
         <input
           id={fieldId}
-          type="number"
+          type="text"
           inputMode="decimal"
           step={step}
           min={min}
           max={max}
           value={nullable && value == null ? '' : display}
           onChange={(e) => {
-            const raw = e.target.value;
-            if (nullable && raw === '') {
+            const raw = e.target.value.replace(',', '.');
+            if (nullable && (raw === '' || raw === '.')) {
               onChange(null);
               return;
             }

@@ -107,7 +107,6 @@ export function LiabilityEditModal({
           onChange={(name) => patch({ name })}
           required
           reserveHintSpace={false}
-          autoFocus
         />
 
         <SelectFormField
