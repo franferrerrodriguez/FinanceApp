@@ -16,11 +16,6 @@ export function PatrimonyEvolutionSection({ snapshots, locale }) {
           <h3 className={`text-base font-semibold ${ui.heading}`}>
             {t('balance.patrimony.evolutionTitle')}
           </h3>
-          <span
-            className={`rounded-full [border:0.5px_solid_rgba(29,158,117,0.30)] px-2.5 py-0.5 text-xs font-medium text-[var(--accent)]`}
-          >
-            {t('balance.patrimony.realDataBadge')}
-          </span>
         </div>
         <p className={`text-sm ${ui.textMuted}`}>
           {t('balance.patrimony.evolutionSubtitle')}

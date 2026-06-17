@@ -22,12 +22,11 @@ export async function signUpWithEmail({ email, password }) {
     return { ok: false, errorCode: 'not_configured' };
   }
 
+  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: {
-      emailRedirectTo: `${window.location.origin}/`,
-    },
+    options: isLocalhost ? undefined : { emailRedirectTo: window.location.origin },
   });
 
   if (error) {

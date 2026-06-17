@@ -53,7 +53,7 @@ export function resolveProjectionMortgage({
       debtBalance > 0 &&
       monthlyPayment > 0 &&
       annualRate != null &&
-      annualRate >= 0,
+      annualRate > 0,
     monthlyPayment,
     annualRate,
     snapshotDebt,

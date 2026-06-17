@@ -292,6 +292,13 @@ export function ProjectionDataTable() {
     settings,
   });
 
+  const mortgagePaidOffIndex = useMemo(() => {
+    if (!mortgageAmortizationActive) return -1;
+    return rows.findIndex(
+      (r, i) => r.debtBalance === 0 && (i === 0 || (rows[i - 1]?.debtBalance ?? 0) > 0),
+    );
+  }, [rows, mortgageAmortizationActive]);
+
   const { overflow: canScrollX, right: canScrollRight, updateEdges } =
     useHorizontalScrollEdges(scrollRef, [
       rows.length,
@@ -404,6 +411,7 @@ export function ProjectionDataTable() {
                 scrolledX={scrolledX}
                 isEven={index % 2 === 0}
                 isLastRow={index === rows.length - 1}
+                isMortgagePaidOff={mortgagePaidOffIndex === index}
               />
             )}
           </VirtualList>
@@ -432,7 +440,9 @@ function ProjectionRow({
   scrolledX,
   isEven,
   isLastRow,
+  isMortgagePaidOff = false,
 }) {
+  const { t } = useTranslation();
   const bg = rowBg(isEven);
   const january = row.isJanuary
     ? 'bg-[rgba(255,255,255,0.04)]'
@@ -458,7 +468,9 @@ function ProjectionRow({
       row.mortgageInterest > 0 ? formatMoney(row.mortgageInterest) : '—',
     mortgagePrincipal:
       row.mortgagePrincipal > 0 ? formatMoney(row.mortgagePrincipal) : '—',
-    debtBalance: formatMoney(row.debtBalance ?? 0),
+    debtBalance: isMortgagePaidOff
+      ? t('projection.summary.mortgagePaidOffShort')
+      : formatMoney(row.debtBalance ?? 0),
     patrimony: formatMoney(row.patrimonyEnd),
   };
 
@@ -481,6 +493,10 @@ function ProjectionRow({
         const alignRight = !isYear && !isDate;
         const separator = showColumnSeparator(key, columns);
 
+        const isDebtCell = key === PROJECTION_COLUMN.DEBT_BALANCE;
+        const paidOffClass =
+          isMortgagePaidOff && isDebtCell ? 'font-medium text-[var(--color-positive)]' : '';
+
         return (
           <div
             key={key}
@@ -493,7 +509,7 @@ function ProjectionRow({
                     isYear && isLastRow ? 'rounded-bl-2xl' : ''
                   }`
                 : toneClass || ui.textLabel
-            } ${isYear ? 'font-medium text-[var(--text-muted)]' : ''}`}
+            } ${isYear ? 'font-medium text-[var(--text-muted)]' : ''} ${paidOffClass}`}
           >
             {cells[key]}
           </div>

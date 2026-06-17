@@ -58,9 +58,6 @@ export function RecordBalancesBar({
           <p className={`text-sm font-semibold ${ui.heading}`}>
             {t('balance.recordBalancesHeading')}
           </p>
-          <p className={`mt-1 text-sm ${ui.text}`}>
-            {t('balance.recordBalancesDescription')}
-          </p>
           {showHistoryLink && onViewHistory ? (
             <button
               type="button"

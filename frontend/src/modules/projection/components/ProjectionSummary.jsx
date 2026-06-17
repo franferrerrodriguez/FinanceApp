@@ -60,17 +60,9 @@ export function ProjectionSummary({
         />
       </div>
 
-      {mortgageAmortizationActive ? (
-        <p
-          className={`rounded-xl border px-4 py-3 text-sm ${
-            finalDebt <= 0
-              ? '[border:0.5px_solid_rgba(29,158,117,0.35)] bg-[rgba(29,158,117,0.10)] text-[var(--color-positive)]'
-              : `${ui.cardMuted} ${ui.text}`
-          }`}
-        >
-          {finalDebt <= 0
-            ? t('projection.summary.mortgagePaidOff')
-            : t('projection.summary.finalDebt', { amount: formatMoney(finalDebt) })}
+      {mortgageAmortizationActive && finalDebt > 0 ? (
+        <p className={`rounded-xl border px-4 py-3 text-sm ${ui.cardMuted} ${ui.text}`}>
+          {t('projection.summary.finalDebt', { amount: formatMoney(finalDebt) })}
         </p>
       ) : null}
 

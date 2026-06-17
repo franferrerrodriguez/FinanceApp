@@ -189,11 +189,12 @@
     "errors": {
       "required": "Introduce email y contraseña.",
       "notConfigured": "El registro no está disponible.",
+      "networkError": "No se pudo conectar con el servidor. Comprueba tu conexión.",
       "generic": "No se pudo completar. Revisa email y contraseña.",
       "alreadyRegistered": "Este email ya tiene cuenta.",
       "invalidCredentials": "Email o contraseña incorrectos.",
       "emailNotConfirmed": "Confirma tu email antes de entrar.",
-      "weakPassword": "Contraseña demasiado débil.",
+      "weakPassword": "La contraseña debe tener al menos 6 caracteres.",
       "rateLimit": "Demasiados intentos. Espera un momento.",
       "emailSendRateLimit": "Demasiados correos enviados. Espera un rato e inténtalo de nuevo."
     }
@@ -994,7 +995,8 @@
       "breakdownFinalDebt": "Deuda pendiente al final",
       "breakdownFinal": "Patrimonio neto al final del periodo",
       "finalDebt": "Deuda hipotecaria al final del periodo: {{amount}}",
-      "mortgagePaidOff": "Hipoteca liquidada en el periodo ✓"
+      "mortgagePaidOff": "Hipoteca liquidada en el periodo ✓",
+      "mortgagePaidOffShort": "Liquidada"
     },
     "table": {
       "scrollHint": "Desliza horizontalmente para ver todas las columnas",

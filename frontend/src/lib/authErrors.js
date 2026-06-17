@@ -11,6 +11,10 @@ export function mapAuthErrorToKey(error) {
       : String(error?.message ?? error?.code ?? '');
   const m = message.toLowerCase();
 
+  if (m.includes('failed to fetch') || m.includes('networkerror') || m.includes('fetch')) {
+    return 'networkError';
+  }
+
   if (
     code === 'over_email_send_rate_limit' ||
     m.includes('email rate limit exceeded')
@@ -26,7 +30,11 @@ export function mapAuthErrorToKey(error) {
   if (m.includes('email not confirmed') || m.includes('email_not_confirmed')) {
     return 'emailNotConfirmed';
   }
-  if (m.includes('password') && (m.includes('weak') || m.includes('short'))) {
+  if (
+    code.includes('weak') ||
+    code === 'password_too_short' ||
+    (m.includes('password') && (m.includes('weak') || m.includes('short') || m.includes('at least')))
+  ) {
     return 'weakPassword';
   }
   if (m.includes('rate limit') || m.includes('too many')) {

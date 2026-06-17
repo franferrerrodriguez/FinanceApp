@@ -67,6 +67,11 @@ export function AuthModal() {
       return;
     }
 
+    if (isSignup && password.length < 6) {
+      setErrorKey('auth.errors.weakPassword');
+      return;
+    }
+
     setSubmitting(true);
     try {
       const result = isSignup

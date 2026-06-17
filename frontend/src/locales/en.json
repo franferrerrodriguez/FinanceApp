@@ -189,11 +189,12 @@
     "errors": {
       "required": "Enter email and password.",
       "notConfigured": "Sign-up is not available.",
+      "networkError": "Could not reach the server. Check your connection.",
       "generic": "Could not complete. Check your email and password.",
       "alreadyRegistered": "This email already has an account.",
       "invalidCredentials": "Incorrect email or password.",
       "emailNotConfirmed": "Confirm your email before signing in.",
-      "weakPassword": "Password is too weak.",
+      "weakPassword": "Password must be at least 6 characters.",
       "rateLimit": "Too many attempts. Wait a moment.",
       "emailSendRateLimit": "Too many emails sent. Wait a while and try again."
     }
@@ -994,7 +995,8 @@
       "breakdownFinalDebt": "Debt remaining at end",
       "breakdownFinal": "Net worth at end of period",
       "finalDebt": "Mortgage debt at end of period: {{amount}}",
-      "mortgagePaidOff": "Mortgage paid off during the period ✓"
+      "mortgagePaidOff": "Mortgage paid off during the period ✓",
+      "mortgagePaidOffShort": "Paid off"
     },
     "table": {
       "scrollHint": "Swipe sideways to see all columns",
