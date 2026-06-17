@@ -1,5 +1,7 @@
+import { useCallback } from 'react';
 import { displayToPct, pctToDisplay } from './PercentRow';
 import { FormFieldFrame } from './FormFieldFrame';
+import { useDecimalInput } from '../hooks/useDecimalInput';
 import { ui } from '../lib/uiClasses';
 
 export function PercentField({
@@ -29,7 +31,22 @@ export function PercentField({
   const resolvedLayout =
     compact === true ? 'stacked' : compact === false ? 'grid' : layout;
 
-  const display = pctToDisplay(value);
+  const toDisplay = useCallback((v) => {
+    if (v == null) return null;
+    const d = pctToDisplay(v);
+    return Number.isFinite(d) ? d : null;
+  }, []);
+
+  const fromDisplay = useCallback((s) => {
+    const n = parseFloat(s);
+    return Number.isFinite(n) ? displayToPct(s) : null;
+  }, []);
+
+  const { inputValue, handleChange, handleFocus, handleBlur } = useDecimalInput(
+    value,
+    onChange,
+    { nullable, toDisplay, fromDisplay },
+  );
 
   return (
     <FormFieldFrame
@@ -46,18 +63,10 @@ export function PercentField({
           id={fieldId}
           type="text"
           inputMode="decimal"
-          step={step}
-          min={min}
-          max={max}
-          value={nullable && value == null ? '' : display}
-          onChange={(e) => {
-            const raw = e.target.value.replace(',', '.');
-            if (nullable && (raw === '' || raw === '.')) {
-              onChange(null);
-              return;
-            }
-            onChange(displayToPct(raw));
-          }}
+          value={inputValue}
+          onChange={handleChange}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
           aria-invalid={error || undefined}
           className={`${error ? ui.inputError : ui.input} w-full max-w-none pr-9 tabular-nums`}
         />

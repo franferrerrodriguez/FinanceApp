@@ -1,9 +1,35 @@
+import { useCallback } from 'react';
 import { ui } from '../lib/uiClasses';
-import { displayToPct, pctToDisplay } from '../utils/formatters';
+import { useDecimalInput } from '../hooks/useDecimalInput';
 
-export { displayToPct, pctToDisplay };
+export function pctToDisplay(decimal) {
+  return Math.round((decimal ?? 0) * 10000) / 100;
+}
+
+export function displayToPct(value) {
+  const n = parseFloat(String(value).trim().replace(',', '.'));
+  return Number.isFinite(n) ? n / 100 : 0;
+}
+
+export { displayToPct as default };
 
 export function PercentRow({ label, hint, value, onChange }) {
+  const toDisplay = useCallback((v) => {
+    const d = pctToDisplay(v ?? 0);
+    return Number.isFinite(d) ? d : 0;
+  }, []);
+
+  const fromDisplay = useCallback((s) => {
+    const n = parseFloat(s);
+    return Number.isFinite(n) ? n / 100 : null;
+  }, []);
+
+  const { inputValue, handleChange, handleFocus, handleBlur } = useDecimalInput(
+    value,
+    onChange,
+    { nullable: false, toDisplay, fromDisplay },
+  );
+
   return (
     <div className="flex items-start justify-between gap-4 py-3 first:pt-0 last:pb-0">
       <div className="min-w-0 flex-1">
@@ -14,12 +40,12 @@ export function PercentRow({ label, hint, value, onChange }) {
       </div>
       <div className="relative shrink-0">
         <input
-          type="number"
-          step="0.01"
-          min={0}
-          max={30}
-          value={pctToDisplay(value)}
-          onChange={(e) => onChange(displayToPct(e.target.value))}
+          type="text"
+          inputMode="decimal"
+          value={inputValue}
+          onChange={handleChange}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
           className={`${ui.inputPercent} pr-9`}
         />
         <span className={`${ui.inputSuffixAdornment} ${ui.textMuted}`}>%</span>
