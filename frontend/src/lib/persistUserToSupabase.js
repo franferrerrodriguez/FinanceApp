@@ -62,7 +62,16 @@ export async function persistUserToSupabase(userId) {
     }
 
     if (snapshots.length) {
-      await upsertSnapshotsToSupabase(supabase, snapshots, userId);
+      const assetIds = new Set(assets.map((a) => a.id));
+      const liabilityIds = new Set(liabilities.map((l) => l.id));
+      const validSnapshots = snapshots.filter((s) => {
+        if (s.assetId) return assetIds.has(s.assetId);
+        if (s.liabilityId) return liabilityIds.has(s.liabilityId);
+        return false;
+      });
+      if (validSnapshots.length) {
+        await upsertSnapshotsToSupabase(supabase, validSnapshots, userId);
+      }
     }
 
     useAppStore.setState({ cloudSyncStatus: 'ready' });
