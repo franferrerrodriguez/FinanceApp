@@ -405,7 +405,7 @@
       "patrimonyShort": "Patrimonio",
       "mortgage": "Amortización hipoteca",
       "mortgageShort": "Hipoteca",
-      "analysis": "Análisis",
+      "analysis": "Análisis de gastos",
       "analysisShort": "Análisis"
     },
     "setup": {
@@ -924,7 +924,7 @@
     "tabsLabel": "Secciones de proyección",
     "tabs": {
       "projection": "Proyección",
-      "mortgage": "Hipoteca"
+      "mortgage": "Calculadora hipoteca"
     },
     "title": "Proyección futura",
     "subtitle": "Simulación mes a mes con interés compuesto. Parte de tus saldos reales y extrapola el reparto del ahorro inferido al actualizar saldos.",

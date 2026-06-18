@@ -405,7 +405,7 @@
       "patrimonyShort": "Assets",
       "mortgage": "Mortgage repayment",
       "mortgageShort": "Mortgage",
-      "analysis": "Analysis",
+      "analysis": "Expense analysis",
       "analysisShort": "Analysis"
     },
     "setup": {
@@ -924,7 +924,7 @@
     "tabsLabel": "Projection sections",
     "tabs": {
       "projection": "Projection",
-      "mortgage": "Mortgage"
+      "mortgage": "Mortgage calculator"
     },
     "title": "Future projection",
     "subtitle": "Month-by-month simulation with compound interest. Starts from real balances and extrapolates savings allocation inferred when you update balances.",

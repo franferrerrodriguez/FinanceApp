@@ -31,7 +31,7 @@ export function UnderlineTabNav({
       aria-label={ariaLabel}
     >
       <div
-        className="flex gap-0 overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex gap-0 overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-x [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         role="tablist"
       >
         {tabs.map((tab) => {
