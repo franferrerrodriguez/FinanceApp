@@ -685,6 +685,21 @@ function PatrimonyLiabilitiesSection({
     });
   };
 
+  const getMobilePaymentInfo = (item) => {
+    if (!isLinkedMortgageLiability(item, settings)) {
+      const amount = getLiabilityMonthlyPaymentDisplay(settings, item);
+      return amount ? t('balance.patrimony.mobilePaymentSimple', { amount: formatMoney(amount) }) : null;
+    }
+    const full = getMortgageFullMonthlyPayment(settings, item);
+    const shareInfo = getMortgageYourSharePayment(settings, item);
+    if (!shareInfo) return full ? t('balance.patrimony.mobilePaymentSimple', { amount: formatMoney(full) }) : null;
+    return t('balance.patrimony.mobilePaymentShared', {
+      full: formatMoney(full),
+      percent: shareInfo.percent,
+      share: formatMoney(shareInfo.amount),
+    });
+  };
+
   const getBalanceSubtext = (item) => {
     const share = getBalance(item);
     if (share == null) return null;
@@ -716,6 +731,7 @@ function PatrimonyLiabilitiesSection({
             formatMoney(getLiabilityMonthlyPaymentDisplay(settings, item))
           }
           getPaymentSubtext={getPaymentSubtext}
+          getMobilePaymentInfo={getMobilePaymentInfo}
           getBalance={getBalance}
           getBalanceSubtext={getBalanceSubtext}
           onEdit={openEdit}

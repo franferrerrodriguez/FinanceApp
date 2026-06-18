@@ -25,8 +25,7 @@ function MobileItemCard({
   item,
   kind,
   categoryLabel,
-  providerLabel,
-  getPaymentSubtext,
+  getMobilePaymentInfo,
   getBalance,
   getBalanceSubtext,
   settings,
@@ -39,6 +38,7 @@ function MobileItemCard({
   const balance = getBalance?.(item);
   const balanceClass =
     kind === 'liability' ? getKpiValueClass('liability') : getKpiValueClass('assets');
+  const paymentInfo = getMobilePaymentInfo?.(item);
 
   return (
     <div
@@ -61,25 +61,14 @@ function MobileItemCard({
         ) : null}
       </div>
 
-      <div className="flex items-start justify-between gap-2">
-        <p className={`min-w-0 flex-1 text-xs leading-relaxed ${ui.textMuted}`}>
+      <div className="flex items-center justify-between gap-2">
+        <p className={`text-xs ${ui.textMuted}`}>
           {categoryLabel(item.category)}
           {kind === 'asset' ? (
-            <span>
-              {' · '}
-              {formatRatePercent(getAssetAnnualReturn(settings, item))}
-            </span>
+            <span>{' · '}{formatRatePercent(getAssetAnnualReturn(settings, item))}</span>
           ) : null}
           {kind === 'liability' ? (
-            <>
-              <span>{' · TIN '}{formatRatePercent(item.interestRate ?? 0)}</span>
-              {providerLabel?.(item) ? (
-                <span>{' · '}{providerLabel(item)}</span>
-              ) : null}
-              {getPaymentSubtext?.(item) ? (
-                <span>{' · '}{getPaymentSubtext(item)}</span>
-              ) : null}
-            </>
+            <span>{' · TIN '}{formatRatePercent(item.interestRate ?? 0)}</span>
           ) : null}
         </p>
         <div className="flex shrink-0 items-center gap-3">
@@ -97,6 +86,10 @@ function MobileItemCard({
           ) : null}
         </div>
       </div>
+
+      {paymentInfo ? (
+        <p className={`text-xs ${ui.textMuted}`}>{paymentInfo}</p>
+      ) : null}
     </div>
   );
 }
@@ -107,6 +100,7 @@ export function PatrimonyCatalogTable({
   categoryLabel,
   providerLabel,
   getPaymentSubtext,
+  getMobilePaymentInfo,
   getBalance,
   getBalanceSubtext,
   settings,
@@ -130,8 +124,7 @@ export function PatrimonyCatalogTable({
               item={item}
               kind={kind}
               categoryLabel={categoryLabel}
-              providerLabel={providerLabel}
-              getPaymentSubtext={getPaymentSubtext}
+              getMobilePaymentInfo={getMobilePaymentInfo}
               getBalance={getBalance}
               getBalanceSubtext={getBalanceSubtext}
               settings={settings}
