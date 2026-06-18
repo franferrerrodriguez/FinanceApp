@@ -59,6 +59,7 @@ import {
   mortgagePaymentSettingsPatch,
 } from '../../../lib/housingLiability';
 import { getLiabilityOutstandingFromSnapshots } from '../../../lib/liabilitySnapshots';
+import { getDefaultReturnForAssetCategory } from '../../../lib/projectionReturns';
 import { PatrimonyCatalogTable } from './PatrimonyCatalogTable';
 import { PatrimonyEvolutionSection } from './PatrimonyEvolutionSection';
 import { PatrimonyHistoryTable } from './PatrimonyHistoryTable';
@@ -262,6 +263,7 @@ export function PatrimonyPanel() {
         saveToCloud={saveToCloud}
         asOfLabel={asOfLabel}
         hasAnyBalance={hasAnyBalance}
+        onViewHistory={hasAnyBalance ? scrollToPatrimonyHistory : undefined}
       />
 
       <section
@@ -395,7 +397,19 @@ function PatrimonyAssetsSection({
       .filter((s) => s.assetId === asset.id)
       .sort((a, b) => String(b.snapshotDate ?? '').localeCompare(String(a.snapshotDate ?? '')))[0];
     const currentBalance = latestSnap?.value ?? null;
-    setModal({ mode: 'edit', id: asset.id, originalBalance: currentBalance, draft: { ...asset, currentBalance } });
+    setModal({
+      mode: 'edit',
+      id: asset.id,
+      originalBalance: currentBalance,
+      draft: {
+        ...asset,
+        currentBalance,
+        customAnnualReturn:
+          asset.customAnnualReturn != null
+            ? asset.customAnnualReturn
+            : getDefaultReturnForAssetCategory(asset.category, settings),
+      },
+    });
   };
   const closeModal = () => setModal(null);
 
@@ -556,6 +570,7 @@ function PatrimonyLiabilitiesSection({
   saveToCloud,
   asOfLabel,
   hasAnyBalance,
+  onViewHistory,
 }) {
   const { t } = useTranslation();
   const toast = useToast();
@@ -709,6 +724,16 @@ function PatrimonyLiabilitiesSection({
       ) : (
         <EmptyBlock message={t('balance.patrimony.liabilitiesEmpty')} />
       )}
+
+      {hasAnyBalance && onViewHistory && catalogLiabilities.length > 0 ? (
+        <button
+          type="button"
+          onClick={onViewHistory}
+          className="text-sm font-medium text-[var(--accent)] underline-offset-2 hover:underline"
+        >
+          {t('balance.patrimony.currentBalancesViewHistory')}
+        </button>
+      ) : null}
 
       <CatalogSectionToolbar
         addLabel={

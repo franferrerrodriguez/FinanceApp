@@ -22,83 +22,128 @@ export function ContributionsTable({ entries, assets, locale, onEdit, onDelete }
   if (!entries.length) return null;
 
   return (
-    <div className={`overflow-hidden rounded-xl border ${ui.divider}`}>
-      <table className="w-full border-collapse text-sm">
-        <thead>
-          <tr className={`border-b bg-[rgba(255,255,255,0.03)] ${ui.divider}`}>
-            <th className={`px-3 py-2.5 text-left text-xs font-semibold ${ui.textLabel}`}>
-              {t('balance.contributions.tableDate')}
-            </th>
-            <th className={`px-3 py-2.5 text-left text-xs font-semibold ${ui.textLabel}`}>
-              {t('balance.contributions.tableDestination')}
-            </th>
-            <th
-              className={`hidden px-3 py-2.5 text-left text-xs font-semibold sm:table-cell ${ui.textLabel}`}
-            >
-              {t('balance.contributions.tableCategory')}
-            </th>
-            <th className={`px-3 py-2.5 text-right text-xs font-semibold ${ui.textLabel}`}>
-              {t('balance.contributions.tableAmount')}
-            </th>
-            <th className="w-28 px-2 py-2.5" />
-          </tr>
-        </thead>
-        <tbody>
-          {entries.map((entry) => {
-            const linkedAsset = resolveLinkedAsset(entry, assets);
-            const assetMissing = entry.assetId && !linkedAsset;
+    <div>
+      {/* Mobile: card layout */}
+      <div className="space-y-2 sm:hidden">
+        {entries.map((entry) => {
+          const linkedAsset = resolveLinkedAsset(entry, assets);
+          const assetMissing = entry.assetId && !linkedAsset;
+          const name = linkedAsset?.name ??
+            (assetMissing
+              ? t('balance.contributions.assetDeleted')
+              : t('balance.contributions.unnamedAsset'));
+          const category = linkedAsset
+            ? t(`categories.asset.${linkedAsset.category}`)
+            : null;
 
-            return (
-              <tr
-                key={entry.id}
-                className={`border-b last:border-b-0 ${ui.divider}`}
-              >
-                <td className={`whitespace-nowrap px-3 py-2.5 ${ui.textLabel}`}>
-                  {formatEntryDate(entry.date, locale)}
-                </td>
-                <td className={`max-w-[12rem] px-3 py-2.5 font-medium ${ui.heading}`}>
-                  <span className="block truncate">
-                    {linkedAsset?.name ??
-                      (assetMissing
-                        ? t('balance.contributions.assetDeleted')
-                        : t('balance.contributions.unnamedAsset'))}
-                  </span>
-                </td>
-                <td
-                  className={`hidden whitespace-nowrap px-3 py-2.5 sm:table-cell ${ui.textLabel}`}
-                >
-                  {linkedAsset
-                    ? t(`categories.asset.${linkedAsset.category}`)
-                    : '—'}
-                </td>
-                <td
-                  className={`whitespace-nowrap px-3 py-2.5 text-right tabular-nums ${ui.textLabel}`}
-                >
+          return (
+            <div key={entry.id} className={`${ui.block} px-4 py-3 space-y-1.5`}>
+              <div className="flex items-start justify-between gap-3">
+                <p className={`font-semibold ${ui.heading}`}>{name}</p>
+                <p className={`shrink-0 tabular-nums font-semibold ${ui.textLabel}`}>
                   {formatMoney(entry.amount ?? 0)}
-                </td>
-                <td className="px-2 py-2.5 text-right">
-                  <div className="flex flex-row items-center justify-end gap-3">
-                    <button
-                      type="button"
-                      onClick={() => onEdit(entry)}
-                      className={ui.actionLink}
-                    >
-                      {t('balance.contributions.editRow')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onDelete(entry)}
-                      className={ui.actionLinkDanger}
-                    >
-                      {t('balance.contributions.deleteRow')}
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                </p>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <p className={`text-xs ${ui.textMuted}`}>
+                  {formatEntryDate(entry.date, locale)}
+                  {category ? ` · ${category}` : null}
+                </p>
+                <div className="flex shrink-0 items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => onEdit(entry)}
+                    className={ui.actionLink}
+                  >
+                    {t('balance.contributions.editRow')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onDelete(entry)}
+                    className={ui.actionLinkDanger}
+                  >
+                    {t('balance.contributions.deleteRow')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Desktop: table */}
+      <div className={`hidden overflow-hidden rounded-xl border sm:block ${ui.divider}`}>
+        <table className="w-full border-collapse text-sm">
+          <thead>
+            <tr className={`border-b bg-[rgba(255,255,255,0.03)] ${ui.divider}`}>
+              <th className={`px-3 py-2.5 text-left text-xs font-semibold ${ui.textLabel}`}>
+                {t('balance.contributions.tableDate')}
+              </th>
+              <th className={`px-3 py-2.5 text-left text-xs font-semibold ${ui.textLabel}`}>
+                {t('balance.contributions.tableDestination')}
+              </th>
+              <th className={`px-3 py-2.5 text-left text-xs font-semibold ${ui.textLabel}`}>
+                {t('balance.contributions.tableCategory')}
+              </th>
+              <th className={`px-3 py-2.5 text-right text-xs font-semibold ${ui.textLabel}`}>
+                {t('balance.contributions.tableAmount')}
+              </th>
+              <th className="w-28 px-2 py-2.5" />
+            </tr>
+          </thead>
+          <tbody>
+            {entries.map((entry) => {
+              const linkedAsset = resolveLinkedAsset(entry, assets);
+              const assetMissing = entry.assetId && !linkedAsset;
+
+              return (
+                <tr
+                  key={entry.id}
+                  className={`border-b last:border-b-0 ${ui.divider}`}
+                >
+                  <td className={`whitespace-nowrap px-3 py-2.5 ${ui.textLabel}`}>
+                    {formatEntryDate(entry.date, locale)}
+                  </td>
+                  <td className={`max-w-[12rem] px-3 py-2.5 font-medium ${ui.heading}`}>
+                    <span className="block truncate">
+                      {linkedAsset?.name ??
+                        (assetMissing
+                          ? t('balance.contributions.assetDeleted')
+                          : t('balance.contributions.unnamedAsset'))}
+                    </span>
+                  </td>
+                  <td className={`whitespace-nowrap px-3 py-2.5 ${ui.textLabel}`}>
+                    {linkedAsset
+                      ? t(`categories.asset.${linkedAsset.category}`)
+                      : '—'}
+                  </td>
+                  <td className={`whitespace-nowrap px-3 py-2.5 text-right tabular-nums ${ui.textLabel}`}>
+                    {formatMoney(entry.amount ?? 0)}
+                  </td>
+                  <td className="px-2 py-2.5 text-right">
+                    <div className="flex flex-row items-center justify-end gap-3">
+                      <button
+                        type="button"
+                        onClick={() => onEdit(entry)}
+                        className={ui.actionLink}
+                      >
+                        {t('balance.contributions.editRow')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onDelete(entry)}
+                        className={ui.actionLinkDanger}
+                      >
+                        {t('balance.contributions.deleteRow')}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

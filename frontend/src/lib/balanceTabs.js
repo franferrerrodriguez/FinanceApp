@@ -7,13 +7,13 @@ export const BALANCE_TAB = {
 };
 
 export const BALANCE_TABS = [
-  BALANCE_TAB.CASHFLOW,
   BALANCE_TAB.PATRIMONY,
+  BALANCE_TAB.CASHFLOW,
   BALANCE_TAB.MORTGAGE,
   BALANCE_TAB.ANALYSIS,
 ];
 
-export const DEFAULT_BALANCE_TAB = BALANCE_TAB.CASHFLOW;
+export const DEFAULT_BALANCE_TAB = BALANCE_TAB.PATRIMONY;
 
 export function isBalanceTab(value) {
   return BALANCE_TABS.includes(value);

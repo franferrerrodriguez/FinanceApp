@@ -17,6 +17,11 @@ function mapAssetFromDb(row) {
     provider: row.provider ?? undefined,
     notes: row.notes ?? undefined,
     isActive: row.is_active !== false,
+    customAnnualReturn:
+      row.custom_annual_return != null && Number.isFinite(Number(row.custom_annual_return))
+        ? Number(row.custom_annual_return)
+        : null,
+    tracksGainLoss: row.tracks_gain_loss === true,
   };
 }
 

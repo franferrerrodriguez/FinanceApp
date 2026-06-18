@@ -7,6 +7,8 @@ export function mapAssetRow(asset, userId) {
     provider: asset.provider ?? null,
     notes: asset.notes ?? null,
     is_active: asset.isActive !== false,
+    custom_annual_return: asset.customAnnualReturn ?? null,
+    tracks_gain_loss: asset.tracksGainLoss ?? false,
   };
 }
 

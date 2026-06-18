@@ -2,7 +2,6 @@ import { Fragment, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   HorizontalScrollRegion,
-  ScrollHintBanner,
 } from '../../../components/HorizontalScrollRegion';
 import { getKpiValueClass } from '../../../components/KpiCard';
 import { getAssetAnnualReturn } from '../../../lib/projectionReturns';
@@ -19,6 +18,86 @@ function TableMetricCell({ primary, subtext, className = '' }) {
         </span>
       ) : null}
     </td>
+  );
+}
+
+function MobileItemCard({
+  item,
+  kind,
+  categoryLabel,
+  providerLabel,
+  getPaymentSubtext,
+  getBalance,
+  getBalanceSubtext,
+  settings,
+  onEdit,
+  onDelete,
+  canDeleteItem,
+  t,
+}) {
+  const inactive = item.isActive === false;
+  const balance = getBalance?.(item);
+  const balanceClass =
+    kind === 'liability' ? getKpiValueClass('liability') : getKpiValueClass('assets');
+
+  return (
+    <div
+      className={`${ui.block} space-y-2 px-4 py-3 ${inactive ? 'opacity-55' : ''}`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className={`font-semibold ${ui.heading}`}>{item.name}</p>
+          {item.notes ? (
+            <p className={`text-xs ${ui.textMuted}`}>{item.notes}</p>
+          ) : null}
+        </div>
+        {balance != null ? (
+          <div className="shrink-0 text-right tabular-nums">
+            <p className={`font-semibold ${balanceClass}`}>{formatMoney(balance)}</p>
+            {getBalanceSubtext?.(item) ? (
+              <p className={`text-xs ${ui.textMuted}`}>{getBalanceSubtext(item)}</p>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+
+      <div className="flex items-center justify-between gap-2">
+        <p className={`min-w-0 flex-1 truncate text-xs ${ui.textMuted}`}>
+          {categoryLabel(item.category)}
+          {kind === 'asset' ? (
+            <span>
+              {' · '}
+              {formatRatePercent(getAssetAnnualReturn(settings, item))}
+            </span>
+          ) : null}
+          {kind === 'liability' ? (
+            <>
+              <span>{' · TIN '}{formatRatePercent(item.interestRate ?? 0)}</span>
+              {providerLabel?.(item) ? (
+                <span>{' · '}{providerLabel(item)}</span>
+              ) : null}
+              {getPaymentSubtext?.(item) ? (
+                <span>{' · '}{getPaymentSubtext(item)}</span>
+              ) : null}
+            </>
+          ) : null}
+        </p>
+        <div className="flex shrink-0 items-center gap-3">
+          <button type="button" onClick={() => onEdit(item)} className={ui.actionLink}>
+            {t('balance.patrimony.editRow')}
+          </button>
+          {onDelete && (canDeleteItem?.(item) ?? true) ? (
+            <button
+              type="button"
+              onClick={() => onDelete(item)}
+              className={ui.actionLinkDanger}
+            >
+              {t('balance.patrimony.deleteRow')}
+            </button>
+          ) : null}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -43,13 +122,33 @@ export function PatrimonyCatalogTable({
 
   return (
     <div className="space-y-2">
-      <ScrollHintBanner
-        hint={t('balance.patrimony.catalogScrollHint')}
-        show={items.length > 0}
-      />
+      {/* Mobile: card layout — all info visible, no scroll */}
+      <div className="space-y-2 sm:hidden">
+        {items.map((item) => (
+          <Fragment key={item.id}>
+            <MobileItemCard
+              item={item}
+              kind={kind}
+              categoryLabel={categoryLabel}
+              providerLabel={providerLabel}
+              getPaymentSubtext={getPaymentSubtext}
+              getBalance={getBalance}
+              getBalanceSubtext={getBalanceSubtext}
+              settings={settings}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              canDeleteItem={canDeleteItem}
+              t={t}
+            />
+            {renderAfterRow?.(item)}
+          </Fragment>
+        ))}
+      </div>
+
+      {/* Desktop: full table */}
       <HorizontalScrollRegion
         ref={scrollRef}
-        className={`w-full min-w-0 overflow-hidden rounded-xl border ${ui.divider}`}
+        className={`hidden w-full min-w-0 overflow-hidden rounded-xl border sm:block ${ui.divider}`}
       >
         <table className="w-full min-w-[36rem] border-collapse text-sm">
           <thead>
@@ -68,7 +167,7 @@ export function PatrimonyCatalogTable({
               </th>
               {kind === 'asset' ? (
                 <th
-                  className={`hidden px-3 py-2.5 text-right text-xs font-semibold sm:table-cell ${ui.textLabel}`}
+                  className={`px-3 py-2.5 text-right text-xs font-semibold ${ui.textLabel}`}
                 >
                   {t('balance.patrimony.tableReturn')}
                 </th>
@@ -81,7 +180,7 @@ export function PatrimonyCatalogTable({
                     {t('balance.patrimony.tableInterestRate')}
                   </th>
                   <th
-                    className={`hidden px-3 py-2.5 text-right text-xs font-semibold sm:table-cell ${ui.textLabel}`}
+                    className={`px-3 py-2.5 text-right text-xs font-semibold ${ui.textLabel}`}
                   >
                     {t('balance.patrimony.tablePayment')}
                   </th>
@@ -103,81 +202,81 @@ export function PatrimonyCatalogTable({
 
               return (
                 <Fragment key={item.id}>
-                <tr
-                  className={`border-b last:border-b-0 ${ui.divider} ${
-                    inactive ? 'opacity-55' : ''
-                  }`}
-                >
-                  <td className={`max-w-[10rem] px-3 py-2.5 font-medium ${ui.heading}`}>
-                    <span className="block truncate">{item.name}</span>
-                    {item.notes ? (
-                      <span className={`mt-0.5 block truncate text-xs ${ui.textMuted}`}>
-                        {item.notes}
-                      </span>
-                    ) : null}
-                  </td>
-                  <td className={`whitespace-nowrap px-3 py-2.5 ${ui.textLabel}`}>
-                    {categoryLabel(item.category)}
-                  </td>
-                  {kind === 'asset' ? (
-                    <td
-                      className={`hidden whitespace-nowrap px-3 py-2.5 text-right tabular-nums sm:table-cell ${ui.textMuted}`}
-                      title={t('balance.patrimony.tableReturnAssetHint')}
-                    >
-                      {formatRatePercent(getAssetAnnualReturn(settings, item))}
+                  <tr
+                    className={`border-b last:border-b-0 ${ui.divider} ${
+                      inactive ? 'opacity-55' : ''
+                    }`}
+                  >
+                    <td className={`max-w-[10rem] px-3 py-2.5 font-medium ${ui.heading}`}>
+                      <span className="block truncate">{item.name}</span>
+                      {item.notes ? (
+                        <span className={`mt-0.5 block truncate text-xs ${ui.textMuted}`}>
+                          {item.notes}
+                        </span>
+                      ) : null}
                     </td>
-                  ) : null}
-                  {kind === 'liability' ? (
-                    <>
+                    <td className={`whitespace-nowrap px-3 py-2.5 ${ui.textLabel}`}>
+                      {categoryLabel(item.category)}
+                    </td>
+                    {kind === 'asset' ? (
                       <td
                         className={`whitespace-nowrap px-3 py-2.5 text-right tabular-nums ${ui.textMuted}`}
-                        title={t('balance.patrimony.tableInterestRateHint')}
+                        title={t('balance.patrimony.tableReturnAssetHint')}
                       >
-                        {formatRatePercent(item.interestRate ?? 0)}
+                        {formatRatePercent(getAssetAnnualReturn(settings, item))}
                       </td>
+                    ) : null}
+                    {kind === 'liability' ? (
+                      <>
+                        <td
+                          className={`whitespace-nowrap px-3 py-2.5 text-right tabular-nums ${ui.textMuted}`}
+                          title={t('balance.patrimony.tableInterestRateHint')}
+                        >
+                          {formatRatePercent(item.interestRate ?? 0)}
+                        </td>
+                        <TableMetricCell
+                          className={ui.textLabel}
+                          primary={providerLabel?.(item)}
+                          subtext={getPaymentSubtext?.(item)}
+                        />
+                      </>
+                    ) : null}
+                    {getBalance ? (
                       <TableMetricCell
-                        className={`hidden sm:table-cell ${ui.textLabel}`}
-                        primary={providerLabel?.(item)}
-                        subtext={getPaymentSubtext?.(item)}
+                        className={
+                          kind === 'liability'
+                            ? getKpiValueClass('liability')
+                            : getKpiValueClass('assets')
+                        }
+                        primary={(() => {
+                          const balance = getBalance(item);
+                          return balance != null ? formatMoney(balance) : '—';
+                        })()}
+                        subtext={getBalanceSubtext?.(item)}
                       />
-                    </>
-                  ) : null}
-                  {getBalance ? (
-                    <TableMetricCell
-                      className={
-                        kind === 'liability'
-                          ? getKpiValueClass('liability')
-                          : getKpiValueClass('assets')
-                      }
-                      primary={(() => {
-                        const balance = getBalance(item);
-                        return balance != null ? formatMoney(balance) : '—';
-                      })()}
-                      subtext={getBalanceSubtext?.(item)}
-                    />
-                  ) : null}
-                  <td className="px-2 py-2.5 text-right">
-                    <div className="flex flex-row items-center justify-end gap-3">
-                      <button
-                        type="button"
-                        onClick={() => onEdit(item)}
-                        className={ui.actionLink}
-                      >
-                        {t('balance.patrimony.editRow')}
-                      </button>
-                      {onDelete && (canDeleteItem?.(item) ?? true) ? (
+                    ) : null}
+                    <td className="px-2 py-2.5 text-right">
+                      <div className="flex flex-row items-center justify-end gap-3">
                         <button
                           type="button"
-                          onClick={() => onDelete(item)}
-                          className={ui.actionLinkDanger}
+                          onClick={() => onEdit(item)}
+                          className={ui.actionLink}
                         >
-                          {t('balance.patrimony.deleteRow')}
+                          {t('balance.patrimony.editRow')}
                         </button>
-                      ) : null}
-                    </div>
-                  </td>
-                </tr>
-                {renderAfterRow?.(item)}
+                        {onDelete && (canDeleteItem?.(item) ?? true) ? (
+                          <button
+                            type="button"
+                            onClick={() => onDelete(item)}
+                            className={ui.actionLinkDanger}
+                          >
+                            {t('balance.patrimony.deleteRow')}
+                          </button>
+                        ) : null}
+                      </div>
+                    </td>
+                  </tr>
+                  {renderAfterRow?.(item)}
                 </Fragment>
               );
             })}
