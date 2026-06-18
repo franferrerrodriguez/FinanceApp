@@ -45,14 +45,6 @@ const ROW_HEIGHT_WIDE = 44;
 const HEAD_HEIGHT_NARROW = 72;
 const HEAD_HEIGHT_WIDE = 52;
 const LIST_MAX_HEIGHT = 480;
-const MORTGAGE_DETAIL_STORAGE_KEY = 'projection_show_mortgage_detail';
-
-function readMortgageDetailPreference(defaultWhenMissing) {
-  if (typeof window === 'undefined') return false;
-  const stored = window.localStorage.getItem(MORTGAGE_DETAIL_STORAGE_KEY);
-  if (stored === null) return Boolean(defaultWhenMissing);
-  return stored === '1';
-}
 
 function rowBg(isEven) {
   return isEven ? 'bg-[var(--bg-secondary)]' : 'bg-[rgba(255,255,255,0.02)]';
@@ -162,9 +154,6 @@ export function ProjectionDataTable() {
       : false,
   );
   const [scrolledX, setScrolledX] = useState(false);
-  const [showMortgageDetail, setShowMortgageDetail] = useState(false);
-  const [mortgageDetailPrefReady, setMortgageDetailPrefReady] = useState(false);
-
   const showPunctual = annualExpenses.length > 0;
 
   const startingState = useMemo(
@@ -191,22 +180,14 @@ export function ProjectionDataTable() {
 
   const mortgageAmortizationActive = mortgageCtx.canAmortize;
 
-  useEffect(() => {
-    if (mortgageDetailPrefReady) return;
-    setShowMortgageDetail(
-      readMortgageDetailPreference(mortgageAmortizationActive),
-    );
-    setMortgageDetailPrefReady(true);
-  }, [mortgageAmortizationActive, mortgageDetailPrefReady]);
-
   const columns = useMemo(
     () =>
       buildProjectionColumnKeys({
         showPunctual,
-        showMortgageDetail,
+        showMortgageDetail: mortgageAmortizationActive,
         mortgageAmortizationActive,
       }),
-    [showPunctual, showMortgageDetail, mortgageAmortizationActive],
+    [showPunctual, mortgageAmortizationActive],
   );
   const tableMinWidth = getTableMinWidth(columns, narrowViewport);
   const headHeight = narrowViewport ? HEAD_HEIGHT_NARROW : HEAD_HEIGHT_WIDE;
@@ -284,16 +265,6 @@ export function ProjectionDataTable() {
     startingState.debtBalance > 0 &&
     mortgageCtx.monthlyPayment > 0 &&
     !mortgageCtx.canAmortize;
-
-  const toggleMortgageDetail = () => {
-    setShowMortgageDetail((prev) => {
-      const next = !prev;
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(MORTGAGE_DETAIL_STORAGE_KEY, next ? '1' : '0');
-      }
-      return next;
-    });
-  };
 
   const hasInvestmentData = hasProjectionContributionData({
     entries: contributionEntries,
@@ -376,18 +347,6 @@ export function ProjectionDataTable() {
         >
           {t('projection.table.mortgageRateMissing')}
         </p>
-      ) : null}
-
-      {mortgageAmortizationActive ? (
-        <div className="flex justify-end">
-          <button
-            type="button"
-            className={showMortgageDetail ? ui.scenarioChipActive : ui.scenarioChip}
-            onClick={toggleMortgageDetail}
-          >
-            {t('projection.table.mortgageDetailToggle')}
-          </button>
-        </div>
       ) : null}
 
       <div className={`${ui.chartCard} w-full !p-0`}>

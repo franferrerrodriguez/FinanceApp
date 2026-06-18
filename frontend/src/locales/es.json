@@ -211,6 +211,8 @@
     "required": "*",
     "currencySymbol": "€",
     "nextIteration": "Próxima iteración",
+    "comingSoon": "En desarrollo",
+    "comingSoonHint": "Esta sección estará disponible próximamente.",
     "months": {
       "1": "Enero",
       "2": "Febrero",
@@ -919,6 +921,11 @@
     }
   },
   "projection": {
+    "tabsLabel": "Secciones de proyección",
+    "tabs": {
+      "projection": "Proyección",
+      "mortgage": "Hipoteca"
+    },
     "title": "Proyección futura",
     "subtitle": "Simulación mes a mes con interés compuesto. Parte de tus saldos reales y extrapola el reparto del ahorro inferido al actualizar saldos.",
     "simulationNotice": "Simulación a partir de hoy: no sustituye tu histórico real ni predice lo que ocurrirá. Parte de supuestos simplificados (mercados, empleo, gastos…) que pueden no cumplirse; úsala como orientación, no como garantía. Los saldos y las aportaciones inferidas se actualizan solo al pulsar «Actualizar saldos».",
