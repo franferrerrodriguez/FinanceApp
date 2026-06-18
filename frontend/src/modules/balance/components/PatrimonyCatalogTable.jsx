@@ -76,7 +76,7 @@ export function PatrimonyCatalogTable({
               {kind === 'liability' ? (
                 <>
                   <th
-                    className={`hidden px-3 py-2.5 text-right text-xs font-semibold sm:table-cell ${ui.textLabel}`}
+                    className={`px-3 py-2.5 text-right text-xs font-semibold ${ui.textLabel}`}
                   >
                     {t('balance.patrimony.tableInterestRate')}
                   </th>
@@ -130,7 +130,7 @@ export function PatrimonyCatalogTable({
                   {kind === 'liability' ? (
                     <>
                       <td
-                        className={`hidden whitespace-nowrap px-3 py-2.5 text-right tabular-nums sm:table-cell ${ui.textMuted}`}
+                        className={`whitespace-nowrap px-3 py-2.5 text-right tabular-nums ${ui.textMuted}`}
                         title={t('balance.patrimony.tableInterestRateHint')}
                       >
                         {formatRatePercent(item.interestRate ?? 0)}
