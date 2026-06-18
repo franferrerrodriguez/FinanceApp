@@ -7,6 +7,7 @@ import {
   getProjectionStartingState,
 } from './projectionBuckets.js';
 import { getProjectionAnnualRate } from './projectionRates.js';
+import { buildScenarioAssets } from './projectionReturns.js';
 
 export { getProjectionAnnualRate } from './projectionRates.js';
 export {
@@ -59,6 +60,12 @@ export function buildMonthlyProjectionTable({
     startDate,
     years,
   });
+}
+
+/** Builds projection table with scenario multiplier applied to all asset returns. */
+export function buildScenarioProjectionTable({ scenario = 'moderate', assets = [], ...rest }) {
+  const scenarioAssets = buildScenarioAssets(assets, scenario, rest.settings);
+  return buildMonthlyProjectionTable({ ...rest, assets: scenarioAssets });
 }
 
 /** @deprecated Use summarizeProjectionRows */

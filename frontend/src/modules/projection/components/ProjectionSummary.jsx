@@ -8,6 +8,7 @@ export function ProjectionSummary({
   weightedPortfolioReturn,
   bucketRates,
   buckets,
+  scenario = 'moderate',
 }) {
   const { t } = useTranslation();
 
@@ -39,6 +40,10 @@ export function ProjectionSummary({
         <MetricCard
           label={t('projection.summary.finalPatrimony')}
           value={formatMoney(finalPatrimony)}
+          hint={t('projection.scenarios.showing', {
+            scenario: t(`projection.scenarios.${scenario}`),
+            return: formatRatePercent(weightedPortfolioReturn ?? 0),
+          })}
         />
         <MetricCard
           label={t('projection.summary.totalContributed')}

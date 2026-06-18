@@ -931,6 +931,17 @@
     "title": "Future projection",
     "subtitle": "Month-by-month simulation with compound interest. Starts from real balances and extrapolates savings allocation inferred when you update balances.",
     "simulationNotice": "Simulation from today: it does not replace your real history or predict what will happen. It uses simplified assumptions (markets, job, spending…) that may not hold — use it for guidance, not as a guarantee. Balances and inferred contributions update only when you tap Update balances.",
+    "scenarios": {
+      "title": "Return scenarios",
+      "pessimistic": "Pessimistic",
+      "moderate": "Moderate",
+      "optimistic": "Optimistic",
+      "userConfig": "your config",
+      "pessimistic.note": "Worst MSCI World decade (2000-2009)",
+      "moderate.note": "MSCI World historical average 1970-2025 in EUR",
+      "optimistic.note": "Best sustained MSCI World runs",
+      "showing": "{{scenario}} · {{return}}% real"
+    },
     "buckets": {
       "liquid": "Liquidity (bank / cash)",
       "investment": "Investments (funds and ETFs)",

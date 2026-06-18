@@ -931,6 +931,17 @@
     "title": "Proyección futura",
     "subtitle": "Simulación mes a mes con interés compuesto. Parte de tus saldos reales y extrapola el reparto del ahorro inferido al actualizar saldos.",
     "simulationNotice": "Simulación a partir de hoy: no sustituye tu histórico real ni predice lo que ocurrirá. Parte de supuestos simplificados (mercados, empleo, gastos…) que pueden no cumplirse; úsala como orientación, no como garantía. Los saldos y las aportaciones inferidas se actualizan solo al pulsar «Actualizar saldos».",
+    "scenarios": {
+      "title": "Escenarios de rentabilidad",
+      "pessimistic": "Pesimista",
+      "moderate": "Moderado",
+      "optimistic": "Optimista",
+      "userConfig": "tu configuración",
+      "pessimistic.note": "Peor década histórica MSCI World (2000-2009)",
+      "moderate.note": "Media histórica MSCI World 1970-2025 en EUR",
+      "optimistic.note": "Mejores rachas sostenidas MSCI World",
+      "showing": "{{scenario}} · {{return}}% real"
+    },
     "buckets": {
       "liquid": "Liquidez (banco / efectivo)",
       "investment": "Inversión (fondos y cotizados)",

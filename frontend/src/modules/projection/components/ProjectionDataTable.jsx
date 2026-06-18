@@ -7,6 +7,7 @@ import {
 import { VirtualList } from '../../../components/VirtualList';
 import {
   buildMonthlyProjectionTable,
+  buildScenarioProjectionTable,
   summarizeMonthlyProjection,
 } from '../../../lib/projectionTable';
 import { normalizeProjectionYears } from '../../../lib/constants';
@@ -38,6 +39,8 @@ import {
   tableGridStyle,
 } from '../projectionTableColumns';
 import { ProjectionSummary } from './ProjectionSummary';
+import { ScenarioSelector } from './ScenarioSelector';
+import { ProjectionScenarioChart } from './ProjectionScenarioChart';
 
 const MOBILE_MEDIA = '(max-width: 767px)';
 const ROW_HEIGHT_NARROW = 42;
@@ -154,6 +157,7 @@ export function ProjectionDataTable() {
       : false,
   );
   const [scrolledX, setScrolledX] = useState(false);
+  const [scenario, setScenario] = useState('moderate');
   const showPunctual = annualExpenses.length > 0;
 
   const startingState = useMemo(
@@ -225,19 +229,18 @@ export function ProjectionDataTable() {
     [bucketPreview],
   );
 
-  const rows = useMemo(
-    () =>
-      buildMonthlyProjectionTable({
-        settings,
-        contributionPlans,
-        contributionEntries,
-        annualExpenses,
-        cashflowHistory,
-        assets,
-        liabilities,
-        snapshots,
-        years: projectionYears,
-      }),
+  const sharedTableArgs = useMemo(
+    () => ({
+      settings,
+      contributionPlans,
+      contributionEntries,
+      annualExpenses,
+      cashflowHistory,
+      assets,
+      liabilities,
+      snapshots,
+      years: projectionYears,
+    }),
     [
       settings,
       contributionPlans,
@@ -250,6 +253,28 @@ export function ProjectionDataTable() {
       projectionYears,
     ],
   );
+
+  const moderateRows = useMemo(
+    () => buildMonthlyProjectionTable(sharedTableArgs),
+    [sharedTableArgs],
+  );
+
+  const pessimisticRows = useMemo(
+    () => buildScenarioProjectionTable({ ...sharedTableArgs, scenario: 'pessimistic' }),
+    [sharedTableArgs],
+  );
+
+  const optimisticRows = useMemo(
+    () => buildScenarioProjectionTable({ ...sharedTableArgs, scenario: 'optimistic' }),
+    [sharedTableArgs],
+  );
+
+  const rows =
+    scenario === 'pessimistic'
+      ? pessimisticRows
+      : scenario === 'optimistic'
+        ? optimisticRows
+        : moderateRows;
 
   const summary = useMemo(
     () =>
@@ -326,11 +351,25 @@ export function ProjectionDataTable() {
 
   return (
     <div className="space-y-4">
+      <ScenarioSelector
+        scenario={scenario}
+        onChange={setScenario}
+        weightedReturn={weightedPortfolioReturn}
+      />
+
+      <ProjectionScenarioChart
+        pessimisticRows={pessimisticRows}
+        moderateRows={moderateRows}
+        optimisticRows={optimisticRows}
+        activeScenario={scenario}
+      />
+
       <ProjectionSummary
         summary={summary}
         weightedPortfolioReturn={weightedPortfolioReturn}
         bucketRates={bucketPreview.bucketRates}
         buckets={bucketPreview.buckets}
+        scenario={scenario}
       />
 
       {!hasInvestmentData ? (
