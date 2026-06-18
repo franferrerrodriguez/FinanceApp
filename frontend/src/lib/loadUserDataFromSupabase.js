@@ -1,4 +1,3 @@
-import { mergeFinanceLists } from './mergeFinanceLists';
 import { dedupeSnapshots } from './snapshotPersist';
 import { filterDraftAssets, filterDraftLiabilities } from './patrimonyDrafts';
 import { pauseCloudAutoSync } from './cloudSync';
@@ -93,6 +92,9 @@ export async function loadUserDataFromSupabase(userId) {
     const cloudLiabilities = (liabilitiesRes.data ?? []).map(mapLiabilityFromDb);
     const cloudSnapshots = (snapshotsRes.data ?? []).map(mapSnapshotFromDb);
 
+    // Cloud dedicated tables are the single source of truth for these lists.
+    // Never merge with local or app_data copies — deletions on another device
+    // must win, and merging would silently resurrect deleted items.
     const persisted = {
       onboardingCompleted:
         lists.onboardingCompleted || Boolean(settingsRow),
@@ -101,21 +103,24 @@ export async function loadUserDataFromSupabase(userId) {
       cashflowHistory: lists.cashflowHistory ?? [],
       contributionPlans: lists.contributionPlans ?? [],
       contributionEntries: lists.contributionEntries ?? [],
-      assets: filterDraftAssets(
-        mergeFinanceLists(cloudAssets, lists.assets ?? []),
-      ),
-      liabilities: filterDraftLiabilities(
-        mergeFinanceLists(cloudLiabilities, lists.liabilities ?? []),
-      ),
-      snapshots: dedupeSnapshots(
-        mergeFinanceLists(cloudSnapshots, lists.snapshots ?? []),
-      ),
+      assets: filterDraftAssets(cloudAssets),
+      liabilities: filterDraftLiabilities(cloudLiabilities),
+      snapshots: dedupeSnapshots(cloudSnapshots),
       profile,
       locale: lists.locale,
       theme: lists.theme,
     };
 
-    const merged = mergePersistedState(persisted, current);
+    // Clear local list state before merging so stale local cache cannot
+    // override what the cloud just returned. The merge is still needed for
+    // settings, cashflowHistory, and other non-list fields.
+    const currentForMerge = {
+      ...current,
+      assets: [],
+      liabilities: [],
+      snapshots: [],
+    };
+    const merged = mergePersistedState(persisted, currentForMerge);
 
     useAppStore.setState({
       ...merged,
