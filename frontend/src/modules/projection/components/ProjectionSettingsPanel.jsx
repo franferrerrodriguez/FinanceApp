@@ -40,21 +40,7 @@ export function ProjectionSettingsPanel() {
         {t('projection.settings.hint')}
       </p>
 
-      {hasSnapshotPatrimony ? (
-        <p
-          className={`mb-5 rounded-xl border px-4 py-3 text-sm ${ui.cardMuted}`}
-        >
-          {t('projection.settings.snapshotsPriority', {
-            amount: formatMoney(patrimonyNetWorth),
-          })}{' '}
-          <Link
-            to={balancePath(BALANCE_TAB.PATRIMONY)}
-            className="font-medium text-[var(--accent)] hover:underline"
-          >
-            {t('projection.settings.goPatrimony')}
-          </Link>
-        </p>
-      ) : (
+      {!hasSnapshotPatrimony ? (
         <div className="mb-5 max-w-md space-y-2">
           <label className="block">
             <span className={`${ui.formFieldLabel} ${ui.textLabel}`}>
@@ -121,15 +107,6 @@ export function ProjectionSettingsPanel() {
         </SelectField>
       </label>
 
-      <p className={`mt-6 rounded-xl border px-4 py-3 text-sm ${ui.cardMuted}`}>
-        {t('projection.settings.assetReturnsHint')}{' '}
-        <Link
-          to={balancePath(BALANCE_TAB.PATRIMONY)}
-          className="font-medium text-[var(--accent)] hover:underline"
-        >
-          {t('projection.settings.goPatrimony')}
-        </Link>
-      </p>
     </section>
   );
 }
