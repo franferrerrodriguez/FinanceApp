@@ -82,7 +82,11 @@ export function CashflowPanel() {
           <button
             type="button"
             onClick={() => setIsEditingExpenses((v) => !v)}
-            className={`shrink-0 text-sm font-medium ${isEditingExpenses ? 'text-[var(--accent)]' : ui.textMuted}`}
+            className={`shrink-0 text-xs font-medium transition-colors ${
+              isEditingExpenses
+                ? 'text-[var(--accent)]'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
+            }`}
           >
             {isEditingExpenses ? t('common.done') : t('common.edit')}
           </button>
