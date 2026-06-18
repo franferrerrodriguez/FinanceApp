@@ -247,7 +247,19 @@
       "trendThisMonth": "{{amount}} this month",
       "trendImprovement": "{{amount}} (improved)",
       "freeCashflow": "Free cashflow",
-      "monthlyChange": "Monthly change"
+      "monthlyChange": "Monthly change",
+      "help": {
+        "netWorth": "Assets minus liabilities. The most important indicator of your long-term financial health. A net worth growing month over month means you're on the right track.",
+        "totalAssets": "Sum of everything you own with economic value: bank accounts, investment funds, real estate, pension plans and other registered assets.",
+        "totalLiabilities": "Sum of all your outstanding debts: mortgage, personal loans, credit cards… It's subtracted from assets to calculate net worth. A declining balance month over month is a good sign.",
+        "savingsRate": "Percentage of your income left over after covering fixed expenses, variable expenses and committed investment. It's your real monthly buffer. The gross rate — including investment — is shown in the Monthly Budget breakdown."
+      },
+      "helpAria": {
+        "netWorth": "What is net worth",
+        "totalAssets": "What are total assets",
+        "totalLiabilities": "What are total liabilities",
+        "savingsRate": "How savings rate is calculated"
+      }
     },
     "alertsTitle": "Alerts",
     "diagnosis": {
@@ -331,20 +343,24 @@
         "help": "What it measures: the rate the ECB pays banks on money they leave on deposit at the Eurosystem.\n\nHow to read it: it only changes when the ECB decides (steps, not a smooth curve). Flat stretches mean the same rate for months.\n\nWhy it matters: it sets a floor for savings accounts and deposits; banks usually pay a bit more to attract customers."
       },
       "cashflow": {
-        "title": "Monthly cashflow",
+        "title": "Monthly cash flow",
         "income": "Income",
         "subtitle": "Breakdown of {{income}} income",
         "rowLabel": "Current month",
         "segments": {
           "fixed": "Fixed expenses",
           "variable": "Variable expenses",
-          "investment": "Savings / investment",
-          "free": "Available"
+          "investment": "Committed investment",
+          "free": "Free cashflow"
         }
       },
       "assets": {
         "title": "Asset allocation",
         "empty": "Record values in the monthly close to see the breakdown."
+      },
+      "liabilities": {
+        "title": "Liability breakdown",
+        "empty": "Record balances in the monthly close to see the breakdown."
       },
       "holdings": {
         "title": "Largest holdings",
@@ -358,7 +374,9 @@
       "noSnapshots": "Update balances under Assets & liabilities (Bank or Cash assets) to see this indicator",
       "progressAria": "Progress toward emergency fund goal",
       "have": "You have {{amount}} · covers {{months}} months of expenses",
-      "target": "Goal: {{amount}} ({{months}} months)"
+      "target": "Goal: {{amount}} ({{months}} months)",
+      "help": "Liquid reserve set aside exclusively for unexpected events: job loss, major repair, medical emergency...\n\nCalculated as the sum of your Bank and Cash assets for the current month.\n\nThe common recommendation is 3–6 months of total expenses. 12 months if you have variable income or are self-employed.",
+      "helpAria": "What is the emergency fund and how is it calculated"
     },
     "annualExpensesSummary": "Planned annual expenses: {{yearly}} (avg. {{monthly}}/month)"
   },
@@ -428,11 +446,15 @@
         "coreFixed": "Fixed expenses",
         "groceries": "Groceries",
         "leisure": "Leisure / variable",
-        "grossSavings": "Gross savings",
+        "grossSavings": "Savings capacity",
         "grossSavingsRate": "Gross savings rate",
-        "investment": "Monthly investment",
+        "grossSavingsRateHelp": "Percentage of income available before deducting committed investment.\n\nFormula: (Income − Fixed expenses − Variable expenses) / Income.\n\nThis is your real savings capacity as a percentage of income. Includes both invested and free amounts.",
+        "grossSavingsRateHelpAria": "How gross savings rate is calculated",
+        "investment": "Committed investment",
         "investmentRate": "Investment rate",
-        "freeCashflowRate": "Free cashflow / income"
+        "freeCashflowRate": "Free cashflow ratio",
+        "freeCashflowRateHelp": "Percentage of income left after all expenses and committed investment.\n\nFormula: Free cashflow / Income.\n\nThis is the same figure shown as 'Savings rate' on the Dashboard.",
+        "freeCashflowRateHelpAria": "How free cashflow ratio is calculated"
       },
       "expensesTitle": "Monthly expenses",
       "expensesSubtitle": "Housing, household and leisure today. Changes update the projection.",

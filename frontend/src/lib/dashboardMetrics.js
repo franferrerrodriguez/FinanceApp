@@ -217,6 +217,30 @@ export function buildAssetDistribution(
   );
 }
 
+export function buildLiabilityDistribution(
+  snapshots,
+  liabilities,
+  monthKey = getCurrentMonthKey(),
+) {
+  const monthSnaps = groupSnapshotsByMonth(snapshots)[monthKey] ?? [];
+  const liabilitySnaps = monthSnaps.filter((s) => getSnapshotLiabilityId(s));
+
+  const liabilityMap = Object.fromEntries(liabilities.map((l) => [l.id, l]));
+  const byCategory = {};
+
+  for (const snap of liabilitySnaps) {
+    const liability = liabilityMap[getSnapshotLiabilityId(snap)];
+    const category = liability?.category ?? 'other';
+    const value = Math.abs(Number(snap.value) || 0);
+    byCategory[category] = (byCategory[category] ?? 0) + value;
+  }
+
+  return Object.entries(byCategory)
+    .filter(([, v]) => v > 0)
+    .sort(([, a], [, b]) => b - a)
+    .map(([category, value]) => ({ category, value }));
+}
+
 export function getTopHoldings(
   snapshots,
   assets,
@@ -427,6 +451,7 @@ export function computeDashboardKpis({
       monthlyInvestment,
     ),
     assetDistribution: buildAssetDistribution(snapshots, assets),
+    liabilityDistribution: buildLiabilityDistribution(snapshots, liabilities),
     topHoldings: getTopHoldings(snapshots, assets, liabilities),
     monthlyClose,
     alerts,

@@ -99,7 +99,7 @@ export const HorizontalScrollRegion = forwardRef(function HorizontalScrollRegion
         <div
           ref={setScrollRef}
           onScroll={updateEdges}
-          className="overflow-x-auto overflow-y-clip overscroll-x-contain scroll-smooth rounded-[inherit] [-webkit-overflow-scrolling:touch]"
+          className="overflow-x-auto overflow-y-clip overscroll-x-contain scroll-smooth rounded-[inherit] [-webkit-overflow-scrolling:touch] [&::-webkit-scrollbar]:h-[3px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[rgba(255,255,255,0.18)]"
           tabIndex={0}
         >
           {children}

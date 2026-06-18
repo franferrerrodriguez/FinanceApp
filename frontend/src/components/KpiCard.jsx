@@ -1,5 +1,6 @@
 import { DEFAULT_SETTINGS } from '../lib/constants';
 import { ui } from '../lib/uiClasses';
+import { HelpTooltip } from './HelpTooltip';
 
 export function getSavingsTone(rate) {
   if (rate >= DEFAULT_SETTINGS.SAVINGS_RATE_GREEN) return 'savings';
@@ -57,6 +58,8 @@ export function KpiCard({
   accent = false,
   hideFooter = false,
   compact = false,
+  help,
+  helpAria,
 }) {
   const valueClass = getKpiValueClass(valueTone);
   const subClass =
@@ -75,9 +78,10 @@ export function KpiCard({
       className={`${compact ? `${ui.block} px-3 py-2.5` : ui.kpiCard} ${accentClass}`}
     >
       <p
-        className={`font-medium ${ui.textMuted} ${compact ? 'text-xs' : 'text-sm'}`}
+        className={`flex items-center gap-1 font-medium ${ui.textMuted} ${compact ? 'text-xs' : 'text-sm'}`}
       >
         {label}
+        {help ? <HelpTooltip ariaLabel={helpAria ?? label}>{help}</HelpTooltip> : null}
       </p>
       <p
         className={`tabular-nums ${valueSize} ${valueClass} ${

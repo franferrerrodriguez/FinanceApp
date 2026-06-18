@@ -246,8 +246,20 @@
       "savingsPerMonth": "{{amount}} / mes",
       "trendThisMonth": "{{amount}} este mes",
       "trendImprovement": "{{amount}} (mejora)",
-      "freeCashflow": "Cashflow libre",
-      "monthlyChange": "Variación mensual"
+      "freeCashflow": "Flujo libre",
+      "monthlyChange": "Variación mensual",
+      "help": {
+        "netWorth": "Activos menos pasivos. Es el indicador más importante de tu salud financiera a largo plazo. Un patrimonio neto creciente mes a mes indica que vas en la dirección correcta.",
+        "totalAssets": "Suma de todo lo que posees con valor económico: cuentas corrientes, fondos de inversión, inmuebles, planes de pensiones y otros activos registrados.",
+        "totalLiabilities": "Suma de todas tus deudas pendientes: hipoteca, préstamos personales, tarjetas de crédito… Se resta a los activos para calcular el patrimonio neto. Que baje mes a mes es una buena señal.",
+        "savingsRate": "Porcentaje de tus ingresos que queda libre tras cubrir gastos fijos, variables e inversión comprometida. Es tu margen de maniobra real. La tasa bruta —incluyendo inversión— se muestra en el desglose del Presupuesto mensual."
+      },
+      "helpAria": {
+        "netWorth": "Qué es el patrimonio neto",
+        "totalAssets": "Qué son los activos totales",
+        "totalLiabilities": "Qué son los pasivos totales",
+        "savingsRate": "Cómo se calcula la tasa de ahorro"
+      }
     },
     "alertsTitle": "Alertas",
     "diagnosis": {
@@ -331,20 +343,24 @@
         "help": "Qué mide: el tipo al que el BCE remunera el dinero que los bancos dejan depositado en el Eurosistema.\n\nCómo leerlo: solo cambia cuando el BCE decide (escalones, no curva suave). Tramos horizontales = mismo tipo durante meses.\n\nPor qué te importa: marca el suelo de lo que pagan cuentas remuneradas y depósitos; los bancos suelen ofrecer algo más para captar clientes."
       },
       "cashflow": {
-        "title": "Cashflow mensual",
+        "title": "Flujo de caja mensual",
         "income": "Ingresos",
         "subtitle": "Distribución de {{income}} de ingresos",
         "rowLabel": "Mes actual",
         "segments": {
           "fixed": "Gastos fijos",
           "variable": "Gastos variables",
-          "investment": "Ahorro / inversión",
-          "free": "Disponible"
+          "investment": "Inversión comprometida",
+          "free": "Flujo libre"
         }
       },
       "assets": {
         "title": "Distribución de activos",
         "empty": "Registra valores en el cierre mensual para ver el desglose."
+      },
+      "liabilities": {
+        "title": "Distribución de pasivos",
+        "empty": "Registra saldos en el cierre mensual para ver el desglose."
       },
       "holdings": {
         "title": "Mayor peso en el patrimonio",
@@ -358,7 +374,9 @@
       "noSnapshots": "Actualiza saldos en Activos y pasivos (activos Banco o Efectivo) para ver este indicador",
       "progressAria": "Progreso hacia el fondo de emergencia",
       "have": "Tienes {{amount}} · cubre {{months}} meses de gastos",
-      "target": "Objetivo: {{amount}} ({{months}} meses)"
+      "target": "Objetivo: {{amount}} ({{months}} meses)",
+      "help": "Reserva de liquidez destinada exclusivamente a imprevistos: pérdida de empleo, avería grave, emergencia médica...\n\nSe calcula como la suma de tus activos tipo Banco y Efectivo del mes actual.\n\nLa recomendación habitual es tener entre 3 y 6 meses de gastos totales. 12 meses si tienes ingresos variables o eres autónomo.",
+      "helpAria": "Qué es el fondo de emergencia y cómo se calcula"
     },
     "annualExpensesSummary": "Gastos anuales previstos: {{yearly}} (media {{monthly}}/mes)"
   },
@@ -428,11 +446,15 @@
         "coreFixed": "Gastos fijos",
         "groceries": "Alimentación",
         "leisure": "Ocio / variables",
-        "grossSavings": "Ahorro bruto",
+        "grossSavings": "Capacidad de ahorro",
         "grossSavingsRate": "Tasa de ahorro bruto",
-        "investment": "Inversión mensual",
+        "grossSavingsRateHelp": "Porcentaje de ingresos disponible antes de descontar la inversión comprometida.\n\nFórmula: (Ingresos − Gastos fijos − Gastos variables) / Ingresos.\n\nEs tu capacidad de ahorro real sobre los ingresos. Incluye tanto lo que inviertes como lo que queda libre.",
+        "grossSavingsRateHelpAria": "Cómo se calcula la tasa de ahorro bruto",
+        "investment": "Inversión comprometida",
         "investmentRate": "Tasa de inversión",
-        "freeCashflowRate": "Cashflow libre / ingresos"
+        "freeCashflowRate": "Ratio flujo libre",
+        "freeCashflowRateHelp": "Porcentaje de ingresos que sobra después de todos los gastos e inversión comprometida.\n\nFórmula: Flujo libre / Ingresos.\n\nEs el mismo indicador que muestra la tarjeta «Tasa de ahorro» en el Dashboard.",
+        "freeCashflowRateHelpAria": "Cómo se calcula el ratio de flujo libre"
       },
       "expensesTitle": "Gastos mensuales",
       "expensesSubtitle": "Vivienda, hogar y ocio de hoy. Al cambiar un importe, se actualiza la proyección.",

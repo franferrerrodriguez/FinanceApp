@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { ui } from '../lib/uiClasses';
 import { formatMoney, formatPercent } from '../utils/formatters';
+import { HelpTooltip } from './HelpTooltip';
 
 function SummaryRow({ label, amount, tone = 'default', emphasis = false }) {
   const amountClass =
@@ -26,10 +27,13 @@ function SummaryRow({ label, amount, tone = 'default', emphasis = false }) {
   );
 }
 
-function RateRow({ label, rate }) {
+function RateRow({ label, rate, help, helpAria }) {
   return (
-    <div className="flex items-baseline justify-between gap-4 text-xs tabular-nums">
-      <span className={ui.textMuted}>{label}</span>
+    <div className="flex items-center justify-between gap-4 text-xs tabular-nums">
+      <span className={`flex items-center gap-1 ${ui.textMuted}`}>
+        {label}
+        {help ? <HelpTooltip ariaLabel={helpAria ?? label}>{help}</HelpTooltip> : null}
+      </span>
       <span className={`font-medium ${ui.textLabel}`}>{formatPercent(rate)}</span>
     </div>
   );
@@ -71,6 +75,8 @@ export function CashflowSummaryBreakdown({ totals }) {
         <RateRow
           label={t('balance.cashflow.breakdown.grossSavingsRate')}
           rate={totals.grossSavingsRate}
+          help={t('balance.cashflow.breakdown.grossSavingsRateHelp')}
+          helpAria={t('balance.cashflow.breakdown.grossSavingsRateHelpAria')}
         />
       </div>
       {totals.investment > 0 ? (
@@ -95,6 +101,8 @@ export function CashflowSummaryBreakdown({ totals }) {
         <RateRow
           label={t('balance.cashflow.breakdown.freeCashflowRate')}
           rate={totals.savingsRate}
+          help={t('balance.cashflow.breakdown.freeCashflowRateHelp')}
+          helpAria={t('balance.cashflow.breakdown.freeCashflowRateHelpAria')}
         />
       </div>
     </div>

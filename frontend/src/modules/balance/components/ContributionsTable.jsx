@@ -77,7 +77,7 @@ export function ContributionsTable({ entries, assets, locale, onEdit, onDelete }
                   {formatMoney(entry.amount ?? 0)}
                 </td>
                 <td className="px-2 py-2.5 text-right">
-                  <div className="flex flex-col items-end gap-1 sm:flex-row sm:justify-end sm:gap-3">
+                  <div className="flex flex-row items-center justify-end gap-3">
                     <button
                       type="button"
                       onClick={() => onEdit(entry)}

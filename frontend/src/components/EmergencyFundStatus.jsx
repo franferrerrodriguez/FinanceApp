@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { BALANCE_TAB, balancePath } from '../lib/balanceTabs';
 import { ui } from '../lib/uiClasses';
 import { formatMoney } from '../utils/formatters';
+import { HelpTooltip } from './HelpTooltip';
 
 const STATUS_BAR = {
   danger: 'bg-[var(--color-negative)]',
@@ -104,8 +105,11 @@ export function EmergencyFundStatus({ metrics, variant = 'card' }) {
   if (variant === 'card') {
     return (
       <article className={ui.kpiCard}>
-        <h3 className={`text-sm font-medium ${ui.textMuted}`}>
+        <h3 className={`flex items-center gap-1 text-sm font-medium ${ui.textMuted}`}>
           {t('dashboard.emergencyFund.title')}
+          <HelpTooltip ariaLabel={t('dashboard.emergencyFund.helpAria')}>
+            {t('dashboard.emergencyFund.help')}
+          </HelpTooltip>
         </h3>
         {progressBlock}
       </article>

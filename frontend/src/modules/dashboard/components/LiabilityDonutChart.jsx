@@ -4,32 +4,31 @@ import { ui } from '../../../lib/uiClasses';
 import { formatMoney } from '../../../utils/formatters';
 
 const COLORS = [
-  '#1D9E75',
-  '#378ADD',
-  '#EF9F27',
   '#E24B4A',
-  '#5DCAA5',
+  '#EF9F27',
+  '#E87B5E',
+  '#D44A8C',
   '#8A9AAD',
 ];
 
-export function AssetDonutChart({ distribution }) {
+export function LiabilityDonutChart({ distribution }) {
   const { t } = useTranslation();
 
   if (!distribution.length) {
     return (
       <div className={ui.chartCard}>
         <h3 className={`mb-4 text-sm font-medium ${ui.textLabel}`}>
-          {t('dashboard.charts.assets.title')}
+          {t('dashboard.charts.liabilities.title')}
         </h3>
         <p className={`py-12 text-center text-sm ${ui.textMuted}`}>
-          {t('dashboard.charts.assets.empty')}
+          {t('dashboard.charts.liabilities.empty')}
         </p>
       </div>
     );
   }
 
   const data = distribution.map((d) => ({
-    name: t(`categories.asset.${d.category}`),
+    name: t(`categories.liability.${d.category}`),
     value: d.value,
     category: d.category,
   }));
@@ -37,7 +36,7 @@ export function AssetDonutChart({ distribution }) {
   return (
     <div className={ui.chartCard}>
       <h3 className={`mb-4 text-sm font-medium ${ui.textLabel}`}>
-        {t('dashboard.charts.assets.title')}
+        {t('dashboard.charts.liabilities.title')}
       </h3>
       <ResponsiveContainer width="100%" height={260}>
         <PieChart>
@@ -75,11 +74,10 @@ export function AssetDonutChart({ distribution }) {
               />
               {d.name}
             </span>
-            <span>{formatMoney(d.value)}</span>
+            <span className="text-[var(--color-negative)]">{formatMoney(d.value)}</span>
           </li>
         ))}
       </ul>
-
     </div>
   );
 }

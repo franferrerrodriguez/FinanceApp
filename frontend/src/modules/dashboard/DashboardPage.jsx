@@ -7,6 +7,7 @@ import { useDashboardData } from '../../hooks/useDashboardData';
 import { useFinanceAlerts } from '../../hooks/useFinanceAlerts';
 import { useSettings } from '../../store/hooks';
 import { AssetDonutChart } from './components/AssetDonutChart';
+import { LiabilityDonutChart } from './components/LiabilityDonutChart';
 import { CashflowChart } from './components/CashflowChart';
 import { DashboardAlerts } from './components/DashboardAlerts';
 import { AnnualExpensesSummaryLine } from '../../components/AnnualExpensesSection';
@@ -70,13 +71,14 @@ export function DashboardPage() {
         <h2 className={`text-sm font-semibold uppercase tracking-wider ${ui.textMuted}`}>
           {t('dashboard.detailSection')}
         </h2>
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-6 sm:grid-cols-2">
           <AssetDonutChart distribution={data.assetDistribution} />
-          <TopHoldingsTable
-            topAssets={data.topHoldings.topAssets}
-            topLiabilities={data.topHoldings.topLiabilities}
-          />
+          <LiabilityDonutChart distribution={data.liabilityDistribution} />
         </div>
+        <TopHoldingsTable
+          topAssets={data.topHoldings.topAssets}
+          topLiabilities={data.topHoldings.topLiabilities}
+        />
       </section>
     </div>
   );

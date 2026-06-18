@@ -10,6 +10,8 @@ export function KpiGrid({ kpis }) {
   const items = [
     {
       label: t('dashboard.kpi.netWorth'),
+      help: t('dashboard.kpi.help.netWorth'),
+      helpAria: t('dashboard.kpi.helpAria.netWorth'),
       value: formatMoney(latest.netWorth),
       valueTone: getNetWorthTone(latest.netWorth),
       trend: formatDeltaTrend(monthDeltas.netWorth, 'up', t),
@@ -17,6 +19,8 @@ export function KpiGrid({ kpis }) {
     },
     {
       label: t('dashboard.kpi.totalAssets'),
+      help: t('dashboard.kpi.help.totalAssets'),
+      helpAria: t('dashboard.kpi.helpAria.totalAssets'),
       value: formatMoney(latest.totalAssets),
       valueTone: 'assets',
       trend: formatDeltaTrend(monthDeltas.totalAssets, 'up', t),
@@ -24,6 +28,8 @@ export function KpiGrid({ kpis }) {
     },
     {
       label: t('dashboard.kpi.totalLiabilities'),
+      help: t('dashboard.kpi.help.totalLiabilities'),
+      helpAria: t('dashboard.kpi.helpAria.totalLiabilities'),
       value: formatMoney(Math.abs(latest.totalLiabilities ?? 0)),
       valueTone: 'liability',
       trend: formatLiabilityTrend(monthDeltas.totalLiabilities, t),
@@ -31,6 +37,8 @@ export function KpiGrid({ kpis }) {
     },
     {
       label: t('dashboard.kpi.savingsRate'),
+      help: t('dashboard.kpi.help.savingsRate'),
+      helpAria: t('dashboard.kpi.helpAria.savingsRate'),
       value: formatPercent(savingsRate),
       valueTone: getSavingsTone(savingsRate),
       subValue:

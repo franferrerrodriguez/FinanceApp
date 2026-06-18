@@ -56,7 +56,9 @@ export function CashflowPanel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- clear legacy auto-split once
   }, []);
 
-  const [isEditingExpenses, setIsEditingExpenses] = useState(false);
+  const [editingBlock, setEditingBlock] = useState(null);
+  const isEditing = (id) => editingBlock === id;
+  const toggleBlock = (id) => setEditingBlock((prev) => (prev === id ? null : id));
 
   const toggleDetailed = () => {
     setSettings(patchExpenseViewMode(settings, !detailed));
@@ -70,103 +72,100 @@ export function CashflowPanel() {
       </div>
 
       <section className={`${ui.chartCard} ${ui.stackSection}`}>
-        <div className={`flex items-start justify-between gap-3 border-b pb-3 ${ui.divider}`}>
-          <div>
-            <h3 className={`text-base font-semibold ${ui.heading}`}>
-              {t('balance.cashflow.expensesTitle')}
-            </h3>
-            <p className={`mt-1 text-sm ${ui.textMuted}`}>
-              {t('balance.cashflow.expensesSubtitle')}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setIsEditingExpenses((v) => !v)}
-            className={`shrink-0 text-xs font-medium transition-colors ${
-              isEditingExpenses
-                ? 'text-[var(--accent)]'
-                : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
-            }`}
-          >
-            {isEditingExpenses ? t('common.done') : t('common.edit')}
-          </button>
+        <div className={`border-b pb-3 ${ui.divider}`}>
+          <h3 className={`text-base font-semibold ${ui.heading}`}>
+            {t('balance.cashflow.expensesTitle')}
+          </h3>
+          <p className={`mt-1 text-sm ${ui.textMuted}`}>
+            {t('balance.cashflow.expensesSubtitle')}
+          </p>
         </div>
 
-        <div className={`${ui.stackBlocks}${isEditingExpenses ? '' : ' pointer-events-none'}`}>
-        <PayYourselfFirstBlock settings={settings} setSettings={setSettings} />
+        <div className={ui.stackBlocks}>
+          <BlockEditWrapper id="invest" isEditing={isEditing('invest')} onToggle={toggleBlock} t={t}>
+            <PayYourselfFirstBlock settings={settings} setSettings={setSettings} />
+          </BlockEditWrapper>
 
-        <HousingExpenseBlock
-          settings={settings}
-          setSettings={setSettings}
-          snapshots={snapshots}
-        />
+          <BlockEditWrapper id="housing" isEditing={isEditing('housing')} onToggle={toggleBlock} t={t}>
+            <HousingExpenseBlock
+              settings={settings}
+              setSettings={setSettings}
+              snapshots={snapshots}
+            />
+          </BlockEditWrapper>
 
-        {!detailed && (
-          <SharedExpenseBlock
-            id="balance-household"
-            label={t('onboarding.expenses.household')}
-            hint={t('onboarding.expenses.householdHint')}
-            total={getHouseholdTotal(settings)}
-            yourShare={getEffectiveHouseholdExpenses(settings)}
-            shared={settings.householdFixedShared ?? false}
-            percent={settings.householdFixedYourSharePercent ?? 50}
-            onTotalChange={(v) =>
-              setSettings({
-                householdFixedEstimate: v,
-                householdFixedIsEstimate: true,
-              })
-            }
-            onSharedChange={(v) => setSettings({ householdFixedShared: v })}
-            onPercentChange={(v) =>
-              setSettings({ householdFixedYourSharePercent: v })
-            }
-          />
-        )}
+          {!detailed && (
+            <BlockEditWrapper id="household" isEditing={isEditing('household')} onToggle={toggleBlock} t={t}>
+              <SharedExpenseBlock
+                id="balance-household"
+                label={t('onboarding.expenses.household')}
+                hint={t('onboarding.expenses.householdHint')}
+                total={getHouseholdTotal(settings)}
+                yourShare={getEffectiveHouseholdExpenses(settings)}
+                shared={settings.householdFixedShared ?? false}
+                percent={settings.householdFixedYourSharePercent ?? 50}
+                onTotalChange={(v) =>
+                  setSettings({
+                    householdFixedEstimate: v,
+                    householdFixedIsEstimate: true,
+                  })
+                }
+                onSharedChange={(v) => setSettings({ householdFixedShared: v })}
+                onPercentChange={(v) =>
+                  setSettings({ householdFixedYourSharePercent: v })
+                }
+              />
+            </BlockEditWrapper>
+          )}
 
-        <SharedExpenseBlock
-          id="balance-groceries"
-          label={t('onboarding.expenses.groceries')}
-          hint={t('onboarding.expenses.groceriesHint')}
-          total={getGroceriesTotal(settings)}
-          yourShare={getEffectiveGroceries(settings)}
-          shared={settings.groceriesShared ?? false}
-          percent={settings.groceriesYourSharePercent ?? 50}
-          onTotalChange={(v) =>
-            setSettings({ groceriesEstimate: v, groceriesIsEstimate: true })
-          }
-          onSharedChange={(v) => setSettings({ groceriesShared: v })}
-          onPercentChange={(v) =>
-            setSettings({ groceriesYourSharePercent: v })
-          }
-        />
+          <BlockEditWrapper id="groceries" isEditing={isEditing('groceries')} onToggle={toggleBlock} t={t}>
+            <SharedExpenseBlock
+              id="balance-groceries"
+              label={t('onboarding.expenses.groceries')}
+              hint={t('onboarding.expenses.groceriesHint')}
+              total={getGroceriesTotal(settings)}
+              yourShare={getEffectiveGroceries(settings)}
+              shared={settings.groceriesShared ?? false}
+              percent={settings.groceriesYourSharePercent ?? 50}
+              onTotalChange={(v) =>
+                setSettings({ groceriesEstimate: v, groceriesIsEstimate: true })
+              }
+              onSharedChange={(v) => setSettings({ groceriesShared: v })}
+              onPercentChange={(v) =>
+                setSettings({ groceriesYourSharePercent: v })
+              }
+            />
+          </BlockEditWrapper>
 
-        <SharedExpenseBlock
-          id="balance-leisure"
-          label={t('onboarding.expenses.leisure')}
-          hint={t('onboarding.expenses.leisureHint')}
-          total={getLeisureTotal(settings)}
-          yourShare={getEffectiveLeisureExpenses(settings)}
-          shared={settings.leisureShared ?? false}
-          percent={settings.leisureYourSharePercent ?? 50}
-          onTotalChange={(v) =>
-            setSettings({ leisureEstimate: v, leisureIsEstimate: true })
-          }
-          onSharedChange={(v) => setSettings({ leisureShared: v })}
-          onPercentChange={(v) =>
-            setSettings({ leisureYourSharePercent: v })
-          }
-        />
+          <BlockEditWrapper id="leisure" isEditing={isEditing('leisure')} onToggle={toggleBlock} t={t}>
+            <SharedExpenseBlock
+              id="balance-leisure"
+              label={t('onboarding.expenses.leisure')}
+              hint={t('onboarding.expenses.leisureHint')}
+              total={getLeisureTotal(settings)}
+              yourShare={getEffectiveLeisureExpenses(settings)}
+              shared={settings.leisureShared ?? false}
+              percent={settings.leisureYourSharePercent ?? 50}
+              onTotalChange={(v) =>
+                setSettings({ leisureEstimate: v, leisureIsEstimate: true })
+              }
+              onSharedChange={(v) => setSettings({ leisureShared: v })}
+              onPercentChange={(v) =>
+                setSettings({ leisureYourSharePercent: v })
+              }
+            />
+          </BlockEditWrapper>
 
-        <ExpenseViewToggle detailed={detailed} onToggle={toggleDetailed} />
+          <ExpenseViewToggle detailed={detailed} onToggle={toggleDetailed} />
 
-        {detailed ? (
-          <DetailedHouseholdBreakdown
-            settings={settings}
-            setSettings={setSettings}
-          />
-        ) : null}
+          {detailed ? (
+            <DetailedHouseholdBreakdown
+              settings={settings}
+              setSettings={setSettings}
+            />
+          ) : null}
 
-        <ExpenseSubtotals settings={settings} />
+          <ExpenseSubtotals settings={settings} />
         </div>
       </section>
 
@@ -198,3 +197,23 @@ export function CashflowPanel() {
   );
 }
 
+function BlockEditWrapper({ id, isEditing, onToggle, t, children }) {
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => onToggle(id)}
+        className={`absolute right-3 top-3 z-10 text-xs font-medium transition-colors ${
+          isEditing
+            ? 'text-[var(--accent)]'
+            : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
+        }`}
+      >
+        {isEditing ? t('common.done') : t('common.edit')}
+      </button>
+      <div className={isEditing ? '' : 'pointer-events-none'}>
+        {children}
+      </div>
+    </div>
+  );
+}

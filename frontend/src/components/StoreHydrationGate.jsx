@@ -36,11 +36,31 @@ export function StoreHydrationGate({ children }) {
   if (!hydrated || needsAuthBootstrap) {
     return (
       <div
-        className={`flex min-h-screen items-center justify-center ${ui.page} ${ui.text}`}
+        className={`flex min-h-screen items-center justify-center ${ui.page}`}
         role="status"
+        aria-label={t('app.loading')}
         aria-live="polite"
       >
-        {t('app.loading')}
+        <svg
+          className="h-8 w-8 animate-spin text-[var(--accent)]"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden
+        >
+          <circle
+            className="opacity-20"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="3"
+          />
+          <path
+            className="opacity-80"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+          />
+        </svg>
       </div>
     );
   }
