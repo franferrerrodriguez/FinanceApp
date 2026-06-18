@@ -1,3 +1,10 @@
+/** @typedef {import('../types/finance.js').AppSettings} AppSettings */
+/** @typedef {import('../types/finance.js').Asset} Asset */
+/** @typedef {import('../types/finance.js').PatrimonySnapshot} PatrimonySnapshot */
+/** @typedef {import('../types/finance.js').AnnualExpense} AnnualExpense */
+/** @typedef {import('../types/finance.js').FinanceAlert} FinanceAlert */
+/** @typedef {import('../types/calculations.js').EmergencyFundMetrics} EmergencyFundMetrics */
+
 import { BALANCE_TAB, balancePath } from './balanceTabs.js';
 import { getCurrentMonthKey } from './dashboardMetrics.js';
 import {
@@ -46,6 +53,11 @@ export function hasLiquidBalanceData(snapshots = [], assets = []) {
   });
 }
 
+/**
+ * @param {Partial<AppSettings>} settings
+ * @param {AnnualExpense[]} [annualExpenses]
+ * @returns {number} Monthly expense baseline in EUR
+ */
 export function calcMonthlyExpenseBaseline(settings, annualExpenses = []) {
   const investment =
     (settings?.emergencyFundCountsInvestment ?? true)
@@ -59,6 +71,11 @@ export function calcMonthlyExpenseBaseline(settings, annualExpenses = []) {
   );
 }
 
+/**
+ * @param {PatrimonySnapshot[]} snapshots
+ * @param {Asset[]} assets
+ * @returns {number} Total liquid cash (bank + cash accounts) in EUR
+ */
 export function getLiquidCashFromSnapshots(snapshots, assets) {
   const monthKey = getCurrentMonthKey();
   const monthSnaps = groupSnapshotsByMonth(snapshots)[monthKey] ?? [];
@@ -75,6 +92,12 @@ export function getLiquidCashFromSnapshots(snapshots, assets) {
   );
 }
 
+/**
+ * Computes all emergency fund metrics from current balances and settings.
+ *
+ * @param {{ settings: Partial<AppSettings>; snapshots?: PatrimonySnapshot[]; assets?: Asset[]; annualExpenses?: AnnualExpense[] }} params
+ * @returns {EmergencyFundMetrics}
+ */
 export function computeEmergencyFundMetrics({
   settings,
   snapshots = [],
@@ -118,7 +141,10 @@ export function computeEmergencyFundMetrics({
 }
 
 /**
- * Alert when liquid cash (bank + cash) is below the configured emergency fund goal.
+ * Returns an alert object when liquid cash is below the emergency fund goal, or null if OK.
+ *
+ * @param {EmergencyFundMetrics | null | undefined} metrics
+ * @returns {FinanceAlert | null}
  */
 export function getEmergencyFundAlert(metrics) {
   if (!metrics) return null;

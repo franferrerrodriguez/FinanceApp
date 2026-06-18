@@ -40,7 +40,7 @@ export function ProjectionSettingsPanel() {
         {t('projection.settings.hint')}
       </p>
 
-      {!hasSnapshotPatrimony ? (
+      {!hasSnapshotPatrimony && (
         <div className="mb-5 max-w-md space-y-2">
           <label className="block">
             <span className={`${ui.formFieldLabel} ${ui.textLabel}`}>

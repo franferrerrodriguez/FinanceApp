@@ -1,3 +1,7 @@
+/** @typedef {import('../types/finance.js').Asset} Asset */
+/** @typedef {import('../types/finance.js').Liability} Liability */
+/** @typedef {import('../types/finance.js').PatrimonySnapshot} PatrimonySnapshot */
+
 import {
   ASSET_CATEGORY_VALUES,
   LIABILITY_CATEGORY_VALUES,
@@ -27,6 +31,11 @@ export { SNAPSHOT_ITEM_TYPE };
 const createId = () =>
   crypto.randomUUID?.() ?? `id-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
+/**
+ * Creates a normalized Asset object with defaults.
+ * @param {Partial<Asset>} [partial]
+ * @returns {Asset}
+ */
 export function createAsset(partial = {}) {
   return {
     id: partial.id ?? createId(),
@@ -51,6 +60,11 @@ export function normalizeLiabilityInterestRate(rate) {
   return Number.isFinite(n) ? Math.max(0, n) : 0;
 }
 
+/**
+ * Creates a normalized Liability object with defaults.
+ * @param {Partial<Liability>} [partial]
+ * @returns {Liability}
+ */
 export function createLiability(partial = {}) {
   return {
     id: partial.id ?? createId(),
@@ -62,10 +76,18 @@ export function createLiability(partial = {}) {
   };
 }
 
+/**
+ * @param {Asset[]} assets
+ * @returns {Asset[]}
+ */
 export function getActiveAssets(assets) {
   return (assets ?? []).filter((a) => a.isActive !== false);
 }
 
+/**
+ * @param {Liability[]} liabilities
+ * @returns {Liability[]}
+ */
 export function getActiveLiabilities(liabilities) {
   return (liabilities ?? []).filter((l) => l.isActive !== false);
 }

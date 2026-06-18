@@ -1,3 +1,7 @@
+/** @typedef {import('../types/calculations.js').AmortizationRow} AmortizationRow */
+/** @typedef {import('../types/calculations.js').AmortizationSummary} AmortizationSummary */
+/** @typedef {import('../types/calculations.js').AmortizationSavings} AmortizationSavings */
+
 import { fromCents, roundMoney, toCents } from './money.js';
 
 /**
@@ -42,8 +46,14 @@ function scheduleToSummary(schedule, monthlyPayment) {
 }
 
 /**
- * Builds full amortization schedule using French method
+ * Builds a full amortization schedule using the French method
  * (constant installment) — standard for Spanish mortgages.
+ *
+ * @param {number} remainingCapital - Outstanding principal in EUR
+ * @param {number} annualRate - Annual interest rate as a decimal (e.g. 0.025)
+ * @param {number} monthlyPayment - Fixed monthly installment in EUR
+ * @param {{ startDate?: Date; initialLumpSum?: number }} [options]
+ * @returns {AmortizationRow[]}
  */
 export function buildAmortizationSchedule(
   remainingCapital,
@@ -85,6 +95,9 @@ export function buildAmortizationSchedule(
 
 /**
  * Resolves baseline schedule and optional early-repayment scenario.
+ *
+ * @param {{ remainingCapital: number; annualRate: number; monthlyPayment: number; startDate?: Date; scenario?: { type: 'lump' | 'recurring'; extraPayment?: number; extraMonthly?: number; mode?: 'reduce_term' | 'reduce_payment' } | null }} params
+ * @returns {{ baseline: AmortizationSummary; scenario: AmortizationSummary | null; savings: AmortizationSavings | null; impliedReturn: number }}
  */
 export function resolveMortgageAmortization({
   remainingCapital,
@@ -143,7 +156,10 @@ export function resolveMortgageAmortization({
 }
 
 /**
- * Calculates the impact of a one-time early repayment.
+ * Calculates the impact of a one-time early repayment (amortización anticipada parcial).
+ *
+ * @param {{ remainingCapital: number; annualRate: number; monthlyPayment: number; extraPayment: number; mode: 'reduce_term' | 'reduce_payment'; startDate?: Date }} params
+ * @returns {{ current: AmortizationSummary; after: AmortizationSummary; savings: AmortizationSavings; impliedReturn: number }}
  */
 export function calcLumpSumRepayment({
   remainingCapital,
@@ -207,7 +223,10 @@ export function calcLumpSumRepayment({
 }
 
 /**
- * Calculates impact of recurring extra monthly payment.
+ * Calculates the impact of a recurring extra monthly payment on mortgage term.
+ *
+ * @param {{ remainingCapital: number; annualRate: number; monthlyPayment: number; extraMonthly: number; startDate?: Date }} params
+ * @returns {{ current: AmortizationSummary; after: AmortizationSummary; savings: AmortizationSavings; impliedReturn: number }}
  */
 export function calcRecurringExtraPayment({
   remainingCapital,

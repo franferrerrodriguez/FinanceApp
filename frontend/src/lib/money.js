@@ -3,6 +3,9 @@ import { resolveIntlLocale } from '../utils/monthLabel.js';
 /**
  * Money arithmetic in integer cents to avoid floating-point errors.
  * Amounts in state/UI stay in euros; critical operations go through here.
+ *
+ * All public functions follow the invariant: inputs and outputs are in EUR (number),
+ * and intermediate calculations use integer cents to prevent IEEE 754 drift.
  */
 
 export const CENTS_PER_EURO = 100;
@@ -128,7 +131,11 @@ export function allocateCents(totalCents, weights) {
   return result;
 }
 
-/** Split euros by weights; returns array of normalized euro amounts. */
+/**
+ * @param {number} totalEuros
+ * @param {number[]} weights - Integer weights (not percentages)
+ * @returns {number[]} EUR amounts summing exactly to totalEuros
+ */
 export function allocateEurosByWeights(totalEuros, weights) {
   return allocateCents(toCents(totalEuros), weights).map(fromCents);
 }

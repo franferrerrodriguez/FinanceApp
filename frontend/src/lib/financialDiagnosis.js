@@ -1,3 +1,15 @@
+/** @typedef {import('../types/finance.js').AppSettings} AppSettings */
+/** @typedef {import('../types/finance.js').Asset} Asset */
+/** @typedef {import('../types/finance.js').Liability} Liability */
+/** @typedef {import('../types/finance.js').PatrimonySnapshot} PatrimonySnapshot */
+/** @typedef {import('../types/finance.js').AnnualExpense} AnnualExpense */
+/** @typedef {import('../types/finance.js').ContributionPlan} ContributionPlan */
+/** @typedef {import('../types/finance.js').ContributionEntry} ContributionEntry */
+/** @typedef {import('../types/finance.js').CashflowEntry} CashflowEntry */
+/** @typedef {import('../types/finance.js').DiagnosisInsight} DiagnosisInsight */
+/** @typedef {import('../types/calculations.js').ProjectionRow} ProjectionRow */
+/** @typedef {import('../types/calculations.js').FinancialDiagnosis} FinancialDiagnosis */
+
 import { balancePath } from './balanceTabs.js';
 import {
   calcCoreFixedExpenses,
@@ -34,6 +46,11 @@ const TONE_PRIORITY = {
  * @property {string} [actionKey]
  */
 
+/**
+ * @param {ProjectionRow[]} rows
+ * @param {number} annualLivingExpenses - Annual living cost in EUR (income not needed)
+ * @returns {number | null} First year where portfolio returns cover expenses, or null
+ */
 export function estimateFireYearsFromProjection(rows, annualLivingExpenses) {
   if (!rows?.length || annualLivingExpenses <= 0) return null;
 
@@ -69,8 +86,11 @@ function sortInsights(insights) {
 }
 
 /**
- * Personalized financial diagnosis from real user data.
- * @returns {{ insights: DiagnosisInsight[] }}
+ * Generates personalized financial insights from real user data.
+ * Insights are sorted by urgency: warn → tip → info → positive.
+ *
+ * @param {{ settings: Partial<AppSettings>; snapshots?: PatrimonySnapshot[]; assets?: Asset[]; liabilities?: Liability[]; annualExpenses?: AnnualExpense[]; contributionPlans?: ContributionPlan[]; contributionEntries?: ContributionEntry[]; cashflowHistory?: CashflowEntry[]; now?: Date; maxItems?: number }} params
+ * @returns {FinancialDiagnosis}
  */
 export function computeFinancialDiagnosis({
   settings,

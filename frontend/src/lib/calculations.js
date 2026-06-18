@@ -1,3 +1,14 @@
+/** @typedef {import('../types/finance.js').AppSettings} AppSettings */
+/** @typedef {import('../types/finance.js').Asset} Asset */
+/** @typedef {import('../types/finance.js').Liability} Liability */
+/** @typedef {import('../types/finance.js').PatrimonySnapshot} PatrimonySnapshot */
+/** @typedef {import('../types/finance.js').CashflowEntry} CashflowEntry */
+/** @typedef {import('../types/finance.js').ContributionPlan} ContributionPlan */
+/** @typedef {import('../types/finance.js').ContributionEntry} ContributionEntry */
+/** @typedef {import('../types/finance.js').AnnualExpense} AnnualExpense */
+/** @typedef {import('../types/calculations.js').ProjectionRow} ProjectionRow */
+/** @typedef {import('../types/calculations.js').ProjectionSummary} ProjectionSummary */
+
 import {
   applyShareEuros,
   roundMoney,
@@ -106,6 +117,10 @@ export const calcFIREYear = (projectionTable, annualExpenses, annualRate) =>
     (row) => row.patrimonioFin * annualRate >= annualExpenses,
   )?.year ?? null;
 
+/**
+ * @param {PatrimonySnapshot[]} snapshots
+ * @returns {number} Net worth in EUR
+ */
 export const calcNetWorth = (snapshots) =>
   sumEuros(...snapshots.map((s) => s.value ?? 0));
 
@@ -180,6 +195,10 @@ export const getEffectiveMortgageRent = (settings) =>
 export const getEffectiveBudgetInvestment = (settings) =>
   Math.max(0, Number(settings?.monthlyBudgetInvestment) || 0);
 
+/**
+ * @param {Partial<AppSettings> | null | undefined} settings
+ * @returns {number} Sum of mortgage/rent + household + groceries in EUR
+ */
 export const calcTotalFixedExpenses = (settings) => {
   if (!settings) return 0;
   return sumEuros(
@@ -206,6 +225,10 @@ export const calcTotalMonthlyOutflow = (settings, monthlyInvestment) => {
   return sumEuros(fixed, variable, investment);
 };
 
+/**
+ * @param {Partial<AppSettings> | null | undefined} settings
+ * @returns {number} Effective monthly net salary + other income in EUR
+ */
 export const calcTotalIncome = (settings) => {
   if (!settings) return 0;
   return sumEuros(
@@ -214,12 +237,25 @@ export const calcTotalIncome = (settings) => {
   );
 };
 
+/**
+ * @param {number} totalIncome - Monthly net income in EUR
+ * @param {number} fixedExpenses - Total fixed expenses in EUR
+ * @param {number} [varExpenses] - Variable expenses in EUR (default 0)
+ * @returns {number} Savings rate as a decimal (0–1)
+ */
 export const calcSavingsRate = (totalIncome, fixedExpenses, varExpenses = 0) => {
   if (totalIncome <= 0) return 0;
   const savings = subtractEuros(totalIncome, fixedExpenses, varExpenses);
   return Math.max(0, savings / totalIncome);
 };
 
+/**
+ * @param {number} totalIncome - Monthly net income in EUR
+ * @param {number} fixedExpenses - Fixed expenses in EUR
+ * @param {number} monthlyInvestment - Investment amount in EUR
+ * @param {number} [variableExpenses] - Variable expenses in EUR (default 0)
+ * @returns {number} Free cash flow in EUR
+ */
 export const calcFreeCashflow = (
   totalIncome,
   fixedExpenses,
@@ -324,21 +360,24 @@ function resolveAdditionalInvestmentsForMonth({
 
 /**
  * Monthly projection table (pure calculation).
+ * Simulates net worth month by month using bucket-based portfolio returns.
+ *
  * @param {object} params
- * @param {object} params.settings
- * @param {object[]} [params.contributionPlans]
- * @param {object[]} [params.contributionEntries]
+ * @param {Partial<AppSettings>} params.settings
+ * @param {ContributionPlan[]} [params.contributionPlans]
+ * @param {ContributionEntry[]} [params.contributionEntries]
  * @param {number} [params.initialPatrimony]
  * @param {Date} [params.startDate]
  * @param {number} [params.years]
- * @param {number} [params.annualRate] @deprecated use bucket rates
- * @param {(plans: object[], monthIndex: number) => number} [params.getInvestmentContributions]
- * @param {object[]} [params.assets]
- * @param {object[]} [params.liabilities]
- * @param {object[]} [params.snapshots]
- * @param {Array<{ id: string, name: string, amount: number, month: number }>} [params.annualExpenses]
- * @param {Array<object>} [params.cashflowHistory]
- * @param {Array<object>} [params.salaryHistory] @deprecated use cashflowHistory
+ * @param {number} [params.annualRate] @deprecated use bucket rates derived from assets
+ * @param {(plans: ContributionPlan[], monthIndex: number, monthKey: string) => number} [params.getInvestmentContributions]
+ * @param {Asset[]} [params.assets]
+ * @param {Liability[]} [params.liabilities]
+ * @param {PatrimonySnapshot[]} [params.snapshots]
+ * @param {AnnualExpense[]} [params.annualExpenses]
+ * @param {CashflowEntry[]} [params.cashflowHistory]
+ * @param {CashflowEntry[]} [params.salaryHistory] @deprecated use cashflowHistory
+ * @returns {ProjectionRow[]}
  */
 export function buildMonthlyProjectionRows({
   settings,
@@ -528,6 +567,12 @@ export function buildMonthlyProjectionRows({
   return rows;
 }
 
+/**
+ * @param {ProjectionRow[]} rows
+ * @param {number} [initialPatrimony]
+ * @param {{ initialGrossAssets?: number; initialDebt?: number }} [options]
+ * @returns {ProjectionSummary}
+ */
 export function summarizeProjectionRows(rows, initialPatrimony = 0, options = {}) {
   const initial = roundMoney(initialPatrimony);
   const initialGrossAssets = roundMoney(options.initialGrossAssets ?? 0);
