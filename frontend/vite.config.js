@@ -80,4 +80,14 @@ export default defineConfig({
   optimizeDeps: {
     include: ['@supabase/supabase-js'],
   },
+  test: {
+    environment: 'node',
+    include: ['src/**/*.spec.js', 'src/**/*.spec.ts'],
+    coverage: {
+      provider: 'v8',
+      include: ['src/lib/**', 'src/utils/**'],
+      exclude: ['src/lib/**/*.test.js', 'src/lib/**/*.vitest.js'],
+      thresholds: { lines: 80, functions: 80 },
+    },
+  },
 });
