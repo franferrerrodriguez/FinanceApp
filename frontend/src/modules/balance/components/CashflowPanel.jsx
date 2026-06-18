@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CashflowTramosSection } from '../../../components/CashflowTramosSection';
 import { getCashflowTotalsForDate } from '../../../lib/cashflowHistory';
@@ -56,6 +56,8 @@ export function CashflowPanel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- clear legacy auto-split once
   }, []);
 
+  const [isEditingExpenses, setIsEditingExpenses] = useState(false);
+
   const toggleDetailed = () => {
     setSettings(patchExpenseViewMode(settings, !detailed));
   };
@@ -68,16 +70,25 @@ export function CashflowPanel() {
       </div>
 
       <section className={`${ui.chartCard} ${ui.stackSection}`}>
-        <div className={`border-b pb-3 ${ui.divider}`}>
-          <h3 className={`text-base font-semibold ${ui.heading}`}>
-            {t('balance.cashflow.expensesTitle')}
-          </h3>
-          <p className={`mt-1 text-sm ${ui.textMuted}`}>
-            {t('balance.cashflow.expensesSubtitle')}
-          </p>
+        <div className={`flex items-start justify-between gap-3 border-b pb-3 ${ui.divider}`}>
+          <div>
+            <h3 className={`text-base font-semibold ${ui.heading}`}>
+              {t('balance.cashflow.expensesTitle')}
+            </h3>
+            <p className={`mt-1 text-sm ${ui.textMuted}`}>
+              {t('balance.cashflow.expensesSubtitle')}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsEditingExpenses((v) => !v)}
+            className={`shrink-0 text-sm font-medium ${isEditingExpenses ? 'text-[var(--accent)]' : ui.textMuted}`}
+          >
+            {isEditingExpenses ? t('common.done') : t('common.edit')}
+          </button>
         </div>
 
-        <div className={ui.stackBlocks}>
+        <div className={`${ui.stackBlocks}${isEditingExpenses ? '' : ' pointer-events-none'}`}>
         <PayYourselfFirstBlock settings={settings} setSettings={setSettings} />
 
         <HousingExpenseBlock

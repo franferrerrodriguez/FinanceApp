@@ -78,15 +78,19 @@ function projectionBodyTone(columnKey) {
   return tableCellToneClasses(getProjectionColumnTone(columnKey));
 }
 
-function ProjectionColumnHeader({ columnKey, columnKeys, narrowViewport, scrolledX, t }) {
+function ProjectionColumnHeader({ columnKey, columnKeys, narrowViewport, scrolledX, t, mortgageSharePercent }) {
   const isYear = columnKey === PROJECTION_COLUMN.YEAR;
   const isDate = columnKey === PROJECTION_COLUMN.DATE;
+  const isMortgage = columnKey === PROJECTION_COLUMN.MORTGAGE;
   const toneClass = projectionHeaderTone(columnKey);
   const stickyLeft = stickyColumnLeftOffset(columnKey, narrowViewport);
   const isSticky = stickyLeft != null;
   const alignRight = !isYear && !isDate;
   const tooltipKey = headerTooltipKey(columnKey);
   const separator = showColumnSeparator(columnKey, columnKeys);
+  const shareLabel = isMortgage && mortgageSharePercent != null
+    ? `${mortgageSharePercent}% tuyo`
+    : null;
 
   return (
     <div
@@ -105,27 +109,34 @@ function ProjectionColumnHeader({ columnKey, columnKeys, narrowViewport, scrolle
           : toneClass
       }`}
     >
-      <span className="inline-flex max-w-full items-center gap-1">
-        <span
-          className={`${
-            toneClass ? '' : 'font-semibold text-[var(--text-primary)]'
-          } ${
-            narrowViewport
-              ? 'text-[10px] leading-snug whitespace-normal'
-              : 'text-xs leading-snug whitespace-normal'
-          }`}
-        >
-          {t(headerLabelKey(columnKey, narrowViewport))}
-        </span>
-        {tooltipKey ? (
-          <HelpTooltip
-            symbol="ⓘ"
-            ariaLabel={t('projection.table.tooltipAria', {
-              column: t(headerLabelKey(columnKey, narrowViewport)),
-            })}
+      <span className={`inline-flex max-w-full gap-1 ${shareLabel ? 'flex-col items-end' : 'items-center'}`}>
+        <span className="inline-flex items-center gap-1">
+          <span
+            className={`${
+              toneClass ? '' : 'font-semibold text-[var(--text-primary)]'
+            } ${
+              narrowViewport
+                ? 'text-[10px] leading-snug whitespace-normal'
+                : 'text-xs leading-snug whitespace-normal'
+            }`}
           >
-            {t(tooltipKey)}
-          </HelpTooltip>
+            {t(headerLabelKey(columnKey, narrowViewport))}
+          </span>
+          {tooltipKey ? (
+            <HelpTooltip
+              symbol="ⓘ"
+              ariaLabel={t('projection.table.tooltipAria', {
+                column: t(headerLabelKey(columnKey, narrowViewport)),
+              })}
+            >
+              {t(tooltipKey)}
+            </HelpTooltip>
+          ) : null}
+        </span>
+        {shareLabel ? (
+          <span className={`text-[9px] font-normal leading-tight ${ui.textMuted}`}>
+            {shareLabel}
+          </span>
         ) : null}
       </span>
     </div>
@@ -315,6 +326,11 @@ export function ProjectionDataTable() {
 
   if (!rows.length) return null;
 
+  const mortgageSharePercent =
+    settings.mortgageRentShared && mortgageAmortizationActive
+      ? (settings.mortgageRentYourSharePercent ?? 50)
+      : null;
+
   const tableHeader = (
     <div
       className={`w-full border-b ${ui.divider} ${headBg()}`}
@@ -331,6 +347,7 @@ export function ProjectionDataTable() {
           narrowViewport={narrowViewport}
           scrolledX={scrolledX}
           t={t}
+          mortgageSharePercent={mortgageSharePercent}
         />
       ))}
     </div>

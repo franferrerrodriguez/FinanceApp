@@ -96,6 +96,17 @@ export function ProfilePage() {
           >
             {t('menu.accountSettings')}
           </button>
+          <div className="flex items-center gap-2 rounded-[14px] px-5 py-3">
+            <div className="min-w-0 flex-1">
+              <p className={`text-sm font-medium ${ui.heading}`}>
+                {t('app.name')}
+                {APP_VERSION ? (
+                  <span className={`ml-2 text-xs font-normal ${ui.textMuted}`}>v{APP_VERSION}</span>
+                ) : null}
+              </p>
+              <BrandCredit />
+            </div>
+          </div>
           <button
             type="button"
             className="inline-flex w-full cursor-pointer items-center justify-start gap-2 rounded-[14px] px-5 py-3 text-sm font-medium text-[var(--color-negative)] transition hover:bg-[rgba(226,75,74,0.08)]"
@@ -115,6 +126,17 @@ export function ProfilePage() {
           <button type="button" className={`${ui.btnSecondary} w-full`} onClick={openLogin}>
             {t('menu.login')}
           </button>
+          <div className="flex items-center gap-2 rounded-[14px] px-5 py-3">
+            <div className="min-w-0 flex-1">
+              <p className={`text-sm font-medium ${ui.heading}`}>
+                {t('app.name')}
+                {APP_VERSION ? (
+                  <span className={`ml-2 text-xs font-normal ${ui.textMuted}`}>v{APP_VERSION}</span>
+                ) : null}
+              </p>
+              <BrandCredit />
+            </div>
+          </div>
         </section>
       )}
 
@@ -170,18 +192,6 @@ export function ProfilePage() {
         </div>
       </section>
 
-      <section className={ui.chartCard}>
-        <h2 className={`mb-3 text-xs font-semibold uppercase tracking-wide ${ui.textMuted}`}>
-          {t('menu.about')}
-        </h2>
-        <p className={`text-sm font-medium ${ui.heading}`}>
-          {t('app.name')}
-          {APP_VERSION ? (
-            <span className={`ml-2 text-xs font-normal ${ui.textMuted}`}>v{APP_VERSION}</span>
-          ) : null}
-        </p>
-        <BrandCredit />
-      </section>
     </div>
   );
 }

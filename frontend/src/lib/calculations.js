@@ -257,7 +257,7 @@ function addMonths(date, count) {
 }
 
 function getProjectionStartDate(fromDate = new Date()) {
-  return new Date(fromDate.getFullYear(), fromDate.getMonth() + 1, 1);
+  return new Date(fromDate.getFullYear(), fromDate.getMonth(), 1);
 }
 
 function monthKeyFromDate(date) {
