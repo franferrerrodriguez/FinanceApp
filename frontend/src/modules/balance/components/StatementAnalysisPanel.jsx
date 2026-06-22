@@ -11,7 +11,8 @@ import { useFinanceData } from '../../../store/hooks';
 import { formatMoney } from '../../../utils/formatters';
 import { formatSnapshotDateLabel } from '../../../utils/monthLabel';
 import { usePreferences } from '../../../store/hooks';
-import { notifyAfterSave, useToast } from '../../../context/ToastContext';
+import { useToast } from '../../../context/ToastContext';
+import { notifyAfterSave } from '../../../lib/toastHelpers';
 import { usePatrimonySave } from '../../../hooks/usePatrimonySave';
 
 const RESULT_TABS = ['subscriptions', 'categories', 'alerts', 'movements'];

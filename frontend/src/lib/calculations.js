@@ -392,7 +392,6 @@ export function buildMonthlyProjectionRows({
   initialPatrimony = 0,
   startDate,
   years,
-  annualRate: _legacyAnnualRate,
   getInvestmentContributions,
 }) {
   const history =
@@ -416,7 +415,7 @@ export function buildMonthlyProjectionRows({
 
   let buckets = { ...initialState.buckets };
   let debtBalance = initialState.debtBalance;
-  let bucketRates = { ...initialState.bucketRates };
+  let bucketRates;
   const mortgageCtx = resolveProjectionMortgage({
     settings,
     liabilities,

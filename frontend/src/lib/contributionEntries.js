@@ -5,7 +5,6 @@ import {
   CONTRIBUTION_ELIGIBLE_CATEGORIES,
   isContributionEligibleAsset,
   PROJECTION_INVESTMENT_CATEGORIES,
-  resolveLinkedAsset,
 } from './contributionPlans.js';
 
 export { isContributionEligibleAsset, resolveLinkedAsset } from './contributionPlans.js';

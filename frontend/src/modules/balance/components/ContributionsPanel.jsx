@@ -23,7 +23,7 @@ import {
 import { ui } from '../../../lib/uiClasses';
 import { useFinanceData, usePreferences } from '../../../store/hooks';
 import { roundMoney } from '../../../lib/money';
-import { formatMoney, formatPercent, formatRatePercent } from '../../../utils/formatters';
+import { formatMoney, formatRatePercent } from '../../../utils/formatters';
 import { formatMonthKeyLong } from '../../../utils/monthLabel';
 import { BalanceSetupStepBanner } from './BalanceSetupStepBanner';
 import { ContributionDeleteConfirmModal } from './ContributionDeleteConfirmModal';

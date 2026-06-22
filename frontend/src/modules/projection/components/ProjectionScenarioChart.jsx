@@ -9,11 +9,11 @@ import {
   YAxis,
 } from 'recharts';
 import { formatMoney } from '../../../utils/formatters';
-import { SCENARIO_COLORS } from './ScenarioSelector';
+import { SCENARIO_COLORS } from './scenarioColors';
 
 function buildChartData(pessimisticRows, moderateRows, optimisticRows) {
   const annualModerate = moderateRows.filter((r) => r.monthIndex % 12 === 11);
-  return annualModerate.map((r, i) => ({
+  return annualModerate.map((r) => ({
     year: r.yearsElapsed + 1,
     pessimistic: pessimisticRows[r.monthIndex]?.patrimonyEnd ?? 0,
     moderate: r.patrimonyEnd,

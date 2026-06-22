@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { FormSection } from '../../../components/FormSection';
 import { ui } from '../../../lib/uiClasses';
-import { MoneyField } from './MoneyField';
+import { MoneyField } from '../../../components/MoneyField';
 
 export function DetailedHouseholdBreakdown({ settings, setSettings }) {
   const { t } = useTranslation();

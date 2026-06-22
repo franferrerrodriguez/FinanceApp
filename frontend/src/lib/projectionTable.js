@@ -2,11 +2,7 @@ import {
   buildMonthlyProjectionRows,
   summarizeProjectionRows,
 } from './calculations.js';
-import {
-  getProjectionStartingPatrimony,
-  getProjectionStartingState,
-} from './projectionBuckets.js';
-import { getProjectionAnnualRate } from './projectionRates.js';
+import { getProjectionStartingPatrimony } from './projectionBuckets.js';
 import { buildScenarioAssets } from './projectionReturns.js';
 
 export { getProjectionAnnualRate } from './projectionRates.js';

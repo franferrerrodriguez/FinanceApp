@@ -1,17 +1,7 @@
 import { useCallback } from 'react';
 import { ui } from '../lib/uiClasses';
 import { useDecimalInput } from '../hooks/useDecimalInput';
-
-export function pctToDisplay(decimal) {
-  return Math.round((decimal ?? 0) * 10000) / 100;
-}
-
-export function displayToPct(value) {
-  const n = parseFloat(String(value).trim().replace(',', '.'));
-  return Number.isFinite(n) ? n / 100 : 0;
-}
-
-export { displayToPct as default };
+import { pctToDisplay } from '../utils/formatters';
 
 export function PercentRow({ label, hint, value, onChange }) {
   const toDisplay = useCallback((v) => {

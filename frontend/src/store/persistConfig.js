@@ -29,7 +29,7 @@ import { rebuildDerivedContributionEntries } from '../lib/deriveContributionsFro
 import { getDefaultReturnForAssetCategory } from '../lib/projectionReturns';
 import { defaultTracksGainLossForCategory } from '../lib/monthlyCloseForm';
 import { syncHousingSettings } from '../lib/housingLiability';
-import { deriveOnboardingResumeStep, resolveOnboardingResumeStep } from '../lib/onboardingAccess';
+import { resolveOnboardingResumeStep } from '../lib/onboardingAccess';
 import { ONBOARDING_STEP_IDS } from '../modules/onboarding/constants';
 
 export const PERSIST_STORAGE_KEY = 'financia_app_data';

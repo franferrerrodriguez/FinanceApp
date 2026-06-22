@@ -16,7 +16,6 @@ import {
   mortgageOutstandingTotalToShare,
 } from '../../../lib/housingLiability';
 import { formatMoney } from '../../../utils/formatters';
-import { ui } from '../../../lib/uiClasses';
 import { normalizeLiabilityInterestRate } from '../../../lib/patrimony';
 import { isSavableLiability } from '../../../lib/patrimonyDrafts';
 

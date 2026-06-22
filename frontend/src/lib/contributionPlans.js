@@ -1,10 +1,6 @@
 import { sumEuros } from './money.js';
 import { getProjectionAnnualRate } from './projectionRates.js';
-import {
-  getAssetAnnualReturn,
-  getPlanAnnualReturn,
-  getReturnForCategory,
-} from './projectionReturns.js';
+import { getPlanAnnualReturn } from './projectionReturns.js';
 
 export { getPlanAnnualReturn, getReturnForCategory } from './projectionReturns.js';
 

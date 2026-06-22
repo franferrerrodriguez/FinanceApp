@@ -7,7 +7,6 @@ import {
   getSnapshotLiabilityId,
   groupSnapshotsByMonth,
 } from './snapshotUtils.js';
-import { liabilityMonthlyPaymentForProjection } from './housingLiability.js';
 import {
   getAssetAnnualReturn,
   getDefaultReturnForAssetCategory,
@@ -195,34 +194,6 @@ export function splitContributionsToBuckets(
     monthKey,
   );
   return splitContributionBreakdownToBuckets(breakdown, netContribution);
-}
-
-function liabilityPayment(settings, liability) {
-  return liabilityMonthlyPaymentForProjection(settings, liability);
-}
-
-function computeDebtMonthDelta(debtBalance, liabilities = [], settings = {}) {
-  const active = (liabilities ?? []).filter((l) => l.isActive !== false);
-  if (debtBalance <= 0 || !active.length) {
-    return {
-      interest: 0,
-      payments: sumEuros(...active.map((l) => liabilityPayment(settings, l))),
-    };
-  }
-
-  let weightedRate = 0;
-  let weightTotal = 0;
-  for (const liability of active) {
-    const rate = liability.interestRate ?? 0;
-    if (rate > 0) {
-      weightedRate += rate;
-      weightTotal += 1;
-    }
-  }
-  const annualDebtRate = weightTotal > 0 ? weightedRate / weightTotal : 0;
-  const interest = roundMoney(debtBalance * annualToMonthlyRate(annualDebtRate));
-  const payments = sumEuros(...active.map((l) => liabilityPayment(settings, l)));
-  return { interest, payments };
 }
 
 /** One projection month: returns, contributions, then optional mortgage amortization. */

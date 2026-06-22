@@ -1,7 +1,7 @@
 import { SAVE_BANNER_SNOOZE_MS } from '../../lib/constants';
 
 /** Session, auth, and usage metadata (not all fields are persisted). */
-export const createSessionSlice = (set, get) => ({
+export const createSessionSlice = (set) => ({
   user: null,
   profile: null,
   sessionStatus: 'guest_no_data',

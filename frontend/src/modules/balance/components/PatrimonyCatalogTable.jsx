@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   HorizontalScrollRegion,
 } from '../../../components/HorizontalScrollRegion';
-import { getKpiValueClass } from '../../../components/KpiCard';
+import { getKpiValueClass } from '../../../components/kpiTones';
 import { getAssetAnnualReturn } from '../../../lib/projectionReturns';
 import { ui } from '../../../lib/uiClasses';
 import { formatMoney, formatRatePercent } from '../../../utils/formatters';

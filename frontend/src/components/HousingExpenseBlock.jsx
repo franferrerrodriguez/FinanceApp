@@ -69,7 +69,7 @@ export function HousingExpenseBlock({
     yourShare,
   );
 
-  const outstandingTotal = useMemo(() => {
+  const outstandingTotal = (() => {
     if (!linkedLiability) return 0;
     const share = getLiabilityOutstandingFromSnapshots(
       snapshots,
@@ -81,18 +81,12 @@ export function HousingExpenseBlock({
       share ??
       0
     );
-  }, [linkedLiability, monthKey, settings, snapshots]);
+  })();
 
-  const outstandingSharePreview = useMemo(() => {
-    if (!linkedLiability || !isMortgageCapitalShared(settings, linkedLiability)) {
-      return null;
-    }
-    return getMortgageBalanceShareInfoFromTotal(
-      settings,
-      linkedLiability,
-      outstandingTotal,
-    );
-  }, [linkedLiability, outstandingTotal, settings]);
+  const outstandingSharePreview =
+    linkedLiability && isMortgageCapitalShared(settings, linkedLiability)
+      ? getMortgageBalanceShareInfoFromTotal(settings, linkedLiability, outstandingTotal)
+      : null;
 
   const setHousing = (type) => {
     if (type === HOUSING_TYPE.MORTGAGE) enableMortgageTracking();

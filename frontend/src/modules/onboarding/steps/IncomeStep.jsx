@@ -4,7 +4,7 @@ import { ui } from '../../../lib/uiClasses';
 import { useSettings } from '../../../store/hooks';
 import { SalaryFields } from '../../../components/SalaryFields';
 import { LiveTotal } from '../components/LiveTotal';
-import { MoneyField } from '../components/MoneyField';
+import { MoneyField } from '../../../components/MoneyField';
 import { OnboardingActions } from '../components/OnboardingActions';
 import { OnboardingStepHeader } from '../components/OnboardingStepHeader';
 

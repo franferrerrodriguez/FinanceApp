@@ -38,7 +38,7 @@ export function EffectiveMonthSelect({
 }
 
 /** Short label for selects (e.g. 04/2026). */
-export function formatEffectiveMonthLabel(monthKey) {
+function formatEffectiveMonthLabel(monthKey) {
   const [y, m] = String(monthKey ?? '').split('-');
   if (!y || !m) return monthKey;
   return `${m}/${y}`;

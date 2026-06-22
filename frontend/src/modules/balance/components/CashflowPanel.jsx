@@ -34,7 +34,6 @@ export function CashflowPanel() {
     annualExpenses,
     snapshots,
     assets,
-    liabilities,
     cashflowHistory,
     addAnnualExpense,
     updateAnnualExpense,

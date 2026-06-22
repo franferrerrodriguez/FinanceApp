@@ -1,4 +1,3 @@
-import { parseMoneyEuros } from '../lib/money';
 import { ui } from '../lib/uiClasses';
 import { FormFieldFrame } from './FormFieldFrame';
 import { HelpTooltip } from './HelpTooltip';
@@ -67,5 +66,3 @@ export function MoneyField({
   );
 }
 
-/** @deprecated Use parseMoneyEuros from lib/money */
-export const parseMoney = parseMoneyEuros;

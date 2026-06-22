@@ -8,7 +8,7 @@ import { buildPatrimonyHistoryTable } from '../../../lib/patrimony';
 import { usePreferences } from '../../../store/hooks';
 import { formatMonthKey } from '../../../utils/monthLabel';
 import { SNAPSHOT_ITEM_TYPE } from '../../../lib/snapshotItemTypes';
-import { getKpiValueClass, getNetWorthTone } from '../../../components/KpiCard';
+import { getKpiValueClass, getNetWorthTone } from '../../../components/kpiTones';
 import { ui } from '../../../lib/uiClasses';
 import { formatMoney, formatPercent } from '../../../utils/formatters';
 

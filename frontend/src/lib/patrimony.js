@@ -21,7 +21,6 @@ import {
   getTodayIsoDate,
   getSnapshotAssetId,
   getSnapshotLiabilityId,
-  getSnapshotMonthKey,
   groupSnapshotsByMonth,
 } from './snapshotUtils.js';
 

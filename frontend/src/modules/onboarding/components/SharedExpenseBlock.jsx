@@ -4,7 +4,7 @@ import { FormFieldFrame } from '../../../components/FormFieldFrame';
 import { FormSection } from '../../../components/FormSection';
 import { formatMoney } from '../../../utils/formatters';
 import { ui } from '../../../lib/uiClasses';
-import { MoneyField } from './MoneyField';
+import { MoneyField } from '../../../components/MoneyField';
 import { SharePercentInput } from './SharePercentInput';
 
 export function SharedExpenseBlock({

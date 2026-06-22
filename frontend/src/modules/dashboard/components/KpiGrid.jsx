@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { getNetWorthTone, getSavingsTone, KpiCard } from '../../../components/KpiCard';
+import { KpiCard } from '../../../components/KpiCard';
+import { getNetWorthTone, getSavingsTone } from '../../../components/kpiTones';
 import { formatMoney, formatPercent } from '../../../utils/formatters';
 
 export function KpiGrid({ kpis }) {

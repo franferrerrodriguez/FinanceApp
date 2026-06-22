@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { displayToPct, pctToDisplay } from './PercentRow';
+import { displayToPct, pctToDisplay } from '../utils/formatters';
 import { FormFieldFrame } from './FormFieldFrame';
 import { useDecimalInput } from '../hooks/useDecimalInput';
 import { ui } from '../lib/uiClasses';
@@ -10,9 +10,6 @@ export function PercentField({
   hint,
   value,
   onChange,
-  min = 0,
-  max = 30,
-  step = 0.1,
   nullable = false,
   required = false,
   error = false,

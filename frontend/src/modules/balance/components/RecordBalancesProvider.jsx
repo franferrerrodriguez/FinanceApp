@@ -25,6 +25,7 @@ import { RecordBalancesBar } from './RecordBalancesBar';
 
 const RecordBalancesContext = createContext(null);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useRecordBalances() {
   const ctx = useContext(RecordBalancesContext);
   if (!ctx) {
@@ -35,7 +36,6 @@ export function useRecordBalances() {
 
 export function RecordBalancesProvider({ children }) {
   const { t } = useTranslation();
-  const { locale } = usePreferences();
   const [searchParams, setSearchParams] = useSearchParams();
   const { monthlyClose } = useFinanceAlerts();
   const toast = useToast();

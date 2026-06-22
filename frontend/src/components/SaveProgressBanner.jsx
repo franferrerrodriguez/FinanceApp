@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ui } from '../lib/uiClasses';
 import { useAuthModal } from '../context/AuthModalContext';
@@ -9,13 +9,11 @@ export function SaveProgressBanner() {
   const { sessionStatus, saveBannerSnoozedUntil, snoozeSaveBanner } =
     useSessionMeta();
   const { openRegister } = useAuthModal();
-  const [tick, setTick] = useState(0);
+  const [, setTick] = useState(0);
 
-  const show = useMemo(() => {
-    if (sessionStatus !== 'guest_with_data') return false;
-    if (saveBannerSnoozedUntil == null) return true;
-    return Date.now() >= saveBannerSnoozedUntil;
-  }, [sessionStatus, saveBannerSnoozedUntil, tick]);
+  const show =
+    sessionStatus === 'guest_with_data' &&
+    (saveBannerSnoozedUntil == null || Date.now() >= saveBannerSnoozedUntil);
 
   useEffect(() => {
     if (!saveBannerSnoozedUntil || Date.now() >= saveBannerSnoozedUntil) {

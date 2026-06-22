@@ -59,8 +59,8 @@ export function calcMonthTotals(monthSnapshots) {
     return { netWorth: 0, totalAssets: 0, totalLiabilities: 0 };
   }
 
-  let totalAssets = 0;
-  let totalLiabilities = 0;
+  let totalAssets;
+  let totalLiabilities;
 
   const assetValues = [];
   const liabilityValues = [];

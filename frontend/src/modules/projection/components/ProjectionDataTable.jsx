@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  ScrollHintBanner,
-  useHorizontalScrollEdges,
-} from '../../../components/HorizontalScrollRegion';
+import { ScrollHintBanner } from '../../../components/HorizontalScrollRegion';
+import { useHorizontalScrollEdges } from '../../../hooks/useHorizontalScrollEdges';
 import { VirtualList } from '../../../components/VirtualList';
 import {
   buildMonthlyProjectionTable,

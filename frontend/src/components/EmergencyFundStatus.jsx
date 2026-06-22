@@ -1,6 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
-import { BALANCE_TAB, balancePath } from '../lib/balanceTabs';
 import { ui } from '../lib/uiClasses';
 import { formatMoney } from '../utils/formatters';
 import { HelpTooltip } from './HelpTooltip';
@@ -131,18 +129,6 @@ export function EmergencyFundStatus({ metrics, variant = 'card' }) {
       </p>
       {progressBlock}
     </div>
-  );
-}
-
-function PatrimonyLink({ className = '' }) {
-  const { t } = useTranslation();
-  return (
-    <Link
-      to={balancePath(BALANCE_TAB.PATRIMONY)}
-      className={`inline-block text-sm font-semibold text-[var(--accent)] underline-offset-2 hover:underline ${className}`}
-    >
-      {t('balance.cashflow.emergencyFundViewPatrimony')}
-    </Link>
   );
 }
 

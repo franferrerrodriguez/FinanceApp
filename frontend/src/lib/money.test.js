@@ -3,7 +3,6 @@ import {
   allocateEurosByWeights,
   applyShareEuros,
   totalFromShareEuros,
-  fromCents,
   parseMoneyEuros,
   shareCents,
   subtractEuros,

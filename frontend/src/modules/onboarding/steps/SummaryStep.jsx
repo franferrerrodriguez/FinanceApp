@@ -9,7 +9,6 @@ import {
   getEffectiveBudgetInvestment,
   getEffectiveGroceries,
   getEffectiveHouseholdExpenses,
-  getEffectiveLeisureExpenses,
   getEffectiveMortgageRent,
 } from '../../../lib/calculations';
 import { sumEuros } from '../../../lib/money';

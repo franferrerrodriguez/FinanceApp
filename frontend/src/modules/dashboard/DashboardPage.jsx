@@ -25,7 +25,7 @@ export function DashboardPage() {
   const { t } = useTranslation();
   const { settings } = useSettings();
   const data = useDashboardData();
-  const { pendingSteps, alerts, hasPendingTasks } = useFinanceAlerts();
+  const { alerts, hasPendingTasks } = useFinanceAlerts();
   const usesEstimates = hasEstimatedFixedExpenses(settings);
   const showAlerts = hasPendingTasks || alerts.length > 0;
 

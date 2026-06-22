@@ -1,13 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { usePrunePatrimonyDrafts } from '../../../hooks/usePrunePatrimonyDrafts';
 import { usePatrimonySave } from '../../../hooks/usePatrimonySave';
 import { useTranslation } from 'react-i18next';
-import {
-  notifyAfterSave,
-  useToast,
-} from '../../../context/ToastContext';
-import { getNetWorthTone, KpiCard } from '../../../components/KpiCard';
+import { useToast } from '../../../context/ToastContext';
+import { notifyAfterSave } from '../../../lib/toastHelpers';
+import { KpiCard } from '../../../components/KpiCard';
+import { getNetWorthTone } from '../../../components/kpiTones';
 import { getAssetCategories, getLiabilityCategories } from '../../../lib/categoryLabels';
 import { getMortgageRentTotal } from '../../../lib/calculations';
 import { getCurrentMonthKey } from '../../../lib/dashboardMetrics';
@@ -69,8 +68,7 @@ export function PatrimonyPanel() {
   const { locale } = usePreferences();
   const location = useLocation();
   const navigate = useNavigate();
-  const { openRecordBalances, goToPatrimonyCatalog, hasAccounts } =
-    useRecordBalances();
+  const { openRecordBalances, hasAccounts } = useRecordBalances();
 
   const autoOpenAsset = location.state?.openAddAsset === true;
   const autoOpenRecordBalances = location.state?.openRecordBalances === true;
@@ -102,7 +100,6 @@ export function PatrimonyPanel() {
   } = useFinanceData();
 
   usePrunePatrimonyDrafts(assets, liabilities);
-  const toast = useToast();
   const { saveToCloud } = usePatrimonySave();
 
   const currentMonthKey = getCurrentMonthKey();
@@ -117,42 +114,36 @@ export function PatrimonyPanel() {
       : monthLabel
     : monthLabel;
 
-  const getAssetBalance = useCallback(
-    (asset) => {
-      const raw = getSnapshotValueForItem(snapshots, currentMonthKey, {
-        type: SNAPSHOT_ITEM_TYPE.ASSET,
-        id: asset.id,
-      });
-      return raw != null && Number.isFinite(raw) ? raw : null;
-    },
-    [snapshots, currentMonthKey],
-  );
+  const getAssetBalance = (asset) => {
+    const raw = getSnapshotValueForItem(snapshots, currentMonthKey, {
+      type: SNAPSHOT_ITEM_TYPE.ASSET,
+      id: asset.id,
+    });
+    return raw != null && Number.isFinite(raw) ? raw : null;
+  };
 
-  const getLiabilityBalance = useCallback(
-    (liability) => {
-      const share = getMortgageYourShareOutstandingBalance(
-        snapshots,
-        liability,
-        currentMonthKey,
-      );
-      return share != null && Number.isFinite(share) ? share : null;
-    },
-    [snapshots, currentMonthKey],
-  );
+  const getLiabilityBalance = (liability) => {
+    const share = getMortgageYourShareOutstandingBalance(
+      snapshots,
+      liability,
+      currentMonthKey,
+    );
+    return share != null && Number.isFinite(share) ? share : null;
+  };
 
-  const scrollToPatrimonyHistory = useCallback(() => {
+  const scrollToPatrimonyHistory = () => {
     document.getElementById('patrimony-history')?.scrollIntoView({
       behavior: 'smooth',
       block: 'start',
     });
-  }, []);
+  };
 
-  const scrollToPatrimonyCatalog = useCallback(() => {
+  const scrollToPatrimonyCatalog = () => {
     document.getElementById('patrimony-assets')?.scrollIntoView({
       behavior: 'smooth',
       block: 'start',
     });
-  }, []);
+  };
 
   return (
     <div className={ui.stackPage}>

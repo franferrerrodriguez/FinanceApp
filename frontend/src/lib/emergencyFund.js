@@ -119,7 +119,7 @@ export function computeEmergencyFundMetrics({
     targetAmount > 0 ? Math.min(1, liquid / targetAmount) : liquid > 0 ? 1 : 0;
   const shortfall = Math.max(0, targetAmount - liquid);
 
-  let status = 'good';
+  let status;
   if (!hasLiquidData) status = 'unavailable';
   else if (liquid >= targetAmount) status = 'good';
   else if (monthsCovered < 1 || progress < 0.25) status = 'danger';
