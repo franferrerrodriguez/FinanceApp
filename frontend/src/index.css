@@ -126,6 +126,13 @@ input[type="datetime-local"] {
   color-scheme: dark;
 }
 
+/* Recharts SVG and wrapper: suppress focus ring on mouse/touch click,
+   keep it for keyboard navigation via :focus-visible */
+.recharts-wrapper:focus:not(:focus-visible),
+.recharts-wrapper svg:focus:not(:focus-visible) {
+  outline: none;
+}
+
 .financia-profile-trigger {
   border-radius: 9999px !important;
   overflow: hidden;

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { HelpTooltip } from '../../../components/HelpTooltip';
 import { getCurrentMonthKey } from '../../../lib/dashboardMetrics';
 import { ui } from '../../../lib/uiClasses';
 import { formatMonthKeyLong } from '../../../utils/monthLabel';
@@ -55,8 +56,15 @@ export function RecordBalancesBar({
     >
       {isPage ? (
         <div className="min-w-0 flex-1 lg:max-w-xl">
-          <p className={`text-sm font-semibold ${ui.heading}`}>
+          <p className={`flex items-center gap-1.5 text-sm font-semibold ${ui.heading}`}>
             {t('balance.recordBalancesHeading')}
+            <HelpTooltip
+              symbol="ⓘ"
+              ariaLabel={t('balance.patrimony.recordBalancesWhyAria')}
+              size="sm"
+            >
+              {t('balance.patrimony.recordBalancesWhy')}
+            </HelpTooltip>
           </p>
           {showHistoryLink && onViewHistory ? (
             <button
@@ -83,9 +91,7 @@ export function RecordBalancesBar({
             className={`${ui.btnPrimary} w-full lg:w-auto`}
             disabled={!hasAccounts}
             aria-disabled={!hasAccounts}
-            aria-describedby={
-              hasAccounts ? 'record-balances-why' : 'record-balances-blocked'
-            }
+            aria-describedby={!hasAccounts ? 'record-balances-blocked' : undefined}
             onClick={onOpen}
           >
             {label}
@@ -101,17 +107,7 @@ export function RecordBalancesBar({
         </div>
 
         {hasAccounts ? (
-          <>
-            <PendingBalancesNotice detail={pendingDetail} t={t} />
-            {!pendingDetail ? (
-              <p
-                id="record-balances-why"
-                className={`text-xs leading-snug ${ui.textMuted} lg:text-right`}
-              >
-                {t('balance.patrimony.recordBalancesWhy')}
-              </p>
-            ) : null}
-          </>
+          <PendingBalancesNotice detail={pendingDetail} t={t} />
         ) : (
           <div
             id="record-balances-blocked"

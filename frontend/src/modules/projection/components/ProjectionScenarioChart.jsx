@@ -58,8 +58,8 @@ export function ProjectionScenarioChart({
   const strokeWidth = (s) => (activeScenario === s ? 2.5 : 1.5);
 
   return (
-    <div className="h-56 w-full sm:h-64">
-      <ResponsiveContainer width="100%" height="100%" minHeight={200}>
+    <div className="w-full">
+      <ResponsiveContainer width="100%" height={240} minWidth={100}>
         <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 4 }}>
           <XAxis
             dataKey="year"
