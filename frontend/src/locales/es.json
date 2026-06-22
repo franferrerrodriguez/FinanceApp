@@ -232,6 +232,7 @@
     "title": "Dashboard",
     "profileFallback": "Usuario",
     "detailSection": "Más detalle",
+    "macroSection": "Contexto macroeconómico",
     "subtitle": "Visión de tu patrimonio, cashflow y evolución mensual.",
     "subtitleWithEstimates": "Algunos gastos fijos son medias estimadas hasta que los completes en Balance.",
     "saveBanner": {

@@ -44,28 +44,21 @@ export function DashboardPage() {
 
       <KpiGrid kpis={data} />
 
-      <AnnualExpensesSummaryLine
-        yearlyTotal={data.annualExpensesYearly}
-        monthlyAvg={data.annualExpensesMonthlyAvg}
-      />
-
       <EmergencyFundCard emergencyFund={data.emergencyFund} />
 
       <DiagnosticCard />
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <IneInflationCard />
-        <IneCoreInflationCard />
-        <EcbEuriborCard />
-        <EcbDepositRateCard />
-      </div>
-
-      <NetWorthChart history={data.history} />
 
       <CashflowChart
         segments={data.cashflowSegments}
         income={data.income}
       />
+
+      <AnnualExpensesSummaryLine
+        yearlyTotal={data.annualExpensesYearly}
+        monthlyAvg={data.annualExpensesMonthlyAvg}
+      />
+
+      <NetWorthChart history={data.history} />
 
       <section className="space-y-4">
         <h2 className={`text-sm font-semibold uppercase tracking-wider ${ui.textMuted}`}>
@@ -79,6 +72,18 @@ export function DashboardPage() {
           topAssets={data.topHoldings.topAssets}
           topLiabilities={data.topHoldings.topLiabilities}
         />
+      </section>
+
+      <section className="space-y-4">
+        <h2 className={`text-sm font-semibold uppercase tracking-wider ${ui.textMuted}`}>
+          {t('dashboard.macroSection')}
+        </h2>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <IneInflationCard />
+          <IneCoreInflationCard />
+          <EcbEuriborCard />
+          <EcbDepositRateCard />
+        </div>
       </section>
     </div>
   );
