@@ -518,7 +518,7 @@ function ProjectionRow({
               alignRight ? 'justify-end text-right' : isYear ? 'justify-center text-center' : 'justify-start text-left'
             } ${separator ? `border-r ${ui.divider}` : ''} ${
               isSticky
-                ? `sticky z-10 ${bg} ${january} ${ui.textLabel} ${stickyDateShadow(scrolledX)} ${
+                ? `sticky z-10 ${row.isJanuary ? 'bg-[var(--bg-tertiary)]' : 'bg-[var(--bg-secondary)]'} ${ui.textLabel} ${stickyDateShadow(scrolledX)} ${
                     isYear && isLastRow ? 'rounded-bl-2xl' : ''
                   }`
                 : toneClass || ui.textLabel

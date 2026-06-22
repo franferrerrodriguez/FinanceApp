@@ -59,7 +59,7 @@ export function ProjectionScenarioChart({
 
   return (
     <div className="h-56 w-full sm:h-64">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minHeight={200}>
         <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 4 }}>
           <XAxis
             dataKey="year"

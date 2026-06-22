@@ -11,7 +11,6 @@ import { ui } from '../../../lib/uiClasses';
 import { formatMoney } from '../../../utils/formatters';
 import { ChartCard } from './ChartCard';
 
-/** Order and colors aligned with the visual reference */
 const SEGMENT_ORDER = ['fixed', 'variable', 'investment', 'free'];
 
 const SEGMENT_COLORS = {
@@ -40,6 +39,16 @@ export function CashflowChart({ segments, income }) {
 
   return (
     <ChartCard title={t('dashboard.charts.cashflow.title')}>
+      {/* Income — shown prominently so the bar reads as "breakdown of this" */}
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <span className={`text-sm ${ui.textMuted}`}>
+          {t('dashboard.charts.cashflow.income')}
+        </span>
+        <span className={`text-2xl font-bold tabular-nums ${ui.heading}`}>
+          {formatMoney(income)}
+        </span>
+      </div>
+
       <ResponsiveContainer width="100%" height={56}>
         <BarChart
           layout="vertical"
@@ -88,12 +97,7 @@ export function CashflowChart({ segments, income }) {
         </BarChart>
       </ResponsiveContainer>
 
-      <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <LegendItem
-          color="#1D9E75"
-          label={t('dashboard.charts.cashflow.income')}
-          amount={formatMoney(income)}
-        />
+      <ul className="mt-5 grid gap-3 sm:grid-cols-3">
         {SEGMENT_ORDER.map((key) => {
           const seg = segments.find((s) => s.key === key);
           if (!seg || seg.amount <= 0) return null;
